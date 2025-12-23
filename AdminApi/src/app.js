@@ -12,37 +12,15 @@ require('dotenv').config();
 const app = express();
 
 // =========== ИСПРАВЛЕННЫЙ CORS ===========
-const corsOptions = {
-  origin: function (origin, callback) {
-    // Разрешаем все origins в development
-    if (process.env.NODE_ENV === 'development') {
-      callback(null, true);
-    } else {
-      // В production разрешаем только указанные домены
-      const allowedOrigins = [
-        'http://localhost:3000',
-        'http://localhost:3001',
-        'http://127.0.0.1:3000',
-        'http://127.0.0.1:3001',
-        process.env.ADMIN_PANEL_URL
-      ].filter(Boolean);
-      
-      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    }
-  },
+app.use(cors({
+  origin: true, // Разрешаем все origins
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
-};
+}));
 
-app.use(cors(corsOptions));
-
-app.options('*', cors(corsOptions));
-
+// Предварительные запросы OPTIONS
+app.options('*', cors());
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
