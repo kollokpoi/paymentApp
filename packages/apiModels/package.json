@@ -1,0 +1,42 @@
+{
+    "name": "@payment-app/models",
+    "version": "1.0.0",
+    "description": "Sequelize models for Bitrix ecosystem",
+    "main": "src/index.js",
+    "scripts": {
+        "test": "jest",
+        "lint": "eslint src/",
+        "build": "echo 'No build step needed for Node.js library'",
+        "db:sync": "node scripts/sync-db.js",
+        "db:seed:demo": "node scripts/seed-demo.js"
+        
+    },
+    "keywords": [
+        "bitrix",
+        "sequelize",
+        "models",
+        "database"
+    ],
+    "license": "MIT",
+    "dependencies": {
+        "bcryptjs": "^2.4.3",
+        "dotenv": "^16.3.1",
+        "mysql2": "^3.6.0",
+        "pg": "^8.16.3",
+        "sequelize": "^6.x",
+        "sequelize-auto-migrations": "^1.0.3",
+        "validator": "^13.11.0"
+    },
+    "devDependencies": {
+        "eslint": "^8.55.0",
+        "jest": "^29.7.0",
+        "sequelize-cli": "^6.6.1"
+    },
+    "peerDependencies": {
+        "sequelize": "^6.x"
+    },
+    "files": [
+        "src/",
+        "README.md"
+    ]
+}

@@ -1,0 +1,99 @@
+const { DataTypes } = require('sequelize');
+const bcrypt = require('bcryptjs');
+
+module.exports = (sequelize) => {
+  const AdminUser = sequelize.define('AdminUser', {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true
+    },
+    email: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+      unique: true,
+      validate: {
+        isEmail: true,
+        notEmpty: true
+      },
+      comment: 'Email администратора'
+    },
+    password: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+        len: [6, 255]
+      },
+      set(value) {
+        const salt = bcrypt.genSaltSync(10);
+        const hash = bcrypt.hashSync(value, salt);
+        this.setDataValue('password', hash);
+      },
+      comment: 'Хэшированный пароль'
+    },
+    name: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+      comment: 'Имя администратора'
+    },
+    role: {
+      type: DataTypes.ENUM('superadmin', 'admin', 'support'),
+      defaultValue: 'admin',
+      comment: 'Роль пользователя'
+    },
+    is_active: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+      comment: 'Активен ли пользователь'
+    },
+    last_login: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      comment: 'Дата последнего входа'
+    }
+  }, {
+    tableName: 'admin_users',
+    timestamps: true,
+    defaultScope: {
+      attributes: { exclude: ['password'] }
+    },
+    scopes: {
+      withPassword: {
+        attributes: { include: ['password'] }
+      },
+      active: {
+        where: { is_active: true }
+      }
+    },
+    hooks: {
+      beforeCreate: async (user) => {
+        if (user.password) {
+          user.password = await bcrypt.hash(user.password, 10);
+        }
+      },
+      beforeUpdate: async (user) => {
+        if (user.changed('password')) {
+          user.password = await bcrypt.hash(user.password, 10);
+        }
+      }
+    }
+  });
+
+  // Методы экземпляра
+  AdminUser.prototype.validPassword = async function(password) {
+    return bcrypt.compare(password, this.password);
+  };
+
+  AdminUser.prototype.updateLastLogin = function() {
+    return this.update({ last_login: new Date() });
+  };
+
+  AdminUser.prototype.toJSON = function() {
+    const values = Object.assign({}, this.get());
+    delete values.password;
+    return values;
+  };
+
+  return AdminUser;
+};
