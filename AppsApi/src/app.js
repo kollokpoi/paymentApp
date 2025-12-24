@@ -109,7 +109,6 @@ app.use(async (req, res, next) => {
         port: process.env.DB_PORT
       });
       await db.connect();
-      console.log('database connected');
     }
     
     req.db = db; 
@@ -122,7 +121,7 @@ app.use(async (req, res, next) => {
 
 app.use('/api', routes);
 
-app.use((req, res, next) => {
+app.use((req, res) => {
   res.status(404).json({
     success: false,
     message: 'Route not found',
@@ -130,7 +129,7 @@ app.use((req, res, next) => {
   });
 });
 
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
   logger.error('Global error handler:', {
     message: err.message,
     stack: err.stack,
