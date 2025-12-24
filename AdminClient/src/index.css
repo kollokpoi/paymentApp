@@ -1,0 +1,29 @@
+@import 'tailwindcss';
+
+/* PrimeIcons */
+@import 'primeicons/primeicons.css';
+
+/* Кастомные стили */
+:root {
+  --radius: 0.5rem;
+}
+
+/* PrimeVue совместимость с Tailwind */
+.p-button {
+  @apply font-medium;
+}
+
+.p-card {
+  @apply shadow-sm;
+}
+
+.p-inputtext {
+  @apply rounded-lg;
+}
+
+/* Tailwind utilities */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

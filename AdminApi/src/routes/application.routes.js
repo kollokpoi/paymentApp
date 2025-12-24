@@ -161,4 +161,18 @@ router.delete('/:id', authenticateToken, authorize('superadmin'), applicationCon
  */
 router.get('/:id/tariffs', authenticateToken, authorize('admin', 'superadmin', 'support'), applicationController.getTariffs);
 
+/**
+ * @swagger
+ * /applications/stats/count:
+ *   get:
+ *     summary: Получить статистику по приложениям
+ *     tags: [Applications]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Статистика приложений
+ */
+router.get('/stats/count', authenticateToken, applicationController.getActiveCount);
+
 module.exports = router;

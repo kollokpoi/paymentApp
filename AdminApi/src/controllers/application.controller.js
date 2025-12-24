@@ -188,6 +188,45 @@ class ApplicationController {
       next(error);
     }
   }
+  async getActiveCount(req, res, next) {
+    try {
+      const Application = req.db.getModel('Application');
+      
+
+      const statistics = await Application.findAll({
+        attributes: [
+          [req.db.sequelize.fn('COUNT', req.db.sequelize.col('id')), 'total'],
+          [
+            req.db.sequelize.fn('SUM', 
+              req.db.sequelize.literal('CASE WHEN is_active = true THEN 1 ELSE 0 END')
+            ), 
+            'active'
+          ],
+          [
+            req.db.sequelize.fn('SUM', 
+              req.db.sequelize.literal('CASE WHEN is_active = false THEN 1 ELSE 0 END')
+            ), 
+            'inactive'
+          ]
+        ],
+        raw: true
+      });
+      
+      
+      res.json({
+        success: true,
+        data: {
+          statistics: statistics[0] || {
+            total: 0,
+            active: 0,
+            inactive: 0
+          },
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = new ApplicationController();

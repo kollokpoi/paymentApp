@@ -2,20 +2,32 @@ import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
+// Импортируем layout компоненты
+import Layout from '@/layouts/AppLayout.vue'
+
 // Типы для метаданных маршрутов
 declare module 'vue-router' {
   interface RouteMeta {
     requiresAuth?: boolean
     title?: string
-    roles?: string[] // Дополнительно: ролевая модель
+    subtitle?: string
+    layout?: unknown
+    roles?: string[]
   }
 }
 
-// Ленивая загрузка компонентов
+// Ленивая загрузка компонентов страниц
 const LoginPage = () => import('@/views/LoginPage.vue')
-const DashboardPage = () => import('@/views/DashboardPage.vue')
-const ProfilePage = () => import('@/views/ProfilePage.vue')
 const NotFoundPage = () => import('@/views/NotFoundPage.vue')
+const DashboardPage = () => import('@/views/DashboardPage.vue')
+const PortalsPage = () => import('@/views/PortalsPage.vue')
+const SubscriptionsPage = () => import('@/views/SubscriptionsPage.vue')
+const PaymentsPage = () => import('@/views/PaymentsPage.vue')
+const ApplicationsPage = () => import('@/views/ApplicationsPage.vue')
+const TariffsPage = () => import('@/views/TariffsPage.vue')
+const UsersPage = () => import('@/views/UsersPage.vue')
+const SettingsPage = () => import('@/views/SettingsPage.vue')
+const AnalyticsPage = () => import('@/views/AnalyticsPage.vue')
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -24,7 +36,7 @@ const routes: Array<RouteRecordRaw> = [
     component: LoginPage,
     meta: {
       title: 'Вход',
-      requiresAuth: false
+      requiresAuth: false,
     }
   },
   {
@@ -32,31 +44,121 @@ const routes: Array<RouteRecordRaw> = [
     name: 'dashboard',
     component: DashboardPage,
     meta: {
-      title: 'Панель управления',
+      title: 'Дашборд',
+      subtitle: 'Обзор системы',
       requiresAuth: true,
-      // roles: ['admin', 'manager'] // Пример ролевой защиты
+      layout: Layout
     }
   },
   {
-    path: '/profile',
-    name: 'profile',
-    component: ProfilePage,
+    path: '/portals',
+    name: 'portals',
+    component: PortalsPage,
     meta: {
-      title: 'Профиль',
-      requiresAuth: true
+      title: 'Порталы',
+      subtitle: 'Управление порталами Bitrix24',
+      requiresAuth: true,
+      layout: Layout
+    }
+  },
+  {
+    path: '/subscriptions',
+    name: 'subscriptions',
+    component: SubscriptionsPage,
+    meta: {
+      title: 'Подписки',
+      subtitle: 'Активные подписки и их статус',
+      requiresAuth: true,
+      layout: Layout
+    }
+  },
+  {
+    path: '/payments',
+    name: 'payments',
+    component: PaymentsPage,
+    meta: {
+      title: 'Платежи',
+      subtitle: 'История и управление платежами',
+      requiresAuth: true,
+      layout: Layout
+    }
+  },
+  {
+    path: '/applications',
+    name: 'applications',
+    component: ApplicationsPage,
+    meta: {
+      title: 'Приложения',
+      subtitle: 'Доступные приложения',
+      requiresAuth: true,
+      layout: Layout
+    }
+  },
+  {
+    path: '/tariffs',
+    name: 'tariffs',
+    component: TariffsPage,
+    meta: {
+      title: 'Тарифы',
+      subtitle: 'Настройка тарифных планов',
+      requiresAuth: true,
+      layout: Layout
+    }
+  },
+  {
+    path: '/users',
+    name: 'users',
+    component: UsersPage,
+    meta: {
+      title: 'Пользователи',
+      subtitle: 'Управление пользователями системы',
+      requiresAuth: true,
+      layout: Layout
+    }
+  },
+  {
+    path: '/settings',
+    name: 'settings',
+    component: SettingsPage,
+    meta: {
+      title: 'Настройки',
+      subtitle: 'Настройки системы',
+      requiresAuth: true,
+      layout: Layout
+    }
+  },
+  {
+    path: '/analytics',
+    name: 'analytics',
+    component: AnalyticsPage,
+    meta: {
+      title: 'Аналитика',
+      subtitle: 'Статистика и отчеты',
+      requiresAuth: true,
+      layout: Layout
     }
   },
   {
     path: '/:pathMatch(.*)*',
     name: 'not-found',
     component: NotFoundPage,
-    meta: { title: 'Страница не найдена' }
+    meta: {
+      title: 'Страница не найдена',
+      layout: Layout
+    }
   }
 ]
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes
+  routes,
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition
+    } else {
+      return { top: 0 }
+    }
+  }
 })
 
 let isCheckingAuth = false
@@ -65,7 +167,7 @@ router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
 
   if (to.meta.title) {
-    document.title = `${to.meta.title} | My App`
+    document.title = `${to.meta.title} | Админ-панель`
   }
 
   if (isCheckingAuth) {
@@ -82,23 +184,18 @@ router.beforeEach(async (to, from, next) => {
     }
   }
 
-  // Проверка авторизации для защищенных маршрутов
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    // Сохраняем путь для редиректа после входа
     next({
       name: 'login',
       query: { redirect: to.fullPath !== '/' ? to.fullPath : undefined }
     })
   }
-  // Редирект с логина если уже авторизован
   else if (to.name === 'login' && authStore.isAuthenticated) {
     next({ name: 'dashboard' })
   }
-  // Дополнительная проверка ролей (опционально)
   else if (to.meta.roles && authStore.user) {
     const userRole = authStore.user.role || 'user'
     if (!to.meta.roles.includes(userRole)) {
-      // Если нет прав - редирект на dashboard или 403
       next({ name: 'dashboard' })
     } else {
       next()
@@ -106,6 +203,14 @@ router.beforeEach(async (to, from, next) => {
   }
   else {
     next()
+  }
+})
+
+router.onError((error) => {
+  console.error('Router navigation error:', error)
+
+  if (error.message.includes('Failed to fetch dynamically imported module')) {
+    console.warn('Module load failed, try refreshing the page')
   }
 })
 
