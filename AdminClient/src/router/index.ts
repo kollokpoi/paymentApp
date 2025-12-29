@@ -20,7 +20,8 @@ declare module 'vue-router' {
 const LoginPage = () => import('@/views/LoginPage.vue')
 const NotFoundPage = () => import('@/views/NotFoundPage.vue')
 const DashboardPage = () => import('@/views/DashboardPage.vue')
-const PortalsPage = () => import('@/views/PortalsPage.vue')
+const PortalsIndex = () => import('@/views/portals/PortalsIndex.vue')
+const PortalsDetails = () => import('@/views/portals/PortalsDetails.vue')
 const SubscriptionsPage = () => import('@/views/SubscriptionsPage.vue')
 const PaymentsPage = () => import('@/views/PaymentsPage.vue')
 const ApplicationsPage = () => import('@/views/ApplicationsPage.vue')
@@ -53,13 +54,29 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/portals',
     name: 'portals',
-    component: PortalsPage,
     meta: {
-      title: 'Порталы',
-      subtitle: 'Управление порталами Bitrix24',
       requiresAuth: true,
-      layout: Layout
-    }
+      layout: Layout 
+    },
+    children: [
+      {
+        path: '', 
+        name: 'portals-list',
+        component: PortalsIndex,
+        meta: { 
+          title: 'Порталы',
+          subtitle: 'Управление порталами Bitrix24'
+        }
+      },
+      {
+        path: ':id',
+        name: 'portal-detail',
+        component: PortalsDetails,
+        meta: { 
+          title: 'Детали портала'
+        }
+      }
+    ]
   },
   {
     path: '/subscriptions',

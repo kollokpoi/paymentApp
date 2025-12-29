@@ -28,6 +28,7 @@
         paginator
         :rows="20"
         :rowsPerPageOptions="[10, 20, 50]"
+        :rowClass="rowClassFunction"
         @row-click="onRowClick"
         paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
         currentPageReportTemplate="Показано {first} - {last} из {totalRecords} сделок">
@@ -51,6 +52,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { portalService } from '@/services'
+import {useRouter } from 'vue-router';
 import type { PortalDTO } from '@/types/dto'
 import Button from 'primevue/button'
 import Column from 'primevue/column'
@@ -59,6 +61,7 @@ import type { DataTableRowClickEvent } from 'primevue'
 const loading = ref(true)
 const search = ref('')
 const portals = ref<PortalDTO[]>([])
+const router = useRouter();
 
 const filteredPortals = computed(() => {
   if (!search.value) return portals.value
@@ -71,8 +74,17 @@ const filteredPortals = computed(() => {
 })
 
 const onRowClick = (event : DataTableRowClickEvent<PortalDTO>) => {
-  console.log('Row clicked:', event.data)
+  const id = event.data.id
+  router.push({
+    path: `/portals/${id}`
+  });
 };
+
+const rowClassFunction = ():string=>
+{
+  const classes = ['cursor-pointer'];
+  return classes.join(' ')
+}
 
 const loadPortals = async () => {
   try {

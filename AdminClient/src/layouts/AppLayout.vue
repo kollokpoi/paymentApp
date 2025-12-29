@@ -22,7 +22,7 @@
           <component
             :is="item.icon"
             :class="[
-              'mr-3 h-5 w-5 flex-shrink-0',
+              'mr-3 h-5 w-5 shrink-0',
               isActive(item.to) ? 'text-primary-600' : 'text-gray-400 group-hover:text-gray-500'
             ]"
             aria-hidden="true"
