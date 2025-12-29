@@ -1,4 +1,4 @@
-const { PaymentDTO, SubscriptionDTO } = require('@payment-app/apiModels');
+const { PaymentDTO } = require('@payment-app/apiModels');
 
 class PaymentController {
   async getAll(req, res, next) {
@@ -224,6 +224,20 @@ class PaymentController {
           totalPayments,
           dailyStats
         }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getActiveCount(req, res, next) {
+    try {
+      const Payment = req.db.getModel("Payment");
+      const count = await Payment.count();
+
+      res.json({
+        success: true,
+        data: count
       });
     } catch (error) {
       next(error);

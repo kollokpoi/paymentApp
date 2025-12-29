@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { apiService } from '@/services/api'
+import { authService } from '@/services'
 
 export interface User {
   id: string
@@ -33,10 +33,10 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
 
     try {
-      const response = await apiService.login(credentials)
-      user.value = response.data.user
-      token.value = response.data.tokens.accessToken
-      refreshToken.value = response.data.tokens.refreshToken||null
+      const response = await authService.login(credentials)
+      user.value = response.user
+      token.value = response.tokens.accessToken
+      refreshToken.value = response.tokens.refreshToken||null
 
       localStorage.setItem('auth_token', token.value)
       localStorage.setItem('user', JSON.stringify( user.value))

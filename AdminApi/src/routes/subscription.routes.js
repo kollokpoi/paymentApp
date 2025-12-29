@@ -97,6 +97,20 @@ router.post('/', authenticateToken, authorize('superadmin', 'admin'), subscripti
 
 /**
  * @swagger
+ * /subscriptions/count:
+ *   get:
+ *     summary: Получить количество подписок
+ *     tags: [Subscriptions]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Количество подписок
+ */
+router.get('/count', authenticateToken, subscriptionController.getActiveCount);
+
+/**
+ * @swagger
  * /subscriptions/{id}:
  *   get:
  *     summary: Получить подписку по ID
@@ -151,6 +165,25 @@ router.get('/:id', authenticateToken, authorize('admin', 'superadmin', 'support'
  *         description: Подписка обновлена
  */
 router.put('/:id', authenticateToken, authorize('superadmin', 'admin'), subscriptionController.update);
+/**
+ * @swagger
+ * /subscriptions/{id}:
+ *   delete:
+ *     summary: удалить подписку
+ *     tags: [Subscriptions]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Подписка удалена
+ */
+router.delete('/:id', authenticateToken, authorize('superadmin', 'admin'), subscriptionController.delete);
 
 /**
  * @swagger
@@ -215,5 +248,6 @@ router.post('/:id/renew', authenticateToken, authorize('superadmin', 'admin', 's
  *         description: Тариф изменен
  */
 router.post('/:id/change-tariff', authenticateToken, authorize('superadmin', 'admin'), subscriptionController.changeTariff);
+
 
 module.exports = router;

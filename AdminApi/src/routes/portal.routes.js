@@ -68,6 +68,20 @@ router.get('/search', authenticateToken, authorize('admin', 'superadmin', 'suppo
 
 /**
  * @swagger
+ * /portals/count:
+ *   get:
+ *     summary: Получить количество порталов
+ *     tags: [Portals]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Количество порталов
+ */
+router.get('/count', authenticateToken, portalController.getActiveCount);
+
+/**
+ * @swagger
  * /portals/{id}:
  *   get:
  *     summary: Получить портал по ID
@@ -85,6 +99,7 @@ router.get('/search', authenticateToken, authorize('admin', 'superadmin', 'suppo
  *         description: Данные портала
  */
 router.get('/:id', authenticateToken, authorize('admin', 'superadmin', 'support'), portalController.getById);
+
 /**
  * @swagger
  * /portals/{id}:
@@ -203,5 +218,19 @@ router.delete('/:id', authenticateToken, authorize('superadmin'), portalControll
  *         description: Статистика портала
  */
 router.get('/:id/stats', authenticateToken, authorize('admin', 'superadmin', 'support'), portalController.getStats);
+
+/**
+ * @swagger
+ * /portals/count:
+ *   get:
+ *     summary: Получить количество порталов
+ *     tags: [Portals]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Количество порталов
+ */
+router.get('/count', authenticateToken, portalController.getActiveCount);
 
 module.exports = router;

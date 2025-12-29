@@ -36,6 +36,7 @@ import Avatar from 'primevue/avatar'
 import Menu from 'primevue/menu'
 import SplitButton from 'primevue/splitbutton'
 import InputSwitch from 'primevue/inputswitch'
+import { AutoComplete } from 'primevue'
 
 export default {
   install(app: any) {
@@ -85,5 +86,6 @@ export default {
     app.component('TextareaPrime', Textarea)
     app.component('TimelinePrime', Timeline)
     app.component('ToastPrime', Toast)
+    app.component('AutoComplete',AutoComplete)
   },
 }

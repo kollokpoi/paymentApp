@@ -188,7 +188,8 @@ class ApplicationController {
       next(error);
     }
   }
-  async getActiveCount(req, res, next) {
+
+  async getStat(req, res, next) {
     try {
       const Application = req.db.getModel('Application');
       
@@ -222,6 +223,24 @@ class ApplicationController {
             inactive: 0
           },
         }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getActiveCount(req, res, next) {
+    try {
+      const Application = req.db.getModel("Application");
+      const count = await Application.count({
+        where: {
+          is_active: true,
+        },
+      });
+
+      res.json({
+        success: true,
+        data: count
       });
     } catch (error) {
       next(error);

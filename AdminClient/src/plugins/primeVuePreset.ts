@@ -1,87 +1,42 @@
-// Кастомный пресет PrimeVue темы
-// Можно взять из рабочего проекта или создать свой
+// src/myPreset.js
+import { definePreset } from '@primeuix/themes';
+import Aura from '@primeuix/themes/aura';
 
-export default {
+const MyPreset = definePreset(Aura, {
   semantic: {
+    primary: {
+      50: '{sky.50}',
+      100: '{sky.100}',
+      200: '{sky.200}',
+      300: '{sky.300}',
+      400: '{sky.400}',
+      500: '{sky.500}', // основной синий
+      600: '{sky.600}',
+      700: '{sky.700}',
+      800: '{sky.800}',
+      900: '{sky.900}',
+      950: '{sky.950}',
+    },
     colorScheme: {
       light: {
-        primary: {
-          50: '{blue.50}',
-          100: '{blue.100}',
-          200: '{blue.200}',
-          300: '{blue.300}',
-          400: '{blue.400}',
-          500: '{blue.500}',
-          600: '{blue.600}',
-          700: '{blue.700}',
-          800: '{blue.800}',
-          900: '{blue.900}',
-          950: '{blue.950}'
-        },
         surface: {
-          0: '{white}',
-          50: '{gray.50}',
-          100: '{gray.100}',
-          200: '{gray.200}',
-          300: '{gray.300}',
-          400: '{gray.400}',
-          500: '{gray.500}',
-          600: '{gray.600}',
-          700: '{gray.700}',
-          800: '{gray.800}',
-          900: '{gray.900}',
-          950: '{gray.950}'
-        }
+          0: '#ffffff', // Главный фон
+          50: '{zinc.50}',
+          100: '{zinc.100}',
+          200: '{zinc.200}',
+          300: '{zinc.300}',
+          400: '{zinc.400}',
+          500: '{zinc.500}',
+          600: '{zinc.600}',
+          700: '{zinc.700}',
+          800: '{zinc.800}',
+          900: '{zinc.900}',
+          950: '{zinc.950}',
+        },
       },
-      dark: {
-        primary: {
-          50: '{blue.50}',
-          100: '{blue.100}',
-          200: '{blue.200}',
-          300: '{blue.300}',
-          400: '{blue.400}',
-          500: '{blue.500}',
-          600: '{blue.600}',
-          700: '{blue.700}',
-          800: '{blue.800}',
-          900: '{blue.900}',
-          950: '{blue.950}'
-        },
-        surface: {
-          0: '{zinc.950}',
-          50: '{zinc.900}',
-          100: '{zinc.800}',
-          200: '{zinc.700}',
-          300: '{zinc.600}',
-          400: '{zinc.500}',
-          500: '{zinc.400}',
-          600: '{zinc.300}',
-          700: '{zinc.200}',
-          800: '{zinc.100}',
-          900: '{zinc.50}',
-          950: '{white}'
-        }
-      }
-    }
+      // Не определяем dark, чтобы не было тёмной темы
+    },
   },
-  components: {
-    card: {
-      root: {
-        borderRadius: '{border.radius.xl}',
-        padding: '{spacing.5}',
-        gap: '{spacing.5}'
-      }
-    },
-    button: {
-      root: {
-        borderRadius: '{border.radius.xl}',
-        fontWeight: '500'
-      }
-    },
-    inputtext: {
-      root: {
-        borderRadius: '{border.radius.xl}'
-      }
-    }
-  }
-}
+});
+
+export default MyPreset;

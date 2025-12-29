@@ -7,6 +7,7 @@ const applicationRoutes = require('./application.routes');
 const tariffRoutes = require('./tariff.routes');
 const subscriptionRoutes = require('./subscription.routes');
 const paymentRoutes = require('./payment.routes');
+const userRoutes = require('./user.routes')
 
 // Health check endpoint
 router.get('/health', (req, res) => {
@@ -25,5 +26,6 @@ router.use('/applications', applicationRoutes);
 router.use('/tariffs', tariffRoutes);
 router.use('/subscriptions', subscriptionRoutes);
 router.use('/payments', paymentRoutes);
+router.use('/users', userRoutes)
 
 module.exports = router;

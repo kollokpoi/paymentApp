@@ -28,7 +28,7 @@
     title: String,
     value: [String, Number],
     icon: {
-      type: Object,
+      type: Function,
       required: true
     },
     link: {

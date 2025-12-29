@@ -1,10 +1,10 @@
-import type { UserRole } from '../api/responses'
+import { AdminRole } from '../api/responses'
 
 export interface AdminUserDTOData {
   id: string
   email: string
   name: string
-  role?: UserRole
+  role?: AdminRole
   is_active?: boolean
   isActive?: boolean
   last_login?: string | Date
@@ -19,7 +19,7 @@ export class AdminUserDTO {
   id: string
   email: string
   name: string
-  role: UserRole
+  role: AdminRole
   isActive: boolean
   lastLogin: string | Date | null
   createdAt: string | Date
@@ -29,7 +29,7 @@ export class AdminUserDTO {
     this.id = data.id
     this.email = data.email
     this.name = data.name
-    this.role = data.role || 'admin'
+    this.role = data.role || AdminRole.ADMIN
     this.isActive = data.is_active !== undefined ? data.is_active : (data.isActive ?? true)
     this.lastLogin = data.last_login || data.lastLogin || null
     this.createdAt = data.created_at || data.createdAt || new Date().toISOString()

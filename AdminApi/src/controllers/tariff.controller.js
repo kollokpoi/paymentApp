@@ -1,29 +1,34 @@
-const { TariffDTO, ApplicationDTO } = require('@payment-app/apiModels');
+const { TariffDTO} = require("@payment-app/apiModels");
 
 class TariffController {
   async getAll(req, res, next) {
     try {
       const { appId, isActive } = req.query;
-      
-      const Tariff = req.db.getModel('Tariff');
+
+      const Tariff = req.db.getModel("Tariff");
       const where = {};
       if (appId) where.app_id = appId;
-      if (isActive !== undefined) where.is_active = isActive === 'true';
-      
+      if (isActive !== undefined) where.is_active = isActive === "true";
+
       const tariffs = await Tariff.findAll({
         where,
-        include: [{
-          model: req.db.getModel('Application'),
-          as: 'application',
-          attributes: ['id', 'name', 'code']
-        }],
-        order: [['sort_order', 'ASC'], ['price', 'ASC']]
+        include: [
+          {
+            model: req.db.getModel("Application"),
+            as: "application",
+            attributes: ["id", "name", "code"],
+          },
+        ],
+        order: [
+          ["sort_order", "ASC"],
+          ["price", "ASC"],
+        ],
       });
-      
-      const result = tariffs.map(tariff => 
+
+      const result = tariffs.map((tariff) =>
         TariffDTO.fromSequelize(tariff).toApiResponse()
       );
-      
+
       res.json({ success: true, data: result });
     } catch (error) {
       next(error);
@@ -32,18 +37,18 @@ class TariffController {
 
   async getById(req, res, next) {
     try {
-      const Tariff = req.db.getModel('Tariff');
+      const Tariff = req.db.getModel("Tariff");
       const tariff = await Tariff.findByPk(req.params.id, {
-        include: ['application']
+        include: ["application"],
       });
-      
+
       if (!tariff) {
         return res.status(404).json({
           success: false,
-          message: 'Tariff not found'
+          message: "Tariff not found",
         });
       }
-      
+
       const tariffDTO = TariffDTO.fromSequelize(tariff);
       res.json({ success: true, data: tariffDTO.toApiResponse() });
     } catch (error) {
@@ -53,68 +58,75 @@ class TariffController {
 
   async create(req, res, next) {
     try {
-      const Tariff = req.db.getModel('Tariff');
-      const Application = req.db.getModel('Application');
-      
-      const { 
-        app_id, code, name, description, price, period, 
-        trial_days, is_active, is_default, limits, features, sort_order 
+      const Tariff = req.db.getModel("Tariff");
+      const Application = req.db.getModel("Application");
+
+      const {
+        app_id,
+        code,
+        name,
+        description,
+        price,
+        period,
+        trial_days,
+        is_active,
+        is_default,
+        limits,
+        features,
+        sort_order,
       } = req.body;
-      
+
       if (!app_id || !code || !name || price === undefined) {
         return res.status(400).json({
           success: false,
-          message: 'app_id, code, name and price are required'
+          message: "app_id, code, name and price are required",
         });
       }
-      
+
       const application = await Application.findByPk(app_id);
       if (!application) {
         return res.status(404).json({
           success: false,
-          message: 'Application not found'
+          message: "Application not found",
         });
       }
-      
-      const existing = await Tariff.findOne({ 
-        where: { app_id, code } 
+
+      const existing = await Tariff.findOne({
+        where: { app_id, code },
       });
-      
+
       if (existing) {
         return res.status(400).json({
           success: false,
-          message: 'Tariff with this code already exists for this application'
+          message: "Tariff with this code already exists for this application",
         });
       }
-      
+
       if (is_default) {
-        await Tariff.update(
-          { is_default: false },
-          { where: { app_id } }
-        );
+        await Tariff.update({ is_default: false }, { where: { app_id } });
       }
-      
+
       const tariff = await Tariff.create({
         app_id,
         code,
         name,
         description,
         price: parseFloat(price),
-        period: period || 'month',
+        period: period || "month",
         trial_days: trial_days || 0,
         is_active: is_active !== undefined ? is_active : true,
         is_default: is_default || false,
         limits: limits || {},
         features: features || [],
-        sort_order: sort_order || 0
+        sort_order: sort_order || 0,
       });
-      
+
       const tariffDTO = TariffDTO.fromSequelize(tariff);
-      
+
       res.status(201).json({
         success: true,
         data: tariffDTO.toApiResponse(),
-        message: 'Tariff created successfully'
+        message: "Tariff created successfully",
       });
     } catch (error) {
       next(error);
@@ -123,28 +135,36 @@ class TariffController {
 
   async update(req, res, next) {
     try {
-      const Tariff = req.db.getModel('Tariff');
+      const Tariff = req.db.getModel("Tariff");
       const tariff = await Tariff.findByPk(req.params.id);
-      
+
       if (!tariff) {
         return res.status(404).json({
           success: false,
-          message: 'Tariff not found'
+          message: "Tariff not found",
         });
       }
-      
-      const { 
-        name, description, price, period, trial_days, 
-        is_active, is_default, limits, features, sort_order 
+
+      const {
+        name,
+        description,
+        price,
+        period,
+        trial_days,
+        is_active,
+        is_default,
+        limits,
+        features,
+        sort_order,
       } = req.body;
-      
+
       if (is_default && !tariff.is_default) {
         await Tariff.update(
           { is_default: false },
           { where: { app_id: tariff.app_id } }
         );
       }
-      
+
       await tariff.update({
         name,
         description,
@@ -155,14 +175,14 @@ class TariffController {
         is_default,
         limits: limits ? { ...tariff.limits, ...limits } : tariff.limits,
         features: features || tariff.features,
-        sort_order
+        sort_order,
       });
-      
+
       const tariffDTO = TariffDTO.fromSequelize(tariff);
       res.json({
         success: true,
         data: tariffDTO.toApiResponse(),
-        message: 'Tariff updated successfully'
+        message: "Tariff updated successfully",
       });
     } catch (error) {
       next(error);
@@ -171,52 +191,70 @@ class TariffController {
 
   async delete(req, res, next) {
     try {
-      const Tariff = req.db.getModel('Tariff');
-      const Subscription = req.db.getModel('Subscription');
-      
+      const Tariff = req.db.getModel("Tariff");
+      const Subscription = req.db.getModel("Subscription");
+
       const tariff = await Tariff.findByPk(req.params.id);
-      
+
       if (!tariff) {
         return res.status(404).json({
           success: false,
-          message: 'Tariff not found'
+          message: "Tariff not found",
         });
       }
-      
+
       const activeSubscriptions = await Subscription.count({
-        where: { 
+        where: {
           tariff_id: tariff.id,
-          status: ['trial', 'active']
-        }
+          status: ["trial", "active"],
+        },
       });
-      
+
       if (activeSubscriptions > 0) {
         return res.status(400).json({
           success: false,
-          message: 'Cannot delete tariff with active subscriptions'
+          message: "Cannot delete tariff with active subscriptions",
         });
       }
-      
+
       if (tariff.is_default) {
         const otherTariff = await Tariff.findOne({
-          where: { 
+          where: {
             app_id: tariff.app_id,
             id: { [req.db.sequelize.Op.ne]: tariff.id },
-            is_active: true
+            is_active: true,
           },
-          order: [['sort_order', 'ASC']]
+          order: [["sort_order", "ASC"]],
         });
-        
+
         if (otherTariff) {
           await otherTariff.update({ is_default: true });
         }
       }
-      
+
       await tariff.destroy();
-      
+
       res.json({
         success: true,
-        message: 'Tariff deleted successfully'
+        message: "Tariff deleted successfully",
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getActiveCount(req, res, next) {
+    try {
+      const Tariff = req.db.getModel("Tariff");
+      const count = await Tariff.count({
+        where: {
+          is_active: true,
+        },
+      });
+
+      res.json({
+        success: true,
+        data: count
       });
     } catch (error) {
       next(error);

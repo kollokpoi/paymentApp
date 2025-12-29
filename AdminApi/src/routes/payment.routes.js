@@ -123,6 +123,20 @@ router.post('/', authenticateToken, authorize('superadmin', 'admin'), paymentCon
 
 /**
  * @swagger
+ * /payments/count:
+ *   get:
+ *     summary: Получить количество подписок
+ *     tags: [Payments]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Количество подписок
+ */
+router.get('/count', authenticateToken, paymentController.getActiveCount);
+
+/**
+ * @swagger
  * /payments/{id}:
  *   get:
  *     summary: Получить платеж по ID
@@ -176,5 +190,19 @@ router.get('/:id', authenticateToken, authorize('admin', 'superadmin', 'support'
  *         description: Платеж обновлен
  */
 router.put('/:id', authenticateToken, authorize('superadmin', 'admin'), paymentController.update);
+
+/**
+ * @swagger
+ * /payments/count:
+ *   get:
+ *     summary: Получить количество подписок
+ *     tags: [Payments]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Количество подписок
+ */
+router.get('/count', authenticateToken, paymentController.getActiveCount);
 
 module.exports = router;

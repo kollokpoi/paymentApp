@@ -1,26 +1,51 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import axios from 'axios'
-import type { AxiosInstance, AxiosRequestConfig } from 'axios'
+import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios'
 import { useAuthStore } from '@/stores/auth'
 import router from '@/router'
 
 // Импортируем DTO
 import type {
   AdminUserDTO,
-  ApplicationDTO,
-  PaymentDTO,
-  PortalDTO,
-  SubscriptionDTO,
-  TariffDTO
 } from '@/types/dto'
 
 // Импортируем общие типы
-import type {
-  ApiResponse,
-  PaginatedResponse,
-} from '@/types/api/responses'
+const API_BASE_URL = 'https://adminapi.paymentapp.kollokpoi.ddns.net/api'
+// Базовые интерфейсы для всех API ответов
+export interface ApiResponse<T = unknown> {
+  data: T
+  message?: string
+  success: boolean
+  timestamp?: string
+}
 
-const API_BASE_URL = 'http://188.17.155.59:3001/api'
+export interface PaginatedResponse<T> {
+  items: T[]
+  total: number
+  page: number
+  limit: number
+  totalPages: number
+  hasNext: boolean
+  hasPrev: boolean
+}
+
+export interface ValidationError {
+  field: string
+  message: string
+}
+
+export interface ApiErrorResponse {
+  message: string
+  code?: string
+  errors?: ValidationError[]
+  statusCode?: number
+  timestamp?: string
+}
+
+// Типы для статусов
+export type SubscriptionStatus = 'trial' | 'active' | 'expired' | 'suspended' | 'canceled'
+export type PaymentStatus = 'pending' | 'completed' | 'failed' | 'refunded'
+export type PeriodType = 'day' | 'week' | 'month' | 'year'
+export type UserRole = 'admin' | 'moderator' | 'user'
 
 // Типы запросов
 export interface LoginRequest {
@@ -35,21 +60,23 @@ export interface ApiError {
 }
 
 export interface LoginResponse {
-  tokens:LoginTokens
+  tokens: LoginTokens
   user: AdminUserDTO
 }
-export interface LoginTokens{
+
+export interface LoginTokens {
   accessToken: string
   refreshToken?: string
   expiresIn: number
 }
+
 export interface RefreshTokenResponse {
   access_token: string
   refresh_token?: string
+  expires_in?: number
 }
 
-
-class ApiService {
+export class ApiService {
   private axiosInstance: AxiosInstance
 
   constructor() {
@@ -139,54 +166,14 @@ class ApiService {
     return response.data
   }
 
-  async refreshToken(data: string): Promise<RefreshTokenResponse> {
-    try {
-      const response = await this.axiosInstance.post<RefreshTokenResponse>('/auth/refresh', data)
-      return response.data
-    } catch (error) {
-      throw this.handleError(error)
-    }
-  }
-
-  async getPortals(page = 1, limit = 20): Promise<ApiResponse<PaginatedResponse<PortalDTO>>> {
-    const response = await this.axiosInstance.get<ApiResponse<PaginatedResponse<PortalDTO>>>('/portals', {
-      params: { page, limit }
+  async refreshToken(refreshToken: string): Promise<RefreshTokenResponse> {
+    const response = await this.axiosInstance.post<RefreshTokenResponse>('/auth/refresh', {
+      refreshToken
     })
     return response.data
   }
 
-  async getPortalById(id: string): Promise<ApiResponse<PortalDTO>> {
-    const response = await this.axiosInstance.get<ApiResponse<PortalDTO>>(`/portals/${id}`)
-    return response.data
-  }
-
-  async getSubscriptions(page = 1, limit = 20): Promise<ApiResponse<PaginatedResponse<SubscriptionDTO>>> {
-    const response = await this.axiosInstance.get<ApiResponse<PaginatedResponse<SubscriptionDTO>>>('/subscriptions', {
-      params: { page, limit }
-    })
-    return response.data
-  }
-
-  async getApplications(): Promise<ApiResponse<ApplicationDTO[]>> {
-    const response = await this.axiosInstance.get<ApiResponse<ApplicationDTO[]>>('/applications')
-    return response.data
-  }
-
-  async getPayments(page = 1, limit = 20): Promise<ApiResponse<PaginatedResponse<PaymentDTO>>> {
-    const response = await this.axiosInstance.get<ApiResponse<PaginatedResponse<PaymentDTO>>>('/payments', {
-      params: { page, limit }
-    })
-    return response.data
-  }
-
-  async getTariffs(appId?: string): Promise<ApiResponse<TariffDTO[]>> {
-    const response = await this.axiosInstance.get<ApiResponse<TariffDTO[]>>('/tariffs', {
-      params: appId ? { appId } : {}
-    })
-    return response.data
-  }
-
-  // Общие CRUD методы
+  // Общие CRUD методы для использования в специализированных сервисах
   async get<T = any>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     const response = await this.axiosInstance.get<ApiResponse<T>>(url, config)
     return response.data
@@ -221,4 +208,5 @@ class ApiService {
   }
 }
 
+// Экспортируем синглтон экземпляр
 export const apiService = new ApiService()

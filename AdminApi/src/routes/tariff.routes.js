@@ -89,6 +89,20 @@ router.post('/', authenticateToken, authorize('superadmin', 'admin'), tariffCont
 
 /**
  * @swagger
+ * /tariffs/count:
+ *   get:
+ *     summary: Получить количество тарифов
+ *     tags: [Tariffs]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Количество тарифов
+ */
+router.get('/count', authenticateToken, tariffController.getActiveCount);
+
+/**
+ * @swagger
  * /tariffs/{id}:
  *   get:
  *     summary: Получить тариф по ID
@@ -177,5 +191,6 @@ router.put('/:id', authenticateToken, authorize('superadmin', 'admin'), tariffCo
  *         description: Тариф удален
  */
 router.delete('/:id', authenticateToken, authorize('superadmin'), tariffController.delete);
+
 
 module.exports = router;

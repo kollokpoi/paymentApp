@@ -18,7 +18,7 @@ const options = {
         description: 'Development server'
       },
       {
-        url: 'http://188.17.155.59:3001/api',
+        url: 'https://adminapi.paymentapp.kollokpoi.ddns.net/api',
         description: 'Production server'
       }
     ],

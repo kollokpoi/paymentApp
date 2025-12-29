@@ -64,6 +64,20 @@ router.post('/', authenticateToken, authorize('superadmin', 'admin'), applicatio
 
 /**
  * @swagger
+ * /applications/stats/count:
+ *   get:
+ *     summary: Получить статистику по приложениям
+ *     tags: [Applications]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Статистика приложений
+ */
+router.get('/count', authenticateToken, applicationController.getActiveCount);
+
+/**
+ * @swagger
  * /applications/{id}:
  *   get:
  *     summary: Получить приложение по ID
@@ -160,19 +174,5 @@ router.delete('/:id', authenticateToken, authorize('superadmin'), applicationCon
  *         description: Список тарифов приложения
  */
 router.get('/:id/tariffs', authenticateToken, authorize('admin', 'superadmin', 'support'), applicationController.getTariffs);
-
-/**
- * @swagger
- * /applications/stats/count:
- *   get:
- *     summary: Получить статистику по приложениям
- *     tags: [Applications]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Статистика приложений
- */
-router.get('/stats/count', authenticateToken, applicationController.getActiveCount);
 
 module.exports = router;

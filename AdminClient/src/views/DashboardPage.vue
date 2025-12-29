@@ -2,62 +2,24 @@
   <div>
     <!-- Карточки статистики -->
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      <DashboardBlock :icon="UsersIcon" title="Пользователи" link="/users" :value="10" />
-      <DashboardBlock :icon="CubeIcon" title="Приложения" link="/applications" :value="10" />
-      <DashboardBlock :icon="BuildingOfficeIcon" title="Порталы" link="/portals" :value="10" />
-      <DashboardBlock :icon="CreditCardIcon" title="Платежи" link="/payments" :value="10" />
-      <DashboardBlock :icon="DocumentTextIcon" title="Подписки" link="/subscriptions" :value="10" />
-      <DashboardBlock :icon="CurrencyDollarIcon" title="Тарифы" link="/tariffs" :value="10" />
+      <DashboardBlock :icon="UsersIcon" title="Пользователи" link="/users" :value="usersCount" />
+      <DashboardBlock :icon="CubeIcon" title="Приложения" link="/applications" :value="applicationsCount" />
+      <DashboardBlock :icon="BuildingOfficeIcon" title="Порталы" link="/portals" :value="portalsCount" />
+      <DashboardBlock :icon="CreditCardIcon" title="Платежи" link="/payments" :value="paymentsCount" />
+      <DashboardBlock :icon="DocumentTextIcon" title="Подписки" link="/subscriptions" :value="subscriptionsCount" />
+      <DashboardBlock :icon="CurrencyDollarIcon" title="Тарифы" link="/tariffs" :value="tariffsCount" />
     </div>
 
     <div class="mt-8">
       <h3 class="text-lg font-medium text-gray-900 mb-4">Последние платежи</h3>
       <div class="bg-white shadow overflow-hidden sm:rounded-md">
-        <ul role="list" class="divide-y divide-gray-200">
-          <li v-for="payment in recentPayments" :key="payment.id">
-            <div class="px-4 py-4 sm:px-6">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                  <div class="flex-shrink-0">
-                    <div :class="[
-                      'h-8 w-8 rounded-full flex items-center justify-center',
-                      payment.status === 'completed' ? 'bg-green-100' : 'bg-yellow-100'
-                    ]">
-                      <CreditCardIcon :class="[
-                        'h-5 w-5',
-                        payment.status === 'completed' ? 'text-green-600' : 'text-yellow-600'
-                      ]" />
-                    </div>
-                  </div>
-                  <div class="ml-4">
-                    <div class="text-sm font-medium text-gray-900">{{ payment.portal }}</div>
-                    <div class="text-sm text-gray-500">{{ payment.description }}</div>
-                  </div>
-                </div>
-                <div class="flex items-center">
-                  <div class="text-right">
-                    <div class="text-sm font-medium text-gray-900">{{ payment.amount }} ₽</div>
-                    <div :class="[
-                      'inline-flex text-xs font-medium rounded-full px-2 py-1',
-                      payment.status === 'completed'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-yellow-100 text-yellow-800'
-                    ]">
-                      {{ payment.status === 'completed' ? 'Оплачено' : 'В ожидании' }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </li>
-        </ul>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import {
   UsersIcon,
   CubeIcon,
@@ -67,11 +29,53 @@ import {
   CurrencyDollarIcon
 } from '@heroicons/vue/24/outline'
 import DashboardBlock from '@/components/dashboardBlock.vue';
+import {
+  applicationService,
+  portalService,
+  paymentService,
+  subscriptionService,
+  tariffService,
+  userService
+} from '@/services'
 
-// Mock data
-const recentPayments = ref([
-  { id: 1, portal: 'Компания А', amount: '5,000', status: 'completed', description: 'Тариф "Профессиональный"' },
-  { id: 2, portal: 'Компания Б', amount: '3,500', status: 'pending', description: 'Тариф "Базовый"' },
-  { id: 3, portal: 'Компания В', amount: '7,200', status: 'completed', description: 'Тариф "Корпоративный"' },
-])
+const usersCount = ref<number>(0)
+const applicationsCount = ref<number>(0)
+const portalsCount = ref<number>(0)
+const paymentsCount = ref<number>(0)
+const subscriptionsCount = ref<number>(0)
+const tariffsCount = ref<number>(0)
+
+const loadDashboardData = async () => {
+  try {
+    const [
+      userResponse,
+      appsResponse,
+      portalsResponse,
+      paymentsResponse,
+      subscriptionsResponse,
+      tariffsResponse
+    ] = await Promise.all([
+      userService.getActiveCount(),
+      applicationService.getActiveCount(),
+      portalService.getActiveCount(),
+      paymentService.getActiveCount(),
+      subscriptionService.getActiveCount(),
+      tariffService.getActiveCount()
+    ])
+    if (userResponse.success) usersCount.value = userResponse.data
+    if (appsResponse.success) applicationsCount.value = appsResponse.data
+    if (portalsResponse.success) portalsCount.value = portalsResponse.data
+    if (paymentsResponse.success) paymentsCount.value = paymentsResponse.data
+    if (subscriptionsResponse.success) subscriptionsCount.value = subscriptionsResponse.data
+    if (tariffsResponse.success) tariffsCount.value = tariffsResponse.data
+
+  } catch (error) {
+    console.error('Ошибка загрузки данных дашборда:', error)
+  }
+}
+
+onMounted(() => {
+  loadDashboardData()
+})
+
 </script>

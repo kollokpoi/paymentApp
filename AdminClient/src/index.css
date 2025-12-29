@@ -1,7 +1,5 @@
 @import 'tailwindcss';
-
-/* PrimeIcons */
-@import 'primeicons/primeicons.css';
+@import "primeicons/primeicons.css";
 
 /* Кастомные стили */
 :root {

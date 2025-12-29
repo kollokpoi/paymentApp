@@ -1,10 +1,4 @@
 // Базовые интерфейсы для всех API ответов
-export interface ApiResponse<T = any> {
-  data: T
-  message?: string
-  status: string
-  timestamp?: string
-}
 
 export interface PaginatedResponse<T> {
   items: T[]
@@ -33,4 +27,8 @@ export interface ApiErrorResponse {
 export type SubscriptionStatus = 'trial' | 'active' | 'expired' | 'suspended' | 'canceled'
 export type PaymentStatus = 'pending' | 'completed' | 'failed' | 'refunded'
 export type PeriodType = 'day' | 'week' | 'month' | 'year'
-export type UserRole = 'admin' | 'moderator' | 'user'
+export enum AdminRole {
+  SUPERADMIN = 'superadmin',
+  ADMIN = 'admin',
+  SUPPORT = 'support'
+}
