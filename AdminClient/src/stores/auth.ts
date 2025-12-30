@@ -24,10 +24,20 @@ export const useAuthStore = defineStore('auth', () => {
   const error = ref<string | null>(null)
   const isInitialized = ref(false)
 
-  // Геттеры
+  let isRefreshing = false
+  let refreshSubscribers: ((token: string) => void)[] = []
+
   const isAuthenticated = computed(() => !!token.value && !!user.value)
 
-  // Действия
+  const onTokenRefreshed = (newToken: string) => {
+    refreshSubscribers.forEach(callback => callback(newToken))
+    refreshSubscribers = []
+  }
+
+  const addRefreshSubscriber = (callback: (token: string) => void) => {
+    refreshSubscribers.push(callback)
+  }
+
   const login = async (credentials: LoginCredentials) => {
     isLoading.value = true
     error.value = null
@@ -52,6 +62,44 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  const refreshAccessToken = async (): Promise<string | null> => {
+    if (!refreshToken.value) {
+      return null
+    }
+
+    if (isRefreshing) {
+      return new Promise((resolve) => {
+        addRefreshSubscriber((newToken: string) => {
+          resolve(newToken)
+        })
+      })
+    }
+
+    isRefreshing = true
+
+    try {
+      const response = await authService.refreshToken(refreshToken.value)
+      const newAccessToken = response.accessToken
+      const newRefreshToken = response.refreshToken
+      
+      token.value = newAccessToken
+
+      if (newRefreshToken) {
+        refreshToken.value = newRefreshToken
+        localStorage.setItem('refresh_token', newRefreshToken)
+      }
+      localStorage.setItem('auth_token', newAccessToken)
+
+      onTokenRefreshed(newAccessToken)
+      
+      return newAccessToken
+    } catch (error) {
+      logout()
+      throw error
+    } finally {
+      isRefreshing = false
+    }
+  }
   const logout = () => {
     user.value = null
     token.value = null
@@ -85,20 +133,19 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
   return {
-    // State
     user,
     token,
     isLoading,
     error,
     isInitialized,
 
-    // Getters
     isAuthenticated,
 
-    // Actions
+
     login,
     logout,
     checkAuth,
-    initialize
+    initialize,
+    refreshAccessToken,
   }
 })

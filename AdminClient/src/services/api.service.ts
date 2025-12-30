@@ -7,74 +7,18 @@ import router from '@/router'
 import type {
   AdminUserDTO,
 } from '@/types/dto'
+import type { ApiResponse } from '@/types/api/responses'
+import type { ApiError } from '.'
 
 // Импортируем общие типы
 const API_BASE_URL = 'https://adminapi.paymentapp.kollokpoi.ddns.net/api'
 // Базовые интерфейсы для всех API ответов
-export interface ApiResponse<T = unknown> {
-  data: T
-  message?: string
-  success: boolean
-  timestamp?: string
-}
-
-export interface PaginatedResponse<T> {
-  items: T[]
-  total: number
-  page: number
-  limit: number
-  totalPages: number
-  hasNext: boolean
-  hasPrev: boolean
-}
-
-export interface ValidationError {
-  field: string
-  message: string
-}
-
-export interface ApiErrorResponse {
-  message: string
-  code?: string
-  errors?: ValidationError[]
-  statusCode?: number
-  timestamp?: string
-}
 
 // Типы для статусов
 export type SubscriptionStatus = 'trial' | 'active' | 'expired' | 'suspended' | 'canceled'
 export type PaymentStatus = 'pending' | 'completed' | 'failed' | 'refunded'
 export type PeriodType = 'day' | 'week' | 'month' | 'year'
 export type UserRole = 'admin' | 'moderator' | 'user'
-
-// Типы запросов
-export interface LoginRequest {
-  email: string
-  password: string
-}
-
-export interface ApiError {
-  message: string
-  status?: number
-  code?: string
-}
-
-export interface LoginResponse {
-  tokens: LoginTokens
-  user: AdminUserDTO
-}
-
-export interface LoginTokens {
-  accessToken: string
-  refreshToken?: string
-  expiresIn: number
-}
-
-export interface RefreshTokenResponse {
-  access_token: string
-  refresh_token?: string
-  expires_in?: number
-}
 
 export class ApiService {
   private axiosInstance: AxiosInstance
@@ -112,33 +56,25 @@ export class ApiService {
       (response) => response,
       async (error) => {
         const originalRequest = error.config
+        const authStore = useAuthStore()
 
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true
 
           try {
-            const authStore = useAuthStore()
-
-            const refreshToken = localStorage.getItem('refresh_token')
-            if (refreshToken) {
-              const response = await this.refreshToken(refreshToken)
-              authStore.token = response.access_token
-              if (response.refresh_token) {
-                localStorage.setItem('refresh_token', response.refresh_token)
-              }
+            const newToken = await authStore.refreshAccessToken()
+            
+            if (newToken) {
+              originalRequest.headers.Authorization = `Bearer ${newToken}`
               return this.axiosInstance(originalRequest)
             }
-
+          }  catch (refreshError) {
             authStore.logout()
             router.push('/login')
-          } catch {
-            const authStore = useAuthStore()
-            authStore.logout()
-            router.push('/login')
+            return Promise.reject(refreshError)
           }
         }
 
-        // Обработка других ошибок
         if (error.response) {
           const apiError: ApiError = {
             message: error.response.data?.message || 'Произошла ошибка',
@@ -159,18 +95,6 @@ export class ApiService {
         })
       }
     )
-  }
-
-  async login(credentials: LoginRequest): Promise<ApiResponse<LoginResponse>> {
-    const response = await this.axiosInstance.post<ApiResponse<LoginResponse>>('/auth/login', credentials)
-    return response.data
-  }
-
-  async refreshToken(refreshToken: string): Promise<RefreshTokenResponse> {
-    const response = await this.axiosInstance.post<RefreshTokenResponse>('/auth/refresh', {
-      refreshToken
-    })
-    return response.data
   }
 
   // Общие CRUD методы для использования в специализированных сервисах

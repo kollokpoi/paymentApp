@@ -1,7 +1,6 @@
 import { BaseService } from './base.service'
 import type { SubscriptionDTO } from '@/types/dto'
-import type { PaginatedResponse } from '@/types/api/responses'
-import type { ApiResponse } from './api.service'
+import type { ApiResponse, PaginatedResponse } from '@/types/api/responses'
 
 export interface CreateSubscriptionRequest {
   portal_id: string

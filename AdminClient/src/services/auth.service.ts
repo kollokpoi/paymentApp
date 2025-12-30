@@ -1,5 +1,5 @@
+import type { LoginRequest, LoginResponse, RefreshTokenResponse } from '.'
 import { BaseService } from './base.service'
-import type { LoginRequest, LoginResponse, RefreshTokenResponse } from './api.service'
 import type { AdminUserDTO } from '@/types/dto'
 
 class AuthService extends BaseService {

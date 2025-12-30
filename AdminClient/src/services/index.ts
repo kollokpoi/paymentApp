@@ -11,8 +11,10 @@ export {userService} from './user.service'
 export type {
   LoginRequest,
   LoginResponse,
-  ApiResponse
-} from './api.service'
+  ApiError,
+  RefreshTokenResponse
+} from '@/types/api/requests'
+
 
 export type {
   CreatePortalRequest,

@@ -28,7 +28,7 @@ import {
   CreditCardIcon,
   CurrencyDollarIcon
 } from '@heroicons/vue/24/outline'
-import DashboardBlock from '@/components/dashboardBlock.vue';
+import DashboardBlock from '@/components/DashboardBlock.vue';
 import {
   applicationService,
   portalService,

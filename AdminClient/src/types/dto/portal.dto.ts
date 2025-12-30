@@ -58,20 +58,4 @@ export class PortalDTO {
       ).filter((sub): sub is SubscriptionDTO => sub !== null)
     }
   }
-
-  toJSON() {
-    return {
-      id: this.id,
-      b24_member_id: this.b24MemberId,
-      b24_domain: this.b24Domain,
-      company_name: this.companyName,
-      admin_email: this.adminEmail,
-      is_active: this.isActive,
-      last_sync_at: this.lastSyncAt,
-      created_at: this.createdAt,
-      updated_at: this.updatedAt,
-      metadata: this.metadata,
-      subscriptions: this.subscriptions.map(s => s.toJSON())
-    }
-  }
 }
