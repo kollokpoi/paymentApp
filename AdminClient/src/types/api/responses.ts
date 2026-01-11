@@ -20,14 +20,17 @@ export interface ApiErrorResponse {
   errors?: ValidationError[]
   statusCode?: number
   timestamp?: string
+  success: false
 }
 
-export interface ApiResponse<T> {
+export interface ApiSuccessResponse<T> {
   data: T
   message?: string
-  success: boolean
+  success: true
   timestamp?: string
 }
+
+export type ApiResponse<T> = ApiSuccessResponse<T> | ApiErrorResponse
 
 export interface PaginatedResponse<T> {
   items: T[]
@@ -39,24 +42,26 @@ export interface PaginatedResponse<T> {
   hasPrev: boolean
 }
 
-export interface ValidationError {
-  field: string
-  message: string
+
+export enum SubscriptionStatus {
+  TRIAL='trial',
+  ACTIVE = 'active',
+  EXPIRED = 'expired',
+  SUSPENDED = 'suspended',
+  CANCELED = 'cancelled'
 }
-
-export interface ApiErrorResponse {
-  message: string
-  code?: string
-  errors?: ValidationError[]
-  statusCode?: number
-  timestamp?: string
+export enum PaymentStatus {
+  PENDING = 'pending',
+  COMPLETED = 'completed',
+  FAILED = 'failed',
+  REFUNDED = 'refunded'
 }
-
-
-// Типы для статусов
-export type SubscriptionStatus = 'trial' | 'active' | 'expired' | 'suspended' | 'canceled'
-export type PaymentStatus = 'pending' | 'completed' | 'failed' | 'refunded'
-export type PeriodType = 'day' | 'week' | 'month' | 'year'
+export enum PeriodType {
+  DAY = 'day',
+  WEEK = 'week',
+  MONTH = 'month',
+  YEAR = 'year'
+}
 export enum AdminRole {
   SUPERADMIN = 'superadmin',
   ADMIN = 'admin',

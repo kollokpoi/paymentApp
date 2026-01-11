@@ -1,34 +1,40 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BaseService } from './base.service'
-import type { PaymentDTO } from '@/types/dto'
-import type { ApiResponse } from './api.service'
-import type { PaginatedResponse } from '@/types/api/responses'
+import { PaymentDTO, type Metadata, type PaymentDTOData } from '@/types/dto'
+import type { ApiResponse, PaginatedResponse, PaymentStatus } from '@/types/api/responses'
+import type { AxiosRequestConfig } from 'axios'
 
 export interface CreatePaymentRequest {
   subscription_id: string
   external_id?: string
   amount: number
   currency?: string
-  status?: 'pending' | 'completed' | 'failed' | 'refunded'
+  status?: PaymentStatus
   payment_method?: string
   description?: string
-  metadata?: Record<string, any>
+  metadata?: Metadata
 }
 
 export interface UpdatePaymentRequest {
-  status?: 'pending' | 'completed' | 'failed' | 'refunded'
-  external_id?: string
-  description?: string
-  metadata?: Record<string, any>
+  status?: PaymentStatus
+  external_id?: string | null
+  description?: string | null
+  metadata?: Metadata
 }
 
 export interface PaymentSearchParams {
   page?: number
   limit?: number
+  portalId?: string
   subscriptionId?: string
   status?: string
-  startDate?: string // ISO string
-  endDate?: string // ISO string
+  search?: string
+  dateFrom?: string
+  dateTo?: string
+  appId?: string
+  paymentMethod?: string
+  amountFrom?: number
+  amountTo?: number
 }
 
 export interface PaymentStats {
@@ -50,12 +56,24 @@ export interface MonthlyRevenue {
 class PaymentService extends BaseService {
   async getPayments(
     params?: PaymentSearchParams,
+    config?: AxiosRequestConfig,
   ): Promise<ApiResponse<PaginatedResponse<PaymentDTO>>> {
-    return this.get<PaginatedResponse<PaymentDTO>>('/payments', { params })
+    const response = await this.get<PaginatedResponse<PaymentDTOData>>('/payments', {
+      params,
+      ...config,
+    })
+    if (response.success) {
+      response.data.items = response.data.items.map((item) => new PaymentDTO(item))
+    }
+    return response as ApiResponse<PaginatedResponse<PaymentDTO>>
   }
 
   async getPayment(id: string): Promise<ApiResponse<PaymentDTO>> {
-    return this.get<PaymentDTO>(`/payments/${id}`)
+    const response = await this.get<PaymentDTOData>(`/payments/${id}`)
+    if (response.success) {
+      response.data = new PaymentDTO(response.data)
+    }
+    return response as ApiResponse<PaymentDTO>
   }
 
   async createPayment(data: CreatePaymentRequest): Promise<ApiResponse<PaymentDTO>> {

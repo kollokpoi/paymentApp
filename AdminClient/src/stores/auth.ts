@@ -81,7 +81,7 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await authService.refreshToken(refreshToken.value)
       const newAccessToken = response.accessToken
       const newRefreshToken = response.refreshToken
-      
+
       token.value = newAccessToken
 
       if (newRefreshToken) {
@@ -91,7 +91,7 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.setItem('auth_token', newAccessToken)
 
       onTokenRefreshed(newAccessToken)
-      
+
       return newAccessToken
     } catch (error) {
       logout()

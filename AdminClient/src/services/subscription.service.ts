@@ -1,32 +1,36 @@
 import { BaseService } from './base.service'
-import type { SubscriptionDTO } from '@/types/dto'
-import type { ApiResponse, PaginatedResponse } from '@/types/api/responses'
+import { SubscriptionDTO, type Metadata, type SubscriptionDTOData} from '@/types/dto'
+import type { ApiResponse, PaginatedResponse, SubscriptionStatus } from '@/types/api/responses'
+import type { AxiosRequestConfig } from 'axios'
 
 export interface CreateSubscriptionRequest {
   portal_id: string
   app_id: string
   tariff_id: string
-  status?: 'trial' | 'active' | 'suspended' | 'cancelled' | 'expired'
-  valid_from?: string
-  valid_until?: string
+  status?: SubscriptionStatus
+  valid_from?: Date
+  valid_until?: Date
   auto_renew?: boolean
-  trial_end_date?: string
+  trial_end_date?: Date
   notes?: string
+  metadata?: Metadata
 }
 
 export interface UpdateSubscriptionRequest {
-  status?: 'trial' | 'active' | 'suspended' | 'cancelled' | 'expired'
-  valid_until?: string
+  status?: SubscriptionStatus
+  valid_until?: Date | string
   auto_renew?: boolean
   notes?: string
 }
 
 export interface SubscriptionSearchParams {
-  page?: number
-  limit?: number
+  page: number
+  limit: number
   portalId?: string
   appId?: string
   status?: string
+  search?: string
+  tariffId?:string
 }
 
 export interface RenewSubscriptionRequest {
@@ -39,12 +43,20 @@ export interface ChangeTariffRequest {
 }
 
 class SubscriptionService extends BaseService {
-  async getSubscriptions(params?: SubscriptionSearchParams): Promise<ApiResponse<PaginatedResponse<SubscriptionDTO>>> {
-    return this.get<PaginatedResponse<SubscriptionDTO>>('/subscriptions', { params })
+  async getSubscriptions(params?: SubscriptionSearchParams,config?: AxiosRequestConfig): Promise<ApiResponse<PaginatedResponse<SubscriptionDTO>>> {
+    const response = await this.get<PaginatedResponse<SubscriptionDTOData>>('/subscriptions', { params, ...config })
+    if(response.success){
+      response.data.items = response.data.items.map(item=>new SubscriptionDTO(item))
+    }
+    return response as ApiResponse<PaginatedResponse<SubscriptionDTO>>;
   }
 
   async getSubscription(id: string): Promise<ApiResponse<SubscriptionDTO>> {
-    return this.get<SubscriptionDTO>(`/subscriptions/${id}`)
+    const response = await this.get<SubscriptionDTOData>(`/subscriptions/${id}`)
+    if(response.success){
+      response.data = new SubscriptionDTO(response.data)
+    }
+    return response as ApiResponse<SubscriptionDTO>;
   }
 
   async createSubscription(data: CreateSubscriptionRequest): Promise<ApiResponse<SubscriptionDTO>> {

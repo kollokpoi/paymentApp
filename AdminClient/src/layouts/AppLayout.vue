@@ -123,6 +123,7 @@
       <slot></slot>
     </main>
   </div>
+  <ToastPrime />
 </template>
 
 <script setup lang="ts">

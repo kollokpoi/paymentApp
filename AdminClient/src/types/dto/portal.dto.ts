@@ -1,28 +1,26 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import type { Metadata } from '.'
 import { SubscriptionDTO } from './subscription.dto'
-
-export interface PortalMetadata {
-  [key: string]: any
-}
 
 export interface PortalDTOData {
   id: string
-  b24_member_id?: string
-  b24MemberId?: string
-  b24_domain?: string
-  b24Domain?: string
-  company_name?: string
-  companyName?: string
-  admin_email?: string
-  adminEmail?: string
+  b24_member_id?: string | null
+  b24MemberId?: string | null
+  b24_domain?: string | null
+  b24Domain?: string | null
+  company_name?: string | null
+  companyName?: string | null
+  admin_email?: string | null
+  adminEmail?: string | null
   is_active?: boolean
   isActive?: boolean
-  last_sync_at?: string | Date
-  lastSyncAt?: string | Date
+  last_sync_at?: string | Date | null
+  lastSyncAt?: string | Date | null
   created_at?: string | Date
   createdAt?: string | Date
   updated_at?: string | Date
   updatedAt?: string | Date
-  metadata?: PortalMetadata
+  metadata?: Metadata
   subscriptions?: any[]
 }
 
@@ -36,7 +34,7 @@ export class PortalDTO {
   lastSyncAt: string | Date | null
   createdAt: string | Date
   updatedAt: string | Date
-  metadata: PortalMetadata
+  metadata: Metadata
   subscriptions: SubscriptionDTO[]
 
   constructor(data: PortalDTOData) {

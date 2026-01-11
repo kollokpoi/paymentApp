@@ -1,7 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BaseService } from './base.service'
-import type { ApplicationDTO, TariffDTO } from '@/types/dto'
-import type { ApiResponse } from './api.service'
+import { ApplicationDTO, type ApplicationDTOData, type Metadata, type TariffDTO } from '@/types/dto'
+import { ApplicationShortDTO, type ApplicationShortDTOData } from '@/types/dto/ApplicationShortDTO'
+import type { ApiResponse } from '.'
+import type { AxiosRequestConfig } from 'axios'
+import type { PaginatedResponse } from '@/types/api/responses'
 
 export interface CreateApplicationRequest {
   code: string
@@ -10,8 +13,16 @@ export interface CreateApplicationRequest {
   version?: string
   is_active?: boolean
   icon_url?: string
-  settings?: Record<string, any>
+  settings?: Metadata
   sort_order?: number
+}
+
+export interface ApplicationSearchParams {
+  page?: number
+  limit?: number
+  search?: string
+  isActive?: boolean
+  version?: string
 }
 
 export interface UpdateApplicationRequest {
@@ -20,7 +31,7 @@ export interface UpdateApplicationRequest {
   version?: string
   is_active?: boolean
   icon_url?: string
-  settings?: Record<string, any>
+  settings?: Metadata
   sort_order?: number
 }
 
@@ -31,8 +42,26 @@ export interface AppStats {
 }
 
 class ApplicationService extends BaseService {
-  async getApplications(): Promise<ApiResponse<ApplicationDTO[]>> {
-    return this.get<ApplicationDTO[]>('/applications')
+  async getApplications(
+    params?: ApplicationSearchParams,
+    config?: AxiosRequestConfig,
+  ): Promise<ApiResponse<PaginatedResponse<ApplicationDTO>>> {
+    const response = await this.get<PaginatedResponse<ApplicationDTOData>>('/applications', {
+      params,
+      ...config,
+    })
+    if (response.success) {
+      response.data.items = response.data.items.map((item) => new ApplicationDTO(item))
+    }
+    return response as ApiResponse<PaginatedResponse<ApplicationDTO>>
+  }
+
+  async getApplicationsList(): Promise<ApiResponse<ApplicationShortDTO[]>> {
+    const response = await this.get<ApplicationShortDTOData[]>('/applications/shortList', {})
+    if (response.success) {
+      response.data = ApplicationShortDTO.fromArray(response.data)
+    }
+    return response as ApiResponse<ApplicationShortDTO[]>
   }
 
   async getActiveApplications(): Promise<ApiResponse<ApplicationDTO[]>> {

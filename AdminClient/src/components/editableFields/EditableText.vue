@@ -9,14 +9,20 @@
       {{ displayValue }}
     </dd>
     <div v-else class="edit-mode">
-      <input
+      <TextareaPrime
+        v-if="type === FieldTypes.TextArea"
         v-model="localValue"
-        :type="inputType"
         class="w-full border rounded px-2 py-1"
-        :class="{ 'border-red-500': !!errorMessage }"
-        ref="inputRef"
-        @keyup.enter="handleEnter"
-        @blur="handleBlur"
+        :placeholder="placeholder"
+        :maxlength="maxLength"
+      />
+      <InputText
+        v-else
+        v-model="localValue"
+        :type="type === FieldTypes.Email ? 'email' : 'text'"
+        class="w-full border rounded px-2 py-1"
+        :placeholder="placeholder"
+        :maxlength="maxLength"
       />
       <div v-if="errorMessage" class="text-red-500 text-sm mt-1">
         {{ errorMessage }}
@@ -26,126 +32,88 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, watch } from 'vue'
-import type { Validator, ValidationResult } from '@/types/editable/EditableBase'
+import { ref, computed, watch } from 'vue'
+import { FieldTypes, type EditableComponentExpose, type EditableTextProps, type ValidationResult } from '@/types/editable'
 
-interface Props {
-  modelValue: string | null
-  label: string
-  inputType?: string
-  isEditing?: boolean
-  validators?: Validator[]
-  placeholder?: string
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  inputType: 'text',
-  isEditing: false,
-  validators: () => [],
+const props = withDefaults(defineProps<EditableTextProps>(), {
+  placeholder: '',
+  maxLength: 255,
+  required: false,
+  validators: () => []
 })
 
-const emit = defineEmits<{
-  'update:modelValue': [value: string|null]
-  'edit-start': []
-  'validation-change': [result: ValidationResult]
-}>()
+const emit = defineEmits([
+  'update:value',
+  'edit-start',
+  'validation-change'
+])
 
-const localValue = ref(props.modelValue)
-const originalValue = ref(props.modelValue)
 const localIsEditing = ref(false)
-const inputRef = ref<HTMLInputElement | null>(null)
+const localValue = ref(props.value as string)
 const errorMessage = ref('')
 
 const displayValue = computed(() => {
-  if (!props.modelValue || props.modelValue.trim() === '') return '—'
-  return props.modelValue
+  if (props.value === null || props.value === undefined || props.value === '') {
+    return '—'
+  }
+  return props.value.toString()
 })
-const validate = (value: string | null = localValue.value): ValidationResult => {
-  if (props.validators.length === 0) {
-    return { isValid: true }
+
+const startEditing = () => {
+  localValue.value = props.value as string
+  errorMessage.value = ''
+  localIsEditing.value = true
+  emit('edit-start')
+}
+
+const cancel = () => {
+  localIsEditing.value = false
+  localValue.value = props.value as string
+  errorMessage.value = ''
+}
+
+const validate = (): ValidationResult => {
+  errorMessage.value=''
+  if (props.required && (!localValue.value || localValue.value.trim() === '')) {
+    const result = { isValid: false, message: 'Поле обязательно для заполнения' }
+    errorMessage.value = result.message
+    return result
   }
 
   for (const validator of props.validators) {
-    const result = validator(value)
+    const result = validator(localValue.value)
+    if(!result.isValid){
+      errorMessage.value = result.message || 'ошибка валидации'
+      return result
+    }
+  }
 
-    if (typeof result === 'boolean') {
-      if (!result) {
-        return { isValid: false, message: 'Неверное значение' }
-      }
-    } else {
-      if (!result.isValid) {
-        return result
-      }
+  if (props.maxLength && localValue.value.length > props.maxLength) {
+    return {
+      isValid: false,
+      message: `Максимальная длина: ${props.maxLength} символов`
     }
   }
 
   return { isValid: true }
 }
 
-const startEditing = () => {
-  originalValue.value = props.modelValue
-  localValue.value = props.modelValue
-  errorMessage.value = ''
-  localIsEditing.value = true
-  emit('edit-start')
-
-  nextTick(() => {
-    if (inputRef.value) {
-      inputRef.value.focus()
-      inputRef.value.select()
-    }
-  })
-}
-
-const handleEnter = () => {
-  const validation = validate()
-  if (validation.isValid) {
-    save()
-  } else {
-    errorMessage.value = validation.message || 'Неверное значение'
+watch(()=>props.isEditing, (newVal) => {
+  if(!newVal && localIsEditing.value){
+    localValue.value = props.value as string
   }
-}
-
-const handleBlur = () => {}
-
-const save = () => {
-  const validation = validate()
-  if (!validation.isValid) {
-    errorMessage.value = validation.message || 'Неверное значение'
-    return
-  }
-
-  emit('update:modelValue', localValue.value)
-  localIsEditing.value = false
-  errorMessage.value = ''
-}
-
-const cancel = () => {
-  emit('update:modelValue', originalValue.value)
-  localIsEditing.value = false
-  errorMessage.value = ''
-}
-
-watch(localValue, (newValue) => {
-  const validation = validate(newValue)
-  emit('validation-change', validation)
-  errorMessage.value = validation.isValid ? '' : validation.message || ''
+  localIsEditing.value = newVal
 })
 
-watch(
-  () => props.isEditing,
-  (newVal) => {
-    localIsEditing.value = newVal
-    if (newVal === false && localIsEditing.value) {
-      cancel()
-    }
-  },
-)
+watch(localValue, () => {
+  const validation = validate()
+  emit('validation-change', validation)
+  emit('update:value',localValue.value)
+})
 
-defineExpose({
-  save,
+defineExpose<EditableComponentExpose>({
   cancel,
   getValue: () => localValue.value,
-  validate: () => validate(),
+  validate
 })
 </script>

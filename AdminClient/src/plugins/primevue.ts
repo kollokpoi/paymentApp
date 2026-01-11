@@ -8,13 +8,13 @@ import MyPreset from './primeVuePreset.ts'
 import Button from 'primevue/button'
 import ButtonGroup from 'primevue/buttongroup'
 import Card from 'primevue/card'
-import Column from 'primevue/column'
+import ColumnPrime from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import Dialog from 'primevue/dialog'
 import Divider from 'primevue/divider'
 import Dropdown from 'primevue/dropdown'
 import InputText from 'primevue/inputtext'
-import Message from 'primevue/message'
+import ProgressSpinner from 'primevue/progressspinner'
 import ProgressBar from 'primevue/progressbar'
 import Tag from 'primevue/tag'
 import Textarea from 'primevue/textarea'
@@ -25,6 +25,9 @@ import Toast from 'primevue/toast'
 import Avatar from 'primevue/avatar'
 import ConfirmDialog from 'primevue/confirmdialog'
 import InputSwitch from 'primevue/inputswitch'
+import Paginator from 'primevue/paginator'
+import Select from 'primevue/select'
+import Checkbox from 'primevue/checkbox'
 import { AutoComplete } from 'primevue'
 
 import ConfirmationService from 'primevue/confirmationservice'
@@ -51,7 +54,7 @@ export default {
     app.component('ButtonPrime', Button)
     app.component('ButtonGroup', ButtonGroup)
     app.component('CardPrime', Card)
-    app.component('ColumnPrime', Column)
+    app.component('ColumnPrime', ColumnPrime)
     app.component('DataTable', DataTable)
     app.component('DatePicker', DatePicker)
     app.component('DialogPrime', Dialog)
@@ -67,5 +70,9 @@ export default {
     app.component('ToastPrime', Toast)
     app.component('AutoComplete',AutoComplete)
     app.component('ConfirmDialog',ConfirmDialog)
+    app.component('ProgressSpinner',ProgressSpinner)
+    app.component('PaginatorPrime',Paginator)
+    app.component('SelectPrime',Select)
+    app.component('CheckboxPrime',Checkbox)
   },
 }

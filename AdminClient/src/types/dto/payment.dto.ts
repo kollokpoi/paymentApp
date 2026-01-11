@@ -1,23 +1,22 @@
-import type { PaymentStatus } from '../api/responses'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import type { Metadata } from '.'
+import { PaymentStatus } from '../api/responses'
 import { SubscriptionDTO } from './subscription.dto'
 
-export interface PaymentMetadata {
-  [key: string]: any
-}
 
 export interface PaymentDTOData {
   id: string
-  subscription_id?: string
-  subscriptionId?: string
-  external_id?: string
-  externalId?: string
+  subscription_id?: string | null
+  subscriptionId?: string | null
+  external_id?: string| null
+  externalId?: string| null
   amount: number | string
   currency?: string
   status?: PaymentStatus
-  payment_method?: string
-  paymentMethod?: string
-  description?: string
-  metadata?: PaymentMetadata
+  payment_method?: string | null
+  paymentMethod?: string | null
+  description?: string | null
+  metadata?: Metadata
   created_at?: string | Date
   createdAt?: string | Date
   updated_at?: string | Date
@@ -34,7 +33,7 @@ export class PaymentDTO {
   status: PaymentStatus
   paymentMethod: string | null
   description: string | null
-  metadata: PaymentMetadata
+  metadata: Metadata
   createdAt: string | Date
   updatedAt: string | Date
   subscription: SubscriptionDTO | null
@@ -45,7 +44,7 @@ export class PaymentDTO {
     this.externalId = data.external_id || data.externalId || null
     this.amount = typeof data.amount === 'string' ? parseFloat(data.amount) : data.amount
     this.currency = data.currency || 'RUB'
-    this.status = data.status || 'pending'
+    this.status = data.status || PaymentStatus.PENDING
     this.paymentMethod = data.payment_method || data.paymentMethod || null
     this.description = data.description || null
     this.metadata = data.metadata || {}
@@ -55,23 +54,6 @@ export class PaymentDTO {
     this.subscription = null
     if (data.subscription) {
       this.subscription = new SubscriptionDTO(data.subscription)
-    }
-  }
-
-  toJSON() {
-    return {
-      id: this.id,
-      subscription_id: this.subscriptionId,
-      external_id: this.externalId,
-      amount: this.amount,
-      currency: this.currency,
-      status: this.status,
-      payment_method: this.paymentMethod,
-      description: this.description,
-      metadata: this.metadata,
-      created_at: this.createdAt,
-      updated_at: this.updatedAt,
-      subscription: this.subscription ? this.subscription.toJSON() : null
     }
   }
 }

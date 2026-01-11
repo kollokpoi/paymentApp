@@ -3,22 +3,10 @@ import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios'
 import { useAuthStore } from '@/stores/auth'
 import router from '@/router'
 
-// Импортируем DTO
-import type {
-  AdminUserDTO,
-} from '@/types/dto'
-import type { ApiResponse } from '@/types/api/responses'
-import type { ApiError } from '.'
 
-// Импортируем общие типы
+import type { ApiErrorResponse, ApiResponse } from '.'
+
 const API_BASE_URL = 'https://adminapi.paymentapp.kollokpoi.ddns.net/api'
-// Базовые интерфейсы для всех API ответов
-
-// Типы для статусов
-export type SubscriptionStatus = 'trial' | 'active' | 'expired' | 'suspended' | 'canceled'
-export type PaymentStatus = 'pending' | 'completed' | 'failed' | 'refunded'
-export type PeriodType = 'day' | 'week' | 'month' | 'year'
-export type UserRole = 'admin' | 'moderator' | 'user'
 
 export class ApiService {
   private axiosInstance: AxiosInstance
@@ -55,6 +43,10 @@ export class ApiService {
     this.axiosInstance.interceptors.response.use(
       (response) => response,
       async (error) => {
+        if (axios.isCancel(error)) {
+          return Promise.reject(error)
+        }
+
         const originalRequest = error.config
         const authStore = useAuthStore()
 
@@ -63,7 +55,7 @@ export class ApiService {
 
           try {
             const newToken = await authStore.refreshAccessToken()
-            
+
             if (newToken) {
               originalRequest.headers.Authorization = `Bearer ${newToken}`
               return this.axiosInstance(originalRequest)
@@ -75,13 +67,13 @@ export class ApiService {
           }
         }
 
-        if (error.response) {
-          const apiError: ApiError = {
-            message: error.response.data?.message || 'Произошла ошибка',
-            status: error.response.status,
-            code: error.response.data?.code,
+        if (error.response?.status >= 400 && error.response?.status < 500) {
+          const errorBox : ApiErrorResponse = {
+            message:error.response.data.message,
+            success: false,
+            statusCode: error.response.status
           }
-          return Promise.reject(apiError)
+          return Promise.resolve(errorBox)
         }
 
         if (error.request) {
@@ -99,35 +91,75 @@ export class ApiService {
 
   // Общие CRUD методы для использования в специализированных сервисах
   async get<T = any>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    const response = await this.axiosInstance.get<ApiResponse<T>>(url, config)
-    return response.data
+     try {
+      const response =  await this.axiosInstance.get<ApiResponse<T>>(url, config)
+      return response.data || response
+    } catch (error: any) {
+      if (error.success === false) {
+        return error
+      }
+      if (axios.isCancel(error) || error.name === 'AbortError') {
+        throw error
+      }
+      return {
+        success: false,
+        message: 'Неизвестная ошибка'
+      }
+    }
   }
 
   async post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    const response = await this.axiosInstance.post<ApiResponse<T>>(url, data, config)
-    return response.data
+
+    try {
+      const response = await this.axiosInstance.post<ApiResponse<T>>(url, data, config)
+      return response.data || response
+    } catch (error: any) {
+      if (error.success === false) {
+        return error
+      }
+      if (axios.isCancel(error) || error.name === 'AbortError') {
+        throw error
+      }
+      return {
+        success: false,
+        message: 'Неизвестная ошибка'
+      }
+    }
   }
 
   async put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    const response = await this.axiosInstance.put<ApiResponse<T>>(url, data, config)
-    return response.data
+    try {
+      const response = await this.axiosInstance.put<ApiResponse<T>>(url, data, config)
+      return response.data || response
+    } catch (error: any) {
+      if (error.success === false) {
+        return error
+      }
+      if (axios.isCancel(error) || error.name === 'AbortError') {
+        throw error
+      }
+      return {
+        success: false,
+        message: 'Неизвестная ошибка'
+      }
+    }
   }
 
   async delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    const response = await this.axiosInstance.delete<ApiResponse<T>>(url, config)
-    return response.data
-  }
-
-  private handleError(error: any): ApiError {
-    if (axios.isAxiosError(error)) {
-      return {
-        message: error.response?.data?.message || error.message,
-        status: error.response?.status,
-        code: error.response?.data?.code,
+     try {
+      const response =  await this.axiosInstance.delete<ApiResponse<T>>(url, config)
+      return response.data || response
+    } catch (error: any) {
+      if (error.success === false) {
+        return error
       }
-    }
-    return {
-      message: error.message || 'Неизвестная ошибка',
+      if (axios.isCancel(error) || error.name === 'AbortError') {
+        throw error
+      }
+      return {
+        success: false,
+        message: 'Неизвестная ошибка'
+      }
     }
   }
 }

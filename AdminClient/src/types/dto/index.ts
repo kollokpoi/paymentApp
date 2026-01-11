@@ -1,28 +1,17 @@
-import type { AdminUserDTOData } from './admin-user.dto'
-import type { ApplicationDTOData, ApplicationSettings } from './application.dto'
-import type { PaymentDTOData, PaymentMetadata } from './payment.dto'
-import type { PortalDTOData, PortalMetadata } from './portal.dto'
-import type { SubscriptionDTOData } from './subscription.dto'
-import type { TariffDTOData, TariffLimits } from './tariff.dto'
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-// Экспорт всех DTO классов
 export * from './admin-user.dto'
 export * from './application.dto'
 export * from './payment.dto'
 export * from './portal.dto'
 export * from './subscription.dto'
 export * from './tariff.dto'
+export * from './EditData'
+export * from './portalShort.dto'
+export * from './ApplicationShortDTO'
+export * from './EditData'
 
-// Экспорт интерфейсов для использования в API
-export type {
-  AdminUserDTOData,
-  ApplicationDTOData,
-  PaymentDTOData,
-  PortalDTOData,
-  SubscriptionDTOData,
-  TariffDTOData,
-  ApplicationSettings,
-  PaymentMetadata,
-  PortalMetadata,
-  TariffLimits
+
+export interface Metadata {
+  [key: string]: any
 }

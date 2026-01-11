@@ -9,21 +9,10 @@
       <i class="pi pi-chevron-right mx-2"></i>
       <span>{{ portal.companyName || portal.b24Domain }}</span>
     </div>
-
     <div class="flex items-start justify-between">
       <div>
         <h1 class="text-2xl font-bold">{{ portal.companyName }}</h1>
         <p class="text-gray-600">{{ portal.b24Domain }}</p>
-      </div>
-      <div class="flex gap-2">
-        <ButtonPrime label="Редактировать" icon="pi pi-pencil" @click="onEditStart" />
-        <ButtonPrime
-          label="Удалить"
-          icon="pi pi-trash"
-          severity="danger"
-          outlined
-          @click="confirmDelete"
-        />
       </div>
     </div>
     <CardPrime>
@@ -33,44 +22,45 @@
           <div>
             <h3 class="font-medium text-gray-700 mb-4">Данные портала</h3>
             <dl class="space-y-3">
-              <div>
-                <dt class="text-sm text-gray-500">Статус</dt>
-                <dd class="font-medium">{{ portal.isActive?'Активен':'Не активен' }}</dd>
-              </div>
+              <EditableBoolean
+                label="Статус"
+                v-model:value="editData.isActive"
+                :type="FieldTypes.Boolean"
+                :is-editing="globalEditing"
+                @edit-start="()=>{globalEditing=true}"
+              />
               <EditableText
-                ref="companyField"
-                v-model="portal.companyName"
                 label="Название компании"
                 placeholder="Компания"
-                :is-editing="isGlobalEditing"
+                v-model:value="editData.companyName"
                 :validators="companyValidators"
-                @edit-start="onEditStart"
+                :type="FieldTypes.Text"
+                :is-editing="globalEditing"
+                required
+                @edit-start="()=>{globalEditing=true}"
                 @validation-change="onValidationChange('companyName', $event)"
               />
               <EditableText
-                ref="emailField"
-                v-model="portal.adminEmail"
-                label="Email администратора"
-                type="email"
-                placeholder="admin@example.com"
-                :is-editing="isGlobalEditing"
-                @edit-start="onEditStart"
-              />
-              <EditableText
-                ref="domainField"
-                v-model="portal.b24Domain"
                 label="Домен Bitrix"
-                type="email"
-                placeholder="admin@example.com"
-                :is-editing="isGlobalEditing"
+                placeholder="Домен"
+                v-model:value="editData.b24Domain"
                 :validators="domainValidators"
-                @edit-start="onEditStart"
+                :type="FieldTypes.Text"
+                :is-editing="globalEditing"
+                required
+                @edit-start="()=>{globalEditing=true}"
                 @validation-change="onValidationChange('b24Domain', $event)"
               />
-              <div>
-                <dt class="text-sm text-gray-500">ID Bitrix</dt>
-                <dd class="font-medium">{{ portal.b24MemberId }}</dd>
-              </div>              
+              <EditableText
+                label="ID Bitrix"
+                placeholder="ID"
+                v-model:value="editData.b24MemberId"
+                :type="FieldTypes.Text"
+                :is-editing="globalEditing"
+                required
+                @edit-start="()=>{globalEditing=true}"
+                @validation-change="onValidationChange('b24MemberId', $event)"
+              />
               <div>
                 <dt class="text-sm text-gray-500">Дата создания</dt>
                 <dd>{{ formatDate(portal.createdAt) }}</dd>
@@ -98,18 +88,46 @@
         </div>
       </template>
     </CardPrime>
-    <div v-if="isGlobalEditing" class="flex items-center justify-center gap-2">
-        <ButtonPrime label="Сохранить" icon="pi pi-pencil" :disabled="!canSave" @click="saveAll"/>
-        <ButtonPrime
-          label="Отменить"
+    <div v-if="globalEditing" class="flex gap-2 items-center justify-end">
+      <ButtonPrime
+        label="Сохранить"
+        icon="pi pi-check"
+        @click="updatePortal"
+        :disabled="!canUpdate"
+      />
+      <ButtonPrime
+          label="Отмена"
           severity="danger"
-          outlined
-          @click="cancelAll"
+          outline
+          @click="cancelEditing"
         />
     </div>
+    <div v-else class="flex gap-2 items-center justify-end">
+        <ButtonPrime
+          label="Редактировать"
+          icon="pi pi-pencil"
+          @click="globalEditing=!globalEditing"
+          :disabled="globalEditing"
+        />
+        <ButtonPrime
+          label="Удалить"
+          icon="pi pi-trash"
+          severity="danger"
+          @click="confirmDelete"
+        />
+      </div>
     <!-- Подписки -->
     <CardPrime v-if="portal.subscriptions && portal.subscriptions.length > 0">
-      <template #title>Активные подписки</template>
+      <template #title>
+        <div class="flex justify-between">
+          <p>Активные подписки</p>
+          <ButtonPrime
+            label="Управление"
+            icon="pi pi-pencil"
+            @click="goToSubscriptions"
+          />
+        </div>
+      </template>
       <template #content>
         <DataTable :value="portal.subscriptions">
           <ColumnPrime field="application.name" header="Приложение"></ColumnPrime>
@@ -151,24 +169,23 @@
     </router-link>
   </div>
 
-
-  <ToastPrime />
-  <ConfirmDialog />
+  <ConfirmDialog
+    :draggable="true" />
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted,computed} from 'vue'
+import { ref, onMounted, computed, reactive} from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
-import type { PortalDTO } from '@/types/dto'
+import type { PortalDTO, PortalEditData } from '@/types/dto'
 import { portalService } from '@/services'
 import { formatDate } from '@/helpers/formatters'
-import ProgressSpinner from 'primevue/progressspinner'
-import type { ValidationResult } from '@/types/editable/EditableBase'
-import type EditableBoolean from '@/components/editableFields/EditableBoolean.vue'
-import type EditableEmail from '@/components/editableFields/EditableEmail.vue'
 import EditableText from '@/components/editableFields/EditableText.vue'
+import { FieldTypes, type ValidationResult } from '@/types/editable'
+import EditableBoolean from '@/components/editableFields/EditableBoolean.vue'
+import { portalDataToRequest, applyPortalEditData, createPortalEditData } from '@/types/dto'
+import { domainValidators, companyValidators} from '@/helpers/validators'
 
 
 const route = useRoute()
@@ -177,102 +194,31 @@ const toast = useToast()
 const confirm = useConfirm()
 
 const portalId = route.params.id as string
+
 const portal = ref<PortalDTO | null>(null)
-const loading = ref(true)
-
-const isGlobalEditing = ref(false)
-const showControls = ref(false)
-const validationErrors = ref<Array<{field: string, message: string}>>([])
-
-const statusField = ref<typeof EditableBoolean | null>(null)
-const companyField = ref<typeof EditableText | null>(null)
-const emailField = ref<typeof EditableEmail | null>(null)
-const domainField = ref<typeof EditableText | null>(null)
-const memberIdField = ref<typeof EditableText | null>(null)
-
-const companyValidators = [
-  (value: string) => {
-    if (!value || value.trim().length < 2) {
-      return { isValid: false, message: 'Название компании должно быть не менее 2 символов' }
-    }
-    return { isValid: true }
-  }
-]
-
-const domainValidators = [
-  (value: string) => {
-    if (!value || value.trim() === '') {
-      return { isValid: false, message: 'Домен обязателен' }
-    }
-    if (!value.includes('.bitrix24')) {
-      return { isValid: false, message: 'Должен содержать .bitrix24' }
-    }
-    return { isValid: true }
-  }
-]
-
-const canSave = computed(() => {
-  return validationErrors.value.length === 0
+const editData = reactive<PortalEditData>({
+  isActive: false,
+  companyName: '',
+  adminEmail: '',
+  b24Domain: '',
+  b24MemberId: '',
 })
 
-const onEditStart = () => {
-  if (!showControls.value) {
-    showControls.value = true
-    isGlobalEditing.value = true
-  }
-}
+
+const loading = ref(true)
+const globalEditing = ref(false)
+const validationErrors = ref<Array<{field: string, message: string}>>([])
 
 const onValidationChange = (field: string, result: ValidationResult) => {
   validationErrors.value = validationErrors.value.filter(e => e.field !== field)
-  
+
   if (!result.isValid && result.message) {
     validationErrors.value.push({
       field,
       message: result.message
     })
   }
-}
-
-const saveAll = async () => {
-  if (!canSave.value) {
-    alert('Исправьте ошибки валидации')
-    return
-  }
-  
-  const fields = [companyField, emailField, domainField]
-  const validations = await Promise.all(
-    fields.map(field => field.value?.validate() || Promise.resolve({ isValid: true }))
-  )
-  
-  const hasErrors = validations.some(v => !v.isValid)
-  if (hasErrors) {
-    alert('Есть ошибки валидации')
-    return
-  }
-  
-  fields.forEach(field => field.value?.save())
-  
-  const data = {
-    isActive: statusField.value?.getValue(),
-    companyName: companyField.value?.getValue(),
-    adminEmail: emailField.value?.getValue(),
-    b24Domain: domainField.value?.getValue(),
-  }
-  
-  console.log('Сохранение:', data)
-  
-  showControls.value = false
-  isGlobalEditing.value = false
-  validationErrors.value = []
-}
-
-const cancelAll = () => {
-  const fields = [statusField, companyField, emailField, domainField]
-  fields.forEach(field => field.value?.cancel())
-  
-  showControls.value = false
-  isGlobalEditing.value = false
-  validationErrors.value = []
+  console.log(validationErrors)
 }
 
 const confirmDelete = () => {
@@ -280,18 +226,28 @@ const confirmDelete = () => {
     message: `Вы действительно хотите удалить портал "${portal.value?.companyName}"?`,
     header: 'Подтверждение удаления',
     icon: 'pi pi-exclamation-triangle',
+    acceptClass:"p-button-danger",
     acceptLabel: 'Удалить',
     rejectLabel: 'Отмена',
     accept: async () => {
       try {
-        // await portalService.deletePortal(portalId)
-        toast.add({
-          severity: 'success',
-          summary: 'Успешно',
-          detail: 'Портал удален',
-          life: 3000,
-        })
-        router.push('/portals')
+        const response = await portalService.deletePortal(portalId)
+        if(response.success){
+          toast.add({
+            severity: 'success',
+            summary: 'Успешно',
+            detail: 'Портал удален',
+            life: 3000,
+          })
+          router.push('/portals')
+        }else{
+          toast.add({
+            severity: 'error',
+            summary: 'Не удалось удалить портал',
+            detail: response.message,
+            life: 3000,
+          })
+        }
       } catch {
         toast.add({
           severity: 'error',
@@ -304,11 +260,57 @@ const confirmDelete = () => {
   })
 }
 
+const canUpdate = computed(()=>validationErrors.value.length==0);
+
+const cancelEditing = ()=>{
+  globalEditing.value = false;
+  if (portal.value) {
+    Object.assign(editData, createPortalEditData(portal.value))
+  }
+}
+
+const updatePortal = async ()=>{
+  if(!canUpdate.value || !portal.value)
+    return;
+  globalEditing.value = false;
+
+  try{
+    const response = await portalService.updatePortal(portalId,portalDataToRequest(editData))
+    if(response.success){
+      applyPortalEditData(portal.value,editData);
+      toast.add({
+        severity:'success',
+        summary:'Данные обновлены',
+        life:3000
+      })
+    }else{
+      toast.add({
+        severity: 'error',
+        summary: 'Ошибка',
+        detail: response.message || 'Не получилось загрузить данные',
+        life: 3000,
+      })
+    }
+  }catch(error){
+    console.error('Ошибка обновления портала:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Ошибка',
+      detail: 'Не удалось обновить данные портала',
+      life: 3000,
+    })
+  }
+}
+
 const loadPortal = async () => {
   try {
     loading.value = true
     const response = await portalService.getPortal(portalId)
-    if (response.success) portal.value = response.data
+    if (response.success) {
+      portal.value = response.data
+      Object.assign(editData, createPortalEditData(response.data))
+
+    }
     else {
       toast.add({
         severity: 'error',
@@ -328,6 +330,12 @@ const loadPortal = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const goToSubscriptions = ()=>{
+  router.push({
+    path: `/portals/${portalId}/subscriptions`
+  });
 }
 
 onMounted(() => {

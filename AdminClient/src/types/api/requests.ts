@@ -4,13 +4,6 @@ export interface LoginRequest {
   email: string
   password: string
 }
-
-export interface ApiError {
-  message: string
-  status?: number
-  code?: string
-}
-
 export interface LoginResponse {
   tokens: LoginTokens
   user: AdminUserDTO

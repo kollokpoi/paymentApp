@@ -8,7 +8,7 @@ export interface AdminUserDTOData {
   is_active?: boolean
   isActive?: boolean
   last_login?: string | Date
-  lastLogin?: string | Date
+  lastLogin?: string | Date | null
   created_at?: string | Date
   createdAt?: string | Date
   updated_at?: string | Date
@@ -34,18 +34,5 @@ export class AdminUserDTO {
     this.lastLogin = data.last_login || data.lastLogin || null
     this.createdAt = data.created_at || data.createdAt || new Date().toISOString()
     this.updatedAt = data.updated_at || data.updatedAt || new Date().toISOString()
-  }
-
-  toJSON() {
-    return {
-      id: this.id,
-      email: this.email,
-      name: this.name,
-      role: this.role,
-      is_active: this.isActive,
-      last_login: this.lastLogin,
-      created_at: this.createdAt,
-      updated_at: this.updatedAt
-    }
   }
 }

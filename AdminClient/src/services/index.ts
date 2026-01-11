@@ -7,18 +7,22 @@ export { subscriptionService } from './subscription.service'
 export { paymentService } from './payment.service'
 export {userService} from './user.service'
 
-// Экспортируем типы
 export type {
   LoginRequest,
   LoginResponse,
-  ApiError,
   RefreshTokenResponse
 } from '@/types/api/requests'
 
+export type {
+  ApiErrorResponse,
+  ApiResponse,
+  PaginatedResponse,
+  AdminRole
+} from '@/types/api/responses'
+
 
 export type {
-  CreatePortalRequest,
-  UpdatePortalRequest,
+  UpdateAndCreatePortalRequest,
   PortalSearchParams
 } from './portal.service'
 

@@ -10,7 +10,7 @@ const MyPreset = definePreset(Aura, {
       200: '{sky.200}',
       300: '{sky.300}',
       400: '{sky.400}',
-      500: '{sky.500}', // основной синий
+      500: '{sky.500}',
       600: '{sky.600}',
       700: '{sky.700}',
       800: '{sky.800}',
@@ -20,7 +20,7 @@ const MyPreset = definePreset(Aura, {
     colorScheme: {
       light: {
         surface: {
-          0: '#ffffff', // Главный фон
+          0: '#ffffff',
           50: '{zinc.50}',
           100: '{zinc.100}',
           200: '{zinc.200}',
@@ -34,7 +34,6 @@ const MyPreset = definePreset(Aura, {
           950: '{zinc.950}',
         },
       },
-      // Не определяем dark, чтобы не было тёмной темы
     },
   },
 });

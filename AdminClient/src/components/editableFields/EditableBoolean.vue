@@ -3,72 +3,94 @@
     <dt class="text-sm text-gray-500">{{ label }}</dt>
     <dd
       v-if="!localIsEditing"
-      class="font-medium cursor-pointer hover:bg-gray-50 p-1 rounded"
+      class="font-medium cursor-pointer hover:bg-gray-50 p-1 rounded flex items-center"
       @dblclick="startEditing"
     >
-      {{ displayValue }}
+      <CheckboxPrime
+        v-model="displayValueModel"
+        :binary="true"
+        disabled
+        class="mr-2"
+      />
+      <span>{{ displayText }}</span>
     </dd>
-    <div v-else class="edit-mode">
-      <select v-model="localValue" class="w-full border rounded px-2 py-1">
-        <option :value="true">Активен</option>
-        <option :value="false">Не активен</option>
-      </select>
+    <div v-else class="edit-mode flex items-center gap-4">
+      <div class="flex items-center gap-2">
+        <CheckboxPrime
+          v-model="localValue"
+          :binary="true"
+          inputId="editable-checkbox"
+        />
+        <label for="editable-checkbox" class="cursor-pointer ml-2">
+          {{ localValue ? trueLabel : falseLabel }}
+        </label>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import { type EditableBooleanProps} from '@/types/editable'
 
-interface Props {
-  modelValue: boolean
-  label: string
-  isEditing?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  isEditing: false
+const props = withDefaults(defineProps<EditableBooleanProps>(), {
+  trueLabel: 'Активен',
+  falseLabel: 'Не активен',
+  required: false,
+  validators: ()=>[]
 })
 
 const emit = defineEmits<{
-  'update:modelValue': [value: boolean]
+  'update:value': [value: boolean]
   'edit-start': []
 }>()
 
-const localValue = ref(props.modelValue)
-const originalValue = ref(props.modelValue)
 const localIsEditing = ref(false)
+const localValue = ref(props.value as unknown as boolean)
+const originalValue = ref(props.value as unknown as boolean)
 
-const displayValue = computed(() => {
-  return props.modelValue ? 'Активен' : 'Не активен'
+const displayValueModel = computed(() => props.value as unknown as boolean)
+
+const displayText = computed(() => {
+  if (props.value === true) return props.trueLabel
+  if (props.value === false) return props.falseLabel
+  return '—'
 })
 
 const startEditing = () => {
-  originalValue.value = props.modelValue
-  localValue.value = props.modelValue
+  originalValue.value = props.value as unknown as boolean
+  localValue.value = props.value as unknown as boolean
   localIsEditing.value = true
   emit('edit-start')
+
 }
 
-const save = () => {
-  emit('update:modelValue', localValue.value)
-  localIsEditing.value = false
-}
-
-const cancel = () => {
-  emit('update:modelValue', originalValue.value)
-  localIsEditing.value = false
-}
-
-watch(() => props.isEditing, (newVal) => {
-  if (newVal === false && localIsEditing.value) {
-    cancel()
+watch(()=>props.isEditing, (newVal) => {
+  if(!newVal && localIsEditing.value){
+    localValue.value = props.value as boolean
   }
+  localIsEditing.value = newVal
 })
 
-defineExpose({
-  save,
-  cancel,
-  getValue: () => localValue.value
+watch(localValue, () => {
+  emit('update:value',localValue.value)
 })
+
 </script>
+
+<style scoped>
+:deep(.p-checkbox) {
+  width: 20px;
+  height: 20px;
+}
+
+:deep(.p-checkbox .p-checkbox-box) {
+  width: 20px;
+  height: 20px;
+}
+
+:deep(.p-checkbox.p-variant-filled .p-checkbox-box) {
+  background: white;
+  border: 1px solid #d1d5db;
+}
+</style>
