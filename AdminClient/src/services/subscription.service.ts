@@ -1,5 +1,11 @@
 import { BaseService } from './base.service'
-import { SubscriptionDTO, type Metadata, type SubscriptionDTOData} from '@/types/dto'
+import {
+  SubscriptionDTO,
+  SubscriptionStatsDTO,
+  type Metadata,
+  type SubscriptionDTOData,
+  type SubscriptionStatsDTOData,
+} from '@/types/dto'
 import type { ApiResponse, PaginatedResponse, SubscriptionStatus } from '@/types/api/responses'
 import type { AxiosRequestConfig } from 'axios'
 
@@ -30,7 +36,7 @@ export interface SubscriptionSearchParams {
   appId?: string
   status?: string
   search?: string
-  tariffId?:string
+  tariffId?: string
 }
 
 export interface RenewSubscriptionRequest {
@@ -43,27 +49,36 @@ export interface ChangeTariffRequest {
 }
 
 class SubscriptionService extends BaseService {
-  async getSubscriptions(params?: SubscriptionSearchParams,config?: AxiosRequestConfig): Promise<ApiResponse<PaginatedResponse<SubscriptionDTO>>> {
-    const response = await this.get<PaginatedResponse<SubscriptionDTOData>>('/subscriptions', { params, ...config })
-    if(response.success){
-      response.data.items = response.data.items.map(item=>new SubscriptionDTO(item))
+  async getSubscriptions(
+    params?: SubscriptionSearchParams,
+    config?: AxiosRequestConfig,
+  ): Promise<ApiResponse<PaginatedResponse<SubscriptionDTO>>> {
+    const response = await this.get<PaginatedResponse<SubscriptionDTOData>>('/subscriptions', {
+      params,
+      ...config,
+    })
+    if (response.success) {
+      response.data.items = response.data.items.map((item) => new SubscriptionDTO(item))
     }
-    return response as ApiResponse<PaginatedResponse<SubscriptionDTO>>;
+    return response as ApiResponse<PaginatedResponse<SubscriptionDTO>>
   }
 
   async getSubscription(id: string): Promise<ApiResponse<SubscriptionDTO>> {
     const response = await this.get<SubscriptionDTOData>(`/subscriptions/${id}`)
-    if(response.success){
+    if (response.success) {
       response.data = new SubscriptionDTO(response.data)
     }
-    return response as ApiResponse<SubscriptionDTO>;
+    return response as ApiResponse<SubscriptionDTO>
   }
 
   async createSubscription(data: CreateSubscriptionRequest): Promise<ApiResponse<SubscriptionDTO>> {
     return this.post<SubscriptionDTO>('/subscriptions', data)
   }
 
-  async updateSubscription(id: string, data: UpdateSubscriptionRequest): Promise<ApiResponse<SubscriptionDTO>> {
+  async updateSubscription(
+    id: string,
+    data: UpdateSubscriptionRequest,
+  ): Promise<ApiResponse<SubscriptionDTO>> {
     return this.put<SubscriptionDTO>(`/subscriptions/${id}`, data)
   }
 
@@ -71,7 +86,10 @@ class SubscriptionService extends BaseService {
     return this.delete<void>(`/subscriptions/${id}`)
   }
 
-  async renewSubscription(id: string, data: RenewSubscriptionRequest): Promise<ApiResponse<SubscriptionDTO>> {
+  async renewSubscription(
+    id: string,
+    data: RenewSubscriptionRequest,
+  ): Promise<ApiResponse<SubscriptionDTO>> {
     return this.post<SubscriptionDTO>(`/subscriptions/${id}/renew`, data)
   }
 
@@ -81,18 +99,32 @@ class SubscriptionService extends BaseService {
 
   async findByPortalAndApp(portalId: string, appId: string): Promise<ApiResponse<SubscriptionDTO>> {
     return this.get<SubscriptionDTO>(`/subscriptions/find`, {
-      params: { portalId, appId }
+      params: { portalId, appId },
     })
   }
 
-  async getActiveSubscriptions(portalId?: string, appId?: string): Promise<ApiResponse<SubscriptionDTO[]>> {
+  async getActiveSubscriptions(
+    portalId?: string,
+    appId?: string,
+  ): Promise<ApiResponse<SubscriptionDTO[]>> {
     return this.get<SubscriptionDTO[]>('/subscriptions/active', {
-      params: { portalId, appId }
+      params: { portalId, appId },
     })
   }
 
   async getActiveCount(): Promise<ApiResponse<number>> {
     return this.get<number>('/subscriptions/count')
+  }
+  async getStats(params?: {
+    startDate?: string
+    endDate?: string
+    appId?: string
+  }): Promise<ApiResponse<SubscriptionStatsDTO>> {
+    const response = await this.get<SubscriptionStatsDTOData>('/subscriptions/stats', { params })
+    if (response.success) {
+      response.data = new SubscriptionStatsDTO(response.data)
+    }
+    return response as ApiResponse<SubscriptionStatsDTO>
   }
 }
 

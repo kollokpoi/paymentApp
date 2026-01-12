@@ -2,10 +2,10 @@ import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
-// Импортируем layout компоненты
+
 import Layout from '@/layouts/AppLayout.vue'
 
-// Типы для метаданных маршрутов
+
 declare module 'vue-router' {
   interface RouteMeta {
     requiresAuth?: boolean
@@ -28,6 +28,8 @@ const PortalCreate = () => import('@/views/portals/CreatePortal.vue')
 const SubscriptionsIndex = () => import('@/views/subscriptions/SubscriprionIndex.vue')
 const SubscriptionsDetails = () => import('@/views/subscriptions/SubscriprionDetails.vue')
 const SubscriprionCreate = () => import('@/views/subscriptions/SubscriptionCreate.vue')
+const SubscriprionExtend = () => import('@/views/subscriptions/SubscriptionExtends.vue')
+
 
 const Paymentindex = () => import('@/views/payment/PaymentIndex.vue')
 const PaymentDetails = () => import('@/views/payment/PaymentDetails.vue')
@@ -178,6 +180,14 @@ const routes: Array<RouteRecordRaw> = [
         component: SubscriprionCreate,
         meta: {
           title: 'Создание подписки',
+        },
+      },
+      {
+        path: ':id/extend',
+        name: 'subscription-extend',
+        component: SubscriprionExtend,
+        meta: {
+          title: 'Продление',
         },
       },
     ],

@@ -1,3 +1,4 @@
+import { statisticService } from './statistic.service';
 export { apiService } from './api.service'
 export { authService } from './auth.service'
 export { portalService } from './portal.service'
@@ -6,6 +7,7 @@ export { tariffService } from './tariff.service'
 export { subscriptionService } from './subscription.service'
 export { paymentService } from './payment.service'
 export {userService} from './user.service'
+export {statisticService} from './statistic.service'
 
 export type {
   LoginRequest,
@@ -22,7 +24,6 @@ export type {
 
 
 export type {
-  UpdateAndCreatePortalRequest,
   PortalSearchParams
 } from './portal.service'
 

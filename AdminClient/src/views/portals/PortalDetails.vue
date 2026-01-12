@@ -69,10 +69,6 @@
                 <dt class="text-sm text-gray-500">Последняя синхронизация</dt>
                 <dd>{{ portal.lastSyncAt ? formatDate(portal.lastSyncAt) : 'Никогда' }}</dd>
               </div>
-              <div>
-                <dt class="text-sm text-gray-500">Последнее изменение</dt>
-                <dd>{{ portal.lastSyncAt ? formatDate(portal.updatedAt) : 'Никогда' }}</dd>
-              </div>
             </dl>
           </div>
 
@@ -129,23 +125,7 @@
         </div>
       </template>
       <template #content>
-        <DataTable :value="portal.subscriptions">
-          <ColumnPrime field="application.name" header="Приложение"></ColumnPrime>
-          <ColumnPrime field="tariff.name" header="Тариф"></ColumnPrime>
-          <ColumnPrime field="status" header="Статус">
-            <template #body="{ data }">
-              <TagPrime :value="data.status" />
-            </template>
-          </ColumnPrime>
-          <ColumnPrime field="validUntil" header="Действует до">
-            <template #body="{ data }">
-              {{ formatDate(data.validUntil)}}
-              <div class="text-xs text-gray-500" v-if="data.daysLeft">
-                Осталось: {{ data.daysLeft }} дней
-              </div>
-            </template>
-          </ColumnPrime>
-        </DataTable>
+        <SubscriptionTable :subscriptions="portal.subscriptions" :loading="loading"/>
       </template>
     </CardPrime>
 
@@ -186,7 +166,7 @@ import { FieldTypes, type ValidationResult } from '@/types/editable'
 import EditableBoolean from '@/components/editableFields/EditableBoolean.vue'
 import { portalDataToRequest, applyPortalEditData, createPortalEditData } from '@/types/dto'
 import { domainValidators, companyValidators} from '@/helpers/validators'
-
+import SubscriptionTable from '@/components/SubscriptionTable.vue'
 
 const route = useRoute()
 const router = useRouter()

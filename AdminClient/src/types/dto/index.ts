@@ -10,7 +10,7 @@ export * from './EditData'
 export * from './portalShort.dto'
 export * from './ApplicationShortDTO'
 export * from './EditData'
-
+export * from './Stats'
 
 export interface Metadata {
   [key: string]: any

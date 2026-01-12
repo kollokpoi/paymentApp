@@ -64,9 +64,6 @@ class ApplicationService extends BaseService {
     return response as ApiResponse<ApplicationShortDTO[]>
   }
 
-  async getActiveApplications(): Promise<ApiResponse<ApplicationDTO[]>> {
-    return this.get<ApplicationDTO[]>('/applications?isActive=true')
-  }
 
   async getApplication(id: string): Promise<ApiResponse<ApplicationDTO>> {
     return this.get<ApplicationDTO>(`/applications/${id}`)
@@ -85,10 +82,6 @@ class ApplicationService extends BaseService {
 
   async deleteApplication(id: string): Promise<ApiResponse<void>> {
     return this.delete<void>(`/applications/${id}`)
-  }
-
-  async getApplicationTariffs(appId: string): Promise<ApiResponse<TariffDTO[]>> {
-    return this.get<TariffDTO[]>(`/applications/${appId}/tariffs`)
   }
 
   async getAppStats(): Promise<ApiResponse<AppStats>> {

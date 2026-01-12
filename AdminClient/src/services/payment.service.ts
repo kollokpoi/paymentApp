@@ -95,32 +95,6 @@ class PaymentService extends BaseService {
     return this.get<PaymentStats>('/payments/stats', { params })
   }
 
-  async getMonthlyRevenue(year?: number): Promise<ApiResponse<MonthlyRevenue[]>> {
-    return this.get<MonthlyRevenue[]>('/payments/revenue/monthly', {
-      params: { year: year || new Date().getFullYear() },
-    })
-  }
-
-  async getPaymentByExternalId(externalId: string): Promise<ApiResponse<PaymentDTO>> {
-    return this.get<PaymentDTO>('/payments/external/:externalId', {
-      params: { externalId },
-    })
-  }
-
-  async processRefund(paymentId: string, reason?: string): Promise<ApiResponse<PaymentDTO>> {
-    return this.post<PaymentDTO>(`/payments/${paymentId}/refund`, { reason })
-  }
-
-  async getSubscriptionPayments(
-    subscriptionId: string,
-    page = 1,
-    limit = 20,
-  ): Promise<ApiResponse<PaginatedResponse<PaymentDTO>>> {
-    return this.get<PaginatedResponse<PaymentDTO>>(`/subscriptions/${subscriptionId}/payments`, {
-      params: { page, limit },
-    })
-  }
-
   async exportPayments(
     format: 'json' | 'csv' = 'json',
     params?: PaymentSearchParams,

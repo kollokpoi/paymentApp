@@ -12,7 +12,6 @@ export const formatCurrency = (amount: number, currency: string = 'RUB'): string
   return formatter.format(amount)
 }
 
-// Альтернативный вариант без Intl (на случай если нужна поддержка старых браузеров):
 export const formatCurrencySimple = (amount: number, currency: string = 'RUB'): string => {
   if (isNaN(amount)) return '0 ₽'
 

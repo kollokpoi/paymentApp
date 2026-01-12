@@ -85,14 +85,14 @@
       </div>
 
       <div>
-        <label class="block text-sm font-medium mb-2">Приложение</label>
+        <label class="block text-sm font-medium mb-2">Статус</label>
         <DropdownPrime
           v-model="selectedStatus"
           class="w-full"
           :options="statusOptions"
           optionLabel="label"
           optionValue="value"
-          placeholder="Все приложения"
+          placeholder="Все статусы"
         />
       </div>
 
@@ -145,6 +145,7 @@ import { useDebouncedFn } from '@/composables/useDebounce'
 import SubscriptionTable from '@/components/SubscriptionTable.vue'
 import type { SubscriptionSearchParams } from '@/services/subscription.service'
 import type { ApplicationShortDTO } from '@/types/dto/ApplicationShortDTO'
+import { SubscriptionStatus } from '@/types/api/responses'
 
 const router = useRouter()
 const toast = useToast()
@@ -172,14 +173,21 @@ const pagination = reactive({
   hasPrev: false,
 })
 
-const portalOptions = computed(() => portals.value?.map(x => x.selectOption) || [])
-const appsOptions = computed(() => applications.value?.map(x => x.selectOption) || [])
+const portalOptions = computed(() => [
+  { value: undefined, label: 'Все порталы' },
+  ...(portals.value?.map(x => x.selectOption) || [])
+])
+const appsOptions = computed(() => [
+  { value: undefined, label: 'Все приложения' },
+  ...(applications.value?.map(x => x.selectOption) || [])
+])
 const statusOptions = [
-  { value: 'active', label: 'Активные' },
-  { value: 'trial', label: 'Триал' },
-  { value: 'expired', label: 'Истекшие' },
-  { value: 'suspended', label: 'Приостановленные' },
-  { value: 'cancelled', label: 'Отмененные' }
+  { value: undefined, label: 'Все статусы' },
+  { value: SubscriptionStatus.ACTIVE, label: 'Активные' },
+  { value: SubscriptionStatus.TRIAL, label: 'Триал' },
+  { value: SubscriptionStatus.EXPIRED, label: 'Истекшие' },
+  { value: SubscriptionStatus.SUSPENDED, label: 'Приостановленные' },
+  { value: SubscriptionStatus.CANCELED, label: 'Отмененные' }
 ]
 
 const hasSubscriptions = computed(() => subscriptions.value.length > 0)

@@ -11,19 +11,16 @@ export function formatRelativeTime(date: string | Date): string {
     return 'только что'
   }
 
-  // Минуты
   const diffInMinutes = Math.floor(diffInSeconds / 60)
   if (diffInMinutes < 60) {
     return pluralizeTime(diffInMinutes, 'минуту', 'минуты', 'минут')
   }
 
-  // Часы
   const diffInHours = Math.floor(diffInMinutes / 60)
   if (diffInHours < 24) {
     return pluralizeTime(diffInHours, 'час', 'часа', 'часов')
   }
 
-  // Дни
   const diffInDays = Math.floor(diffInHours / 24)
   if (diffInDays === 1) {
     return 'вчера'
@@ -32,19 +29,15 @@ export function formatRelativeTime(date: string | Date): string {
     return `${diffInDays} дня назад`
   }
 
-  // Недели
   const diffInWeeks = Math.floor(diffInDays / 7)
   if (diffInWeeks < 4) {
     return pluralizeTime(diffInWeeks, 'неделю', 'недели', 'недель')
   }
 
-  // Месяцы
   const diffInMonths = Math.floor(diffInDays / 30)
   if (diffInMonths < 12) {
     return pluralizeTime(diffInMonths, 'месяц', 'месяца', 'месяцев')
   }
-
-  // Годы
   const diffInYears = Math.floor(diffInDays / 365)
   return pluralizeTime(diffInYears, 'год', 'года', 'лет')
 }
@@ -62,7 +55,6 @@ function pluralizeTime(value: number, one: string, few: string, many: string): s
     return `${value} ${many} назад`
   }
 
-  // Для чисел > 20
   const lastDigit = value % 10
   if (lastDigit === 1) {
     return `${value} ${one} назад`

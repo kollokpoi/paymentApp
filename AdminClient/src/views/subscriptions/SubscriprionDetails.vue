@@ -23,15 +23,19 @@
             <dl class="space-y-3">
               <div>
                 <dt class="text-sm text-gray-500">Портал</dt>
-                <router-link :to="`/portals/${subscription.portalId}`"
-                  class="font-medium text-primary-600 hover:text-primary-500">
+                <router-link
+                  :to="`/portals/${subscription.portalId}`"
+                  class="font-medium text-primary-600 hover:text-primary-500"
+                >
                   <dd>{{ subscription.companyName }}</dd>
                 </router-link>
               </div>
               <div>
                 <dt class="text-sm text-gray-500">Приложение</dt>
-                <router-link :to="`/applications/${subscription.appId}`"
-                  class="font-medium text-primary-600 hover:text-primary-500">
+                <router-link
+                  :to="`/applications/${subscription.appId}`"
+                  class="font-medium text-primary-600 hover:text-primary-500"
+                >
                   <dd>{{ subscription.application?.name }}</dd>
                 </router-link>
               </div>
@@ -39,24 +43,54 @@
                 <dt class="text-sm text-gray-500">Тариф</dt>
                 <dd>{{ subscription.tariff?.name }}</dd>
               </div>
-              <EditableSelect label="Статус" v-model:value="editData.status" required
-                @edit-start="() => { globalEditing = true }" :is-editing="globalEditing" :items="statusOptions" />
+              <EditableSelect
+                label="Статус"
+                v-model:value="editData.status"
+                required
+                @edit-start="
+                  () => {
+                    globalEditing = true
+                  }
+                "
+                :is-editing="globalEditing"
+                :items="statusOptions"
+              />
               <div>
                 <dt class="text-sm text-gray-500">Дата начала</dt>
                 <dd>{{ formatDate(subscription.validFrom) }}</dd>
               </div>
-              <EditableDate label="Дата окончания" v-model:value="editData.validUntil"
-                :min-date="new Date(subscription.validFrom)" :is-editing="globalEditing"
-                @edit-start="() => { globalEditing = true }" required />
+              <div>
+                <dt class="text-sm text-gray-500">Дата окончания</dt>
+                <dd>{{ formatDate(subscription.validUntil) }}</dd>
+              </div>
               <div>
                 <dt class="text-sm text-gray-500">Осталось дней</dt>
                 <dd>{{ subscription.daysLeft }}</dd>
               </div>
 
-              <EditableBoolean label="Автопродление" v-model:value="editData.autoRenew" :is-editing="globalEditing"
-                true-label="Включено" false-label="отключено" @edit-start="() => { globalEditing = true }" />
-              <EditableText label="Пометки" v-model:value="editData.notes" :is-editing="globalEditing"
-                @edit-start="() => { globalEditing = true }" :type="FieldTypes.TextArea" />
+              <EditableBoolean
+                label="Автопродление"
+                v-model:value="editData.autoRenew"
+                :is-editing="globalEditing"
+                true-label="Включено"
+                false-label="отключено"
+                @edit-start="
+                  () => {
+                    globalEditing = true
+                  }
+                "
+              />
+              <EditableText
+                label="Пометки"
+                v-model:value="editData.notes"
+                :is-editing="globalEditing"
+                @edit-start="
+                  () => {
+                    globalEditing = true
+                  }
+                "
+                :type="FieldTypes.TextArea"
+              />
             </dl>
           </div>
           <div>
@@ -72,26 +106,45 @@
       </template>
     </CardPrime>
     <div v-if="globalEditing" class="flex gap-2 items-center justify-end">
-      <ButtonPrime label="Сохранить" icon="pi pi-check" @click="updateSubscription" :disabled="!canUpdate" />
+      <ButtonPrime
+        label="Сохранить"
+        icon="pi pi-check"
+        @click="updateSubscription"
+        :disabled="!canUpdate"
+      />
       <ButtonPrime label="Отмена" severity="danger" outline @click="cancelEditing" />
     </div>
     <div v-else class="flex gap-2 items-center justify-end">
-      <ButtonPrime label="Редактировать" icon="pi pi-pencil" @click="globalEditing = !globalEditing"
-        :disabled="globalEditing" />
+      <ButtonPrime
+        label="Продлить"
+        icon="pi pi-pencil"
+        @click="goToExtend"
+        :disabled="globalEditing"
+      />
+      <ButtonPrime
+        label="Редактировать"
+        icon="pi pi-pencil"
+        @click="globalEditing = !globalEditing"
+        :disabled="globalEditing"
+      />
       <ButtonPrime label="Удалить" icon="pi pi-trash" severity="danger" @click="confirmDelete" />
     </div>
     <CardPrime>
       <template #title>
         <div class="flex justify-between">
           <p>Платежи</p>
-          <ButtonPrime label="Управление" icon="pi pi-pencil" @click="goToPayments" />
+          <ButtonPrime label="Все платежи" icon="pi pi-external-link" @click="goToPayments" />
         </div>
       </template>
       <template #content>
         <div v-if="payments">
           <PaymentTable :payments="payments" :loading="paymentsLoading" />
-          <PaginatorPrime v-if="paymentPagination?.total > paymentPagination.limit" :rows="paymentPagination.limit"
-            :totalRecords="paymentPagination.total" @page="onPageChange" />
+          <PaginatorPrime
+            v-if="paymentPagination?.total > paymentPagination.limit"
+            :rows="paymentPagination.limit"
+            :totalRecords="paymentPagination.total"
+            @page="onPageChange"
+          />
         </div>
         <div v-else class="text-center py-12">
           <i class="pi pi-exclamation-circle text-4xl text-gray-300 mb-4"></i>
@@ -110,19 +163,25 @@
   <ConfirmDialog :draggable="true" />
 </template>
 <script setup lang="ts">
-import { paymentService, subscriptionService, type PaymentSearchParams } from '@/services';
-import { applySubscriptionEditData, createSubscriptionEditData, PaymentDTO, subscriptionDataToRequest, SubscriptionDTO, type SubscriptionEditData } from '@/types/dto';
-import { FieldTypes } from '@/types/editable';
-import { useToast, useConfirm } from 'primevue';
-import { computed, onMounted, reactive, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { paymentService, subscriptionService, type PaymentSearchParams } from '@/services'
+import {
+  applySubscriptionEditData,
+  createSubscriptionEditData,
+  PaymentDTO,
+  subscriptionDataToRequest,
+  SubscriptionDTO,
+  type SubscriptionEditData,
+} from '@/types/dto'
+import { FieldTypes } from '@/types/editable'
+import { useToast, useConfirm } from 'primevue'
+import { computed, onMounted, reactive, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import EditableBoolean from '@/components/editableFields/EditableBoolean.vue'
-import EditableDate from '@/components/editableFields/EditableDate.vue';
-import EditableText from '@/components/editableFields/EditableText.vue';
-import EditableSelect from '@/components/editableFields/EditableSelect.vue';
-import type { SubscriptionStatus } from '@/types/api/responses';
-import { formatDate } from '@/helpers/formatters';
-import PaymentTable from '@/components/PaymentTable.vue';
+import EditableText from '@/components/editableFields/EditableText.vue'
+import EditableSelect from '@/components/editableFields/EditableSelect.vue'
+import { SubscriptionStatus } from '@/types/api/responses'
+import { formatDate } from '@/helpers/formatters'
+import PaymentTable from '@/components/PaymentTable.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -131,16 +190,16 @@ const confirm = useConfirm()
 
 const subscriptionId = route.params.id as string
 
-const loading = ref(false);
-const paymentsLoading = ref(false);
-const subscription = ref<SubscriptionDTO>();
+const loading = ref(false)
+const paymentsLoading = ref(false)
+const subscription = ref<SubscriptionDTO>()
 const payments = ref<PaymentDTO[]>()
 const globalEditing = ref(false)
-const validationErrors = ref<Array<{ field: string, message: string }>>([])
+const validationErrors = ref<Array<{ field: string; message: string }>>([])
 
-const canUpdate = computed(() => validationErrors.value.length == 0);
+const canUpdate = computed(() => validationErrors.value.length == 0)
 const editData = reactive<SubscriptionEditData>({
-  status: 'trial',
+  status: SubscriptionStatus.TRIAL,
   validUntil: '',
   autoRenew: false,
   notes: '',
@@ -160,29 +219,31 @@ const statusOptions = [
   { value: 'active' as SubscriptionStatus, label: 'Активна' },
   { value: 'expired' as SubscriptionStatus, label: 'Истекла' },
   { value: 'suspended' as SubscriptionStatus, label: 'Приостановлена' },
-  { value: 'canceled' as SubscriptionStatus, label: 'Отменена' }
+  { value: 'canceled' as SubscriptionStatus, label: 'Отменена' },
 ]
 
 const cancelEditing = () => {
-  globalEditing.value = false;
+  globalEditing.value = false
   if (subscription.value) {
     Object.assign(editData, createSubscriptionEditData(subscription.value))
   }
 }
 
 const updateSubscription = async () => {
-  if (!canUpdate.value || !subscription.value)
-    return;
-  globalEditing.value = false;
+  if (!canUpdate.value || !subscription.value) return
+  globalEditing.value = false
 
   try {
-    const response = await subscriptionService.updateSubscription(subscriptionId, subscriptionDataToRequest(editData))
+    const response = await subscriptionService.updateSubscription(
+      subscriptionId,
+      subscriptionDataToRequest(editData),
+    )
     if (response.success) {
-      applySubscriptionEditData(subscription.value, editData);
+      applySubscriptionEditData(subscription.value, editData)
       toast.add({
         severity: 'success',
         summary: 'Данные обновлены',
-        life: 3000
+        life: 3000,
       })
     } else {
       toast.add({
@@ -208,7 +269,7 @@ const confirmDelete = () => {
     message: `Вы действительно хотите удалить подписку "${subscription.value?.companyName}"?`,
     header: 'Подтверждение удаления',
     icon: 'pi pi-exclamation-triangle',
-    acceptClass: "p-button-danger",
+    acceptClass: 'p-button-danger',
     acceptLabel: 'Удалить',
     rejectLabel: 'Отмена',
     accept: async () => {
@@ -241,7 +302,9 @@ const confirmDelete = () => {
     },
   })
 }
-
+const goToExtend = () => {
+  router.push(`/subscriptions/${subscriptionId}/extend`)
+}
 const loadSubscriprion = async () => {
   loading.value = true
   try {
@@ -274,20 +337,17 @@ const onPageChange = (event: any) => {
   loadPayments()
 }
 
-const goToPayments = ()=>{
-  router.push(
-    `/payments?subscriptionId=${subscriptionId}`
-  )
+const goToPayments = () => {
+  router.push(`/payments?subscriptionId=${subscriptionId}`)
 }
 
 const loadPayments = async () => {
   paymentsLoading.value = true
   try {
-
     const params: PaymentSearchParams = {
       page: paymentPagination.page,
       limit: paymentPagination.limit,
-      subscriptionId: subscriptionId
+      subscriptionId: subscriptionId,
     }
     const response = await paymentService.getPayments(params)
 
@@ -317,9 +377,7 @@ const loadPayments = async () => {
 }
 
 onMounted(() => {
-  loadSubscriprion();
-  loadPayments();
+  loadSubscriprion()
+  loadPayments()
 })
-
-
 </script>

@@ -173,22 +173,26 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, watch, reactive, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import { tariffService, applicationService } from '@/services'
 import type { ApplicationShortDTO, TariffDTO } from '@/types/dto'
 import { useDebouncedFn } from '@/composables/useDebounce'
 import TariffTable from '@/components/TariffTable.vue'
 import type { TariffSearchParams } from '@/services/tariff.service'
+import { PeriodType } from '@/types/api/responses'
 
+const route = useRoute()
 const router = useRouter()
 const toast = useToast()
+
+const appId = route.query.appId
 
 const applications = ref<ApplicationShortDTO[]>([])
 const tariffs = ref<TariffDTO[]>([])
 
 const search = ref('')
-const selectedAppId = ref<string>()
+const selectedAppId = ref<string | undefined>(appId as string)
 const selectedStatus = ref<string>()
 const selectedPeriod = ref<string>()
 const priceFrom = ref<number>()
@@ -208,26 +212,33 @@ const pagination = reactive({
   hasPrev: false,
 })
 
-const appsOptions = computed(() => applications.value?.map(x => x.selectOption) || [])
+const appsOptions = computed(() => [
+  { value: undefined, label: 'Все приложения' },
+  ...(applications.value?.map(x => x.selectOption) || [])
+])
 
 const statusOptions = [
+  { value: undefined, label: 'Все статусы' },
   { value: 'true', label: 'Активные' },
   { value: 'false', label: 'Неактивные' }
 ]
 
 const periodOptions = [
-  { value: 'day', label: 'День' },
-  { value: 'week', label: 'Неделя' },
-  { value: 'month', label: 'Месяц' },
-  { value: 'year', label: 'Год' }
+  { value: undefined, label: 'Все периоды' },
+  { value: PeriodType.DAY, label: 'День' },
+  { value: PeriodType.WEEK, label: 'Неделя' },
+  { value: PeriodType.MONTH, label: 'Месяц' },
+  { value: PeriodType.YEAR, label: 'Год' }
 ]
 
 const trialOptions = [
+  { value: undefined, label: 'Любой пробный период' },
   { value: 'true', label: 'С пробным периодом' },
   { value: 'false', label: 'Без пробного периода' }
 ]
 
 const defaultOptions = [
+   { value: undefined, label: 'Любой' },
   { value: 'true', label: 'По умолчанию' },
   { value: 'false', label: 'Не по умолчанию' }
 ]

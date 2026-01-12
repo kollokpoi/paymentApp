@@ -56,7 +56,7 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
-import Menu from 'primevue/menu' // Добавляем импорт Menu
+import Menu from 'primevue/menu'
 import type { SubscriptionDTO } from '@/types/dto'
 import { subscriptionService } from '@/services/subscription.service'
 import { formatDate, pluralizeDays } from '@/helpers/formatters'
@@ -129,7 +129,7 @@ const editSubscription = (id: string) => {
 }
 
 const extendSubscription = (id: string) => {
-  router.push(`/subscription/${id}/extend`)
+  router.push(`/subscriptions/${id}/extend`)
 }
 
 const deleteSubscription = async (id: string) => {

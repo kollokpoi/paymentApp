@@ -88,13 +88,13 @@
                   v-model="formData.price"
                   :min="0"
                   :max="99999"
-                  :minFractionDigits="2"
+                  :minFractionDigits="1"
                   :maxFractionDigits="2"
                   class="flex-1"
-                  :invalid="!formData.price || formData.price < 0"
+                  :invalid="formData.price < 0"
                 />
               </div>
-              <small v-if="!formData.price || formData.price < 0" class="text-red-500 text-xs">
+              <small v-if="formData.price < 0" class="text-red-500 text-xs">
                 Цена должна быть положительной
               </small>
             </div>

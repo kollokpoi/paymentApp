@@ -17,11 +17,11 @@ export default defineConfig({
     },
   },
   server: {
-    port: 5173, // ← если нужно явно указать порт
-    host: true  // ← чтобы был доступен по сети
+    port: 5173, 
+    host: true  
   },
   css: {
-    devSourcemap: true // ← ВАЖНО! Для dev режима
+    devSourcemap: true 
   },
   build: {
     sourcemap: true

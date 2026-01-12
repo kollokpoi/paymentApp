@@ -209,18 +209,15 @@ const pagination = reactive({
   hasPrev: false,
 })
 
-// Рефы для меню
 const menuRef = ref<InstanceType<typeof Menu> | null>(null)
-const selectedApplication = ref<ApplicationDTO | null>(null)
 
-// Опции фильтров
+const selectedApplication = ref<ApplicationDTO | null>(null)
 const statusOptions = [
   { value: 'true', label: 'Активные' },
   { value: 'false', label: 'Неактивные' }
 ]
 
 
-// Модель меню
 const menuItems = computed(() => {
   if (!selectedApplication.value) return []
 
@@ -372,7 +369,7 @@ const toggleActiveStatus = async (id: string, isActive: boolean) => {
 }
 
 const viewTariffs = (id: string) => {
-  router.push(`/applications/${id}/tariffs`)
+  router.push(`/tariffs?appId=${id}`)
 }
 
 const deleteApplication = async (id: string) => {

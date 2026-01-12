@@ -1,5 +1,3 @@
-// Добавь в конце файла после класса TariffDTO
-
 import type { UpdateTariffRequest } from '@/services'
 import type { TariffDTO, TariffLimits } from '..'
 import type { PeriodType } from '@/types/api/responses'

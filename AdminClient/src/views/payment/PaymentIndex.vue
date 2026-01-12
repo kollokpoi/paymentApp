@@ -110,24 +110,25 @@ import type { PortalShortDTO, PaymentDTO, ApplicationShortDTO } from '@/types/dt
 import { useDebouncedFn } from '@/composables/useDebounce'
 import PaymentTable from '@/components/PaymentTable.vue'
 import type { PaymentSearchParams } from '@/services/payment.service'
+import { PaymentStatus } from '@/types/api/responses'
 
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
 
-const subscriptionId = route.query.subscriptionId as string
-const appId = route.query.appId as string
-const portalId = route.query.portalId as string
+const subscriptionId = route.query.subscriptionId 
+const appId = route.query.appId 
+const portalId = route.query.portalId
 
 const portals = ref<PortalShortDTO[]>([])
 const applications = ref<ApplicationShortDTO[]>([])
 const payments = ref<PaymentDTO[]>([])
 
 const search = ref('')
-const selectedPortalId = ref<string | undefined>(portalId)
+const selectedPortalId = ref<string | undefined>(portalId as string)
 const selectedStatus = ref<string>()
-const selectedAppId = ref<string | undefined>(appId)
-const selectedSubscriptionId = ref<string | undefined>(subscriptionId)
+const selectedAppId = ref<string | undefined>(appId as string)
+const selectedSubscriptionId = ref<string | undefined>(subscriptionId as string)
 const selectedPaymentMethod = ref<string>()
 const dateFrom = ref<Date>()
 const dateTo = ref<Date>()
@@ -146,14 +147,20 @@ const pagination = reactive({
   hasPrev: false,
 })
 
-const portalOptions = computed(() => portals.value?.map(x => x.selectOption) || [])
-const appsOptions = computed(() => applications.value?.map(x => x.selectOption) || [])
+const portalOptions = computed(() => [
+  { value: undefined, label: 'Все порталы' },
+  ...(portals.value?.map(x => x.selectOption) || [])
+])
+const appsOptions = computed(() => [
+  { value: undefined, label: 'Все приложения' },
+  ...(applications.value?.map(x => x.selectOption) || [])
+])
 const statusOptions = [
-  { value: 'completed', label: 'Успешные' },
-  { value: 'pending', label: 'Ожидающие' },
-  { value: 'failed', label: 'Ошибки' },
-  { value: 'refunded', label: 'Возвраты' },
-  { value: 'canceled', label: 'Отмененные' }
+  { value: undefined, label: 'Любой' },
+  { value: PaymentStatus.COMPLETED, label: 'Успешные' },
+  { value: PaymentStatus.PENDING, label: 'Ожидающие' },
+  { value: PaymentStatus.FAILED, label: 'Ошибки' },
+  { value: PaymentStatus.REFUNDED, label: 'Возвраты' },
 ]
 
 const paymentMethodOptions = [
@@ -311,8 +318,10 @@ const onPageChange = (event: any) => {
 }
 
 const addPayment = () => {
+  const queryParams = subscriptionId ? { subscriptionId } : {}
   router.push({
-    path: `/payments/create`
+    path: `/payments/create`,
+    query: queryParams
   })
 }
 

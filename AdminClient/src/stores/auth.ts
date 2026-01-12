@@ -15,8 +15,6 @@ export interface LoginCredentials {
 }
 
 export const useAuthStore = defineStore('auth', () => {
-
-  // Состояние
   const user = ref<User | null>(null)
   const token = ref<string | null>(localStorage.getItem('auth_token'))
   const refreshToken = ref<string | null>(localStorage.getItem('refresh_token'))

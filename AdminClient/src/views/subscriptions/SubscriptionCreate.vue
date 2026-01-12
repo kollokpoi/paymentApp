@@ -29,7 +29,6 @@
                 :filter="true"
                 :loading="portalsLoading"
                 :invalid="!formData.portal_id"
-                @change="onPortalChange"
               />
               <small v-if="!formData.portal_id" class="text-red-500 text-xs">
                 Выберите портал
@@ -396,12 +395,7 @@ const getDaysInPeriod = (period: PeriodType): number => {
   return periodMap[period] || 30
 }
 
-const onPortalChange = () => {
-  // Можно добавить логику при выборе портала
-}
-
 const onApplicationChange = () => {
-  // Загружаем тарифы для выбранного приложения
   loadTariffs()
 }
 

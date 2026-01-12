@@ -53,14 +53,15 @@
             </div>
 
             <div>
-              <label class="block text-sm font-medium mb-2">ID портала в Bitrix</label>
+              <label class="block text-sm font-medium mb-2">ID портала в Bitrix <span class="text-red-500">*</span> </label>
               <InputText
                 v-model="formData.b24_member_id"
                 placeholder="ID из Bitrix24"
                 class="w-full"
+                :invalid="!formData.b24_member_id"
               />
-              <small class="text-gray-500 text-xs">
-                Если не указано, будет создано автоматически
+              <small v-if="!formData.b24_member_id" class="text-red-500 text-xs">
+                ID Bitrix обязателен
               </small>
             </div>
 
@@ -180,7 +181,6 @@ const formData = reactive<CreatePortalRequest>({
   b24_domain: '',
   company_name: '',
   b24_member_id: '',
-  admin_email: '',
   is_active: true,
   metadata: {}
 })
@@ -207,6 +207,7 @@ const isEmailValid = computed(() => {
 const isFormValid = computed(() => {
   return !!isDomainValid.value &&
          !!formData.company_name &&
+         !!formData.b24_member_id &&
          (formData.admin_email ? isEmailValid.value : true)
 })
 
@@ -247,7 +248,14 @@ const createPortal = async () => {
   creating.value = true
 
   try {
-    const response = await portalService.createPortal(formData)
+    const response = await portalService.createPortal({
+      b24_domain: fullDomain.value,
+      company_name: formData.company_name,
+      b24_member_id: formData.b24_member_id,
+      is_active: formData.is_active,
+      metadata: formData.metadata,
+      admin_email: formData.admin_email,
+    })
 
     if (response.success) {
       toast.add({

@@ -140,7 +140,7 @@ const menuItems = computed(() => {
       icon: 'pi pi-trash',
       command: () => confirmDelete(id),
       class: 'text-red-500',
-      disabled: tariff.isDefault // Нельзя удалить тариф по умолчанию
+      disabled: tariff.isDefault 
     }
   ]
 })

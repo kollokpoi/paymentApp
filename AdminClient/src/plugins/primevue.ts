@@ -1,10 +1,10 @@
-// Импортируем PrimeVue
+
 import PrimeVue from 'primevue/config'
 
-// Импортируем кастомный Пресет
+
 import MyPreset from './primeVuePreset.ts'
 
-// Импортируем компоненты PrimeVue
+
 import Button from 'primevue/button'
 import ButtonGroup from 'primevue/buttongroup'
 import Card from 'primevue/card'

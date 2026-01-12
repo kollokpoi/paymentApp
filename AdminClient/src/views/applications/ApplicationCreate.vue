@@ -149,7 +149,7 @@ const handleJsonInput = () => {
   try {
     const parsed = JSON.parse(jsonSettings.value)
     formData.settings = parsed
-  } catch (error) {
+  } catch {
     jsonError.value = 'Некорректный JSON формат'
   }
 }
