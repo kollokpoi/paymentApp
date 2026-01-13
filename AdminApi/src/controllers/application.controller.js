@@ -3,13 +3,7 @@ const { ApplicationDTO, TariffDTO } = require("@payment-app/apiModels");
 class ApplicationController {
   async getAll(req, res, next) {
     try {
-      const {
-        page = 1,
-        limit = 20,
-        search,
-        isActive,
-        version,
-      } = req.query;
+      const { page = 1, limit = 20, search, isActive, version } = req.query;
 
       const offset = (page - 1) * limit;
 
@@ -23,7 +17,6 @@ class ApplicationController {
       if (search) {
         where[req.db.sequelize.Op.or] = [
           { name: { [req.db.sequelize.Op.like]: `%${search}%` } },
-          { code: { [req.db.sequelize.Op.like]: `%${search}%` } },
           { description: { [req.db.sequelize.Op.like]: `%${search}%` } },
         ];
       }
@@ -43,8 +36,8 @@ class ApplicationController {
           },
         ],
         order: [
-          ['sort_order', 'ASC'],
-          ['name', 'ASC']
+          ["sort_order", "ASC"],
+          ["name", "ASC"],
         ],
         limit: parseInt(limit),
         offset: parseInt(offset),
@@ -75,15 +68,11 @@ class ApplicationController {
     try {
       const Application = req.db.getModel("Application");
       const applications = await Application.findAll({
-        attributes: [
-          "id",
-          "code",
-          "name",
-          "is_active",
-          "icon_url",
-          "sort_order",
+        attributes: ["id", "name", "is_active", "icon_url", "sort_order"],
+        order: [
+          ["sort_order", "ASC"],
+          ["name", "ASC"],
         ],
-        order: [["sort_order","ASC"],["name", "ASC"]],
       });
 
       const result = applications.map((app) =>
@@ -120,7 +109,8 @@ class ApplicationController {
     try {
       const Application = req.db.getModel("Application");
       const {
-        code,
+        client_id,
+        client_secret,
         name,
         description,
         version,
@@ -130,30 +120,31 @@ class ApplicationController {
         sort_order,
       } = req.body;
 
-      if (!code || !name) {
+      if (!client_id || !client_secret || !name) {
         return res.status(400).json({
           success: false,
-          message: "code and name are required",
+          message: "client_id, client_secret and name are required",
         });
       }
 
-      const existing = await Application.findOne({ where: { code } });
+      const existing = await Application.findOne({ where: { client_id } });
       if (existing) {
         return res.status(400).json({
           success: false,
-          message: "Application with this code already exists",
+          message: "Application with this client_id already exists",
         });
       }
 
       const application = await Application.create({
-        code,
+        client_id,
+        client_secret,
         name,
         description,
         version,
         is_active: is_active !== undefined ? is_active : true,
         icon_url,
         settings: settings || {},
-        sort_order
+        sort_order,
       });
 
       const appDTO = ApplicationDTO.fromSequelize(application);
@@ -180,10 +171,36 @@ class ApplicationController {
         });
       }
 
-      const { name, description, version, is_active, icon_url, settings, sort_order } =
-        req.body;
+      const {
+        name,
+        description,
+        version,
+        is_active,
+        icon_url,
+        settings,
+        sort_order,
+        client_id,
+        client_secret,
+      } = req.body;
 
+      if (!client_id || !client_secret || !name) {
+        return res.status(400).json({
+          success: false,
+          message: "client_id, client_secret and name are required",
+        });
+      }
+
+      const existing = await Application.findOne({ where: { client_id } });
+      if (existing) {
+        return res.status(400).json({
+          success: false,
+          message: "Application with this client_id already exists",
+        });
+      }
+      
       await application.update({
+        client_id,
+        client_secret,
         name,
         description,
         version,
@@ -191,7 +208,7 @@ class ApplicationController {
         icon_url,
         settings: { ...application.settings, ...settings },
         sort_order,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       });
 
       const appDTO = ApplicationDTO.fromSequelize(application);
@@ -276,10 +293,10 @@ class ApplicationController {
       res.json({
         success: true,
         data: statistics[0] || {
-            total: 0,
-            active: 0,
-            inactive: 0,
-          },
+          total: 0,
+          active: 0,
+          inactive: 0,
+        },
       });
     } catch (error) {
       next(error);
