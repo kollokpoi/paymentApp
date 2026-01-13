@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 
 const authenticateToken = async (req, res, next) => {
   try {
-    const  AdminUser = req.db.getModel('AdminUser');
+    const AdminUser = req.db.getModel('AdminUser');
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
@@ -13,22 +13,56 @@ const authenticateToken = async (req, res, next) => {
       });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await AdminUser.findByPk(decoded.id);
+    // Используем verify с callback для лучшего контроля ошибок
+    jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
+      if (err) {
+        // Проверяем тип ошибки
+        if (err.name === 'TokenExpiredError') {
+          return res.status(401).json({ 
+            success: false, 
+            message: 'Token expired', 
+            code: 'TOKEN_EXPIRED'
+          });
+        } else if (err.name === 'JsonWebTokenError') {
+          return res.status(403).json({ 
+            success: false, 
+            message: 'Invalid token', 
+            code: 'INVALID_TOKEN'
+          });
+        } else {
+          return res.status(403).json({ 
+            success: false, 
+            message: 'Token verification failed' 
+          });
+        }
+      }
 
-    if (!user || !user.is_active) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'User not found or inactive' 
-      });
-    }
+      try {
+        // Если токен валиден, ищем пользователя
+        const user = await AdminUser.findByPk(decoded.id);
 
-    req.user = user;
-    next();
+        if (!user || !user.is_active) {
+          return res.status(401).json({ 
+            success: false, 
+            message: 'User not found or inactive' 
+          });
+        }
+
+        req.user = user;
+        next();
+      } catch (dbError) {
+        console.error('Database error in auth middleware:', dbError);
+        return res.status(500).json({ 
+          success: false, 
+          message: 'Internal server error' 
+        });
+      }
+    });
   } catch (error) {
-    return res.status(403).json({ 
+    console.error('Auth middleware error:', error);
+    return res.status(500).json({ 
       success: false, 
-      message: 'Invalid or expired token' 
+      message: 'Internal server error' 
     });
   }
 };

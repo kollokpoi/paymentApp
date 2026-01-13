@@ -3,25 +3,51 @@ const { AdminUserDTO } = require("@payment-app/apiModels");
 class UserController {
   async getAll(req, res, next) {
     try {
-      const { page = 1, limit = 20 } = req.query;
+      const { page = 1, limit = 20, search, role, isActive } = req.query;
+
       const offset = (page - 1) * limit;
 
       const AdminUser = req.db.getModel("AdminUser");
+      const { Op } = req.db.sequelize;
+
+      const where = {};
+
+      // Фильтр по роли
+      if (role) {
+        where.role = role;
+      }
+
+      // Фильтр по статусу активности
+      if (isActive !== undefined) {
+        where.is_active = isActive === "true";
+      }
+
+      // Поиск по email или имени
+      if (search) {
+        where[Op.or] = [
+          { email: { [Op.like]: `%${search}%` } },
+          { name: { [Op.like]: `%${search}%` } },
+        ];
+      }
 
       const { count, rows } = await AdminUser.findAndCountAll({
+        where,
         limit: parseInt(limit),
         offset: parseInt(offset),
-        order: [["last_login", "DESC"]],
+        order: [
+          ["last_login", "DESC"],
+          ["created_at", "DESC"],
+        ],
       });
 
       const result = rows.map((user) =>
-        AdminUser.fromSequelize(user).toApiResponse()
+        AdminUserDTO.fromSequelize(user).toApiResponse()
       );
 
       res.json({
         success: true,
-        data: result,
-        pagination: {
+        data:{
+          items:result,
           page: parseInt(page),
           limit: parseInt(limit),
           total: count,
@@ -235,7 +261,7 @@ class UserController {
 
       res.json({
         success: true,
-        data: count
+        data: count,
       });
     } catch (error) {
       next(error);

@@ -111,6 +111,20 @@ router.get('/count', authenticateToken, subscriptionController.getActiveCount);
 
 /**
  * @swagger
+ * /subscriptions/stats:
+ *   get:
+ *     summary: Получить статистику подписок
+ *     tags: [Subscriptions]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Статистика подписок
+ */
+router.get('/stats',authenticateToken, authorize('superadmin'), subscriptionController.getStats);
+
+/**
+ * @swagger
  * /subscriptions/{id}:
  *   get:
  *     summary: Получить подписку по ID
@@ -248,6 +262,7 @@ router.post('/:id/renew', authenticateToken, authorize('superadmin', 'admin', 's
  *         description: Тариф изменен
  */
 router.post('/:id/change-tariff', authenticateToken, authorize('superadmin', 'admin'), subscriptionController.changeTariff);
+
 
 
 module.exports = router;

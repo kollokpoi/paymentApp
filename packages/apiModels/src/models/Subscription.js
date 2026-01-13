@@ -75,7 +75,6 @@ module.exports = (sequelize) => {
     ],
     hooks: {
       beforeCreate: async (subscription) => {
-        // Убираем сложную логику - оставим простую
         if (subscription.status === 'trial' && !subscription.trial_end_date) {
           subscription.trial_end_date = new Date();
           subscription.trial_end_date.setDate(
@@ -116,7 +115,6 @@ module.exports = (sequelize) => {
     }
   });
 
-  // Методы экземпляра
   Subscription.prototype.isActive = function() {
     return ['trial', 'active'].includes(this.status) && 
            new Date(this.valid_until) > new Date();

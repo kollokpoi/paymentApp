@@ -85,6 +85,20 @@ router.get('/count',authenticateToken, userController.getActiveCount);
 
 /**
  * @swagger
+ * /users/stats:
+ *   get:
+ *     summary: Получить статистику пользователей
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Статистика пользователей
+ */
+router.get('/stats',authenticateToken, authorize('superadmin'), userController.getAdminStats);
+
+/**
+ * @swagger
  * /users/{id}:
  *   get:
  *     summary: Получить пользователя по ID
@@ -143,20 +157,6 @@ router.get('/:id',authenticateToken, authorize('superadmin'), userController.get
  *         description: Пользователь обновлен
  */
 router.put('/:id',authenticateToken, authorize('superadmin'), userController.update);
-
-/**
- * @swagger
- * /users/stats:
- *   get:
- *     summary: Получить статистику пользователей
- *     tags: [Users]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Статистика пользователей
- */
-router.get('/stats',authenticateToken, authorize('superadmin'), userController.getAdminStats);
 
 /**
  * @swagger

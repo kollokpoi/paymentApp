@@ -1,5 +1,6 @@
-const  Database  = require('../src/database');
+const Database = require('../src/database');
 require('dotenv').config();
+
 async function seedDemoData() {
   let db;
   
@@ -22,204 +23,227 @@ async function seedDemoData() {
     const Portal = db.getModel('Portal');
     const Subscription = db.getModel('Subscription');
     const AdminUser = db.getModel('AdminUser');
+    const Payment = db.getModel('Payment'); // ← Добавляем модель платежей
     
-    // 1. Создаем демо-приложения
-    console.log('Creating demo applications...');
-    const apps = await Application.bulkCreate([
-      {
-        code: 'crm_automation',
-        name: 'CRM Automation Pro',
-        description: 'Расширенная автоматизация CRM процессов',
-        version: '1.0.0',
-        is_active: true,
-        icon_url: 'https://example.com/icons/crm.svg'
-      },
-      {
-        code: 'task_manager',
-        name: 'Advanced Task Manager',
-        description: 'Продвинутый менеджер задач для команд',
-        version: '2.1.0',
-        is_active: true,
-        icon_url: 'https://example.com/icons/tasks.svg'
-      },
-      {
-        code: 'analytics_dashboard',
-        name: 'Business Analytics Dashboard',
-        description: 'Панель аналитики бизнес-показателей',
-        version: '1.5.0',
-        is_active: true,
-        icon_url: 'https://example.com/icons/analytics.svg'
-      }
-    ]);
-    
-    console.log(`Created ${apps.length} applications`);
-    
-    // 2. Создаем тарифы для каждого приложения
-    console.log('Creating tariffs...');
-    const tariffs = [];
-    
-    for (const app of apps) {
-      const appTariffs = await Tariff.bulkCreate([
+    // 1. Получаем существующие данные для создания платежей
+    console.log('Fetching existing data for payments...');
+    const existingSubscriptions = await Subscription.findAll({
+      include: [
         {
-          app_id: app.id,
-          code: 'free',
-          name: 'Бесплатный',
-          description: 'Базовый функционал',
-          price: 0,
-          period: 'month',
-          trial_days: 0,
-          is_active: true,
-          is_default: true,
-          limits: { users: 3, projects: 1, storage_mb: 100 },
-          features: ['basic_tasks', 'email_notifications'],
-          sort_order: 1
+          model: db.getModel('Portal'),
+          as: 'portal'
         },
         {
-          app_id: app.id,
-          code: 'basic',
-          name: 'Базовый',
-          description: 'Для малых команд',
-          price: 990,
-          period: 'month',
-          trial_days: 14,
-          is_active: true,
-          limits: { users: 10, projects: 5, storage_mb: 1024 },
-          features: ['advanced_tasks', 'reports', 'api_access'],
-          sort_order: 2
-        },
-        {
-          app_id: app.id,
-          code: 'pro',
-          name: 'Профессиональный',
-          description: 'Для средних и крупных команд',
-          price: 2990,
-          period: 'month',
-          trial_days: 30,
-          is_active: true,
-          limits: { users: 50, projects: 50, storage_mb: 5120 },
-          features: ['all_features', 'priority_support', 'custom_integrations'],
-          sort_order: 3
-        },
-        {
-          app_id: app.id,
-          code: 'enterprise',
-          name: 'Корпоративный',
-          description: 'Индивидуальные решения',
-          price: 9990,
-          period: 'month',
-          trial_days: 60,
-          is_active: true,
-          limits: { users: 999, projects: 999, storage_mb: 10240 },
-          features: ['all_features', 'dedicated_support', 'custom_development'],
-          sort_order: 4
+          model: db.getModel('Tariff'),
+          as: 'tariff'
         }
-      ]);
-      
-      tariffs.push(...appTariffs);
-    }
+      ],
+      limit: 20 // Берем первые 20 подписок для демо
+    });
     
-    console.log(`Created ${tariffs.length} tariffs`);
+    const existingPortals = await Portal.findAll({ limit: 5 });
+    const existingTariffs = await Tariff.findAll({ limit: 10 });
     
-    // 3. Создаем демо-порталы
-    console.log('Creating demo portals...');
-    const portals = await Portal.bulkCreate([
-      {
-        b24_member_id: 'demo_portal_001',
-        b24_domain: 'demo1.bitrix24.ru',
-        company_name: 'ООО "Демо Компания 1"',
-        admin_email: 'admin@demo1.ru',
-        is_active: true
-      },
-      {
-        b24_member_id: 'demo_portal_002',
-        b24_domain: 'demo2.bitrix24.com',
-        company_name: 'Demo Company 2 Inc.',
-        admin_email: 'admin@demo2.com',
-        is_active: true
-      },
-      {
-        b24_member_id: 'demo_portal_003',
-        b24_domain: 'startup.bitrix24.ru',
-        company_name: 'Стартап "Инновации"',
-        admin_email: 'ceo@startup.ru',
-        is_active: true
-      }
-    ]);
-    
-    console.log(`Created ${portals.length} portals`);
-    
-    // 4. Создаем демо-подписки
-    console.log('Creating demo subscriptions...');
-    const subscriptions = [];
+    // 2. Создаем демо-платежи
+    console.log('Creating demo payments...');
+    const payments = [];
     const now = new Date();
+    const oneMonthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
     
-    // Для каждого портала создаем подписки на разные приложения
-    for (const portal of portals) {
-      for (let i = 0; i < apps.length; i++) {
-        const app = apps[i];
-        const tariff = tariffs.find(t => t.app_id === app.id && t.code === (i === 0 ? 'pro' : 'basic'));
+    // Массив статусов платежей
+    const paymentStatuses = ['completed', 'pending', 'failed', 'refunded'];
+    const paymentMethods = ['bank_card', 'sbp', 'yookassa', 'cloudpayments', 'tinkoff'];
+    
+    // Создаем по несколько платежей для каждой подписки
+    for (const subscription of existingSubscriptions) {
+      // Определяем количество платежей для этой подписки (1-3)
+      const numPayments = Math.floor(Math.random() * 3) + 1;
+      
+      for (let i = 0; i < numPayments; i++) {
+        const daysAgo = Math.floor(Math.random() * 30); // От 0 до 30 дней назад
+        const paymentDate = new Date(oneMonthAgo);
+        paymentDate.setDate(paymentDate.getDate() + daysAgo);
         
-        if (tariff) {
-          const validUntil = new Date(now);
-          validUntil.setMonth(validUntil.getMonth() + 1);
-          
-          const subscription = await Subscription.create({
-            portal_id: portal.id,
-            app_id: app.id,
-            tariff_id: tariff.id,
-            status: i === 0 ? 'trial' : 'active',
-            valid_from: now,
-            valid_until: validUntil,
-            auto_renew: true,
-            trial_end_date: i === 0 ? new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000) : null
-          });
-          
-          subscriptions.push(subscription);
+        // Определяем сумму платежа (обычно цена тарифа)
+        const amount = subscription.tariff ? subscription.tariff.price : 
+                      (Math.floor(Math.random() * 5) + 1) * 1000; // 1000-5000 если нет тарифа
+        
+        const status = paymentStatuses[Math.floor(Math.random() * paymentStatuses.length)];
+        const method = paymentMethods[Math.floor(Math.random() * paymentMethods.length)];
+        
+        const paymentData = {
+          subscription_id: subscription.id,
+          external_id: `ext_pay_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          amount: amount,
+          currency: 'RUB',
+          status: status,
+          payment_method: method,
+          description: `Оплата подписки ${subscription.portal?.company_name || subscription.portal?.b24_domain || 'Портал'}`,
+          metadata: {
+            subscription_status: subscription.status,
+            portal_id: subscription.portal_id,
+            tariff_price: subscription.tariff?.price || 0,
+            created_via: 'demo_seeder'
+          },
+          created_at: paymentDate,
+          updated_at: paymentDate
+        };
+        
+        // Для возвращенных платежей добавляем дату возврата
+        if (status === 'refunded') {
+          const refundDate = new Date(paymentDate);
+          refundDate.setDate(refundDate.getDate() + Math.floor(Math.random() * 7) + 1);
+          paymentData.refund_date = refundDate;
+          paymentData.refund_reason = 'По запросу клиента';
+        }
+        
+        // Для успешных платежей - добавляем детали
+        if (status === 'completed') {
+          paymentData.metadata.payment_details = {
+            card_last4: Math.floor(Math.random() * 9000) + 1000,
+            auth_code: `AUTH${Math.floor(Math.random() * 1000000)}`,
+            provider_transaction_id: `TRX${Date.now()}${Math.floor(Math.random() * 1000)}`
+          };
+        }
+        
+        // Для неудачных платежей - добавляем причину
+        if (status === 'failed') {
+          paymentData.metadata.failure_reason = ['Недостаточно средств', 'Карта заблокирована', 'Превышен лимит'][Math.floor(Math.random() * 3)];
+        }
+        
+        try {
+          const payment = await Payment.create(paymentData);
+          payments.push(payment);
+          console.log(`Created payment ${payments.length}: ${amount} RUB - ${status}`);
+        } catch (error) {
+          console.warn(`Failed to create payment for subscription ${subscription.id}:`, error.message);
         }
       }
     }
     
-    console.log(`Created ${subscriptions.length} subscriptions`);
-    
-    // 5. Создаем администраторов, если их нет
-    const adminCount = await AdminUser.count();
-    if (adminCount === 0) {
-      console.log('Creating admin users...');
-      await AdminUser.bulkCreate([
-        {
-          email: 'superadmin@example.com',
-          password: 'superadmin123',
-          name: 'Главный Администратор',
-          role: 'superadmin'
+    // 3. Создаем несколько разовых платежей без подписки (например, тестовые)
+    console.log('Creating standalone demo payments...');
+    for (let i = 0; i < 5; i++) {
+      const portal = existingPortals[Math.floor(Math.random() * existingPortals.length)];
+      const tariff = existingTariffs[Math.floor(Math.random() * existingTariffs.length)];
+      
+      const paymentDate = new Date(now);
+      paymentDate.setDate(paymentDate.getDate() - Math.floor(Math.random() * 15));
+      
+      const paymentData = {
+        subscription_id: null,
+        external_id: `standalone_${Date.now()}_${i}`,
+        amount: tariff ? tariff.price : 1990,
+        currency: 'RUB',
+        status: 'completed',
+        payment_method: paymentMethods[Math.floor(Math.random() * paymentMethods.length)],
+        description: `Тестовый платеж для ${portal?.company_name || 'портала'}`,
+        metadata: {
+          portal_id: portal?.id,
+          is_test: true,
+          created_via: 'demo_seeder_standalone'
         },
-        {
-          email: 'admin@example.com',
-          password: 'admin123',
-          name: 'Администратор Системы',
-          role: 'admin'
-        },
-        {
-          email: 'support@example.com',
-          password: 'support123',
-          name: 'Техподдержка',
-          role: 'support'
-        }
-      ]);
-      console.log('Created 3 admin users');
+        created_at: paymentDate,
+        updated_at: paymentDate
+      };
+      
+      try {
+        const payment = await Payment.create(paymentData);
+        payments.push(payment);
+        console.log(`Created standalone payment: ${paymentData.amount} RUB`);
+      } catch (error) {
+        console.warn(`Failed to create standalone payment:`, error.message);
+      }
     }
     
-    console.log('Demo data seeded successfully!');
-    console.log('\n=== Демо-данные загружены ===');
-    console.log('Администраторы:');
-    console.log('- superadmin@example.com / superadmin123 (суперадмин)');
-    console.log('- admin@example.com / admin123 (админ)');
-    console.log('- support@example.com / support123 (поддержка)');
-    console.log('\nПорталы:');
-    portals.forEach(p => console.log(`- ${p.b24_domain} (${p.company_name})`));
-    console.log('\nПриложения:');
-    apps.forEach(a => console.log(`- ${a.name} (${a.code})`));
-    console.log('\nТарифы:');
-    tariffs.forEach(t => console.log(`- ${t.name} (${t.code}) - ${t.price} руб./мес`));
+    // 4. Создаем платежи для разных статусов для демонстрации фильтров
+    console.log('Creating payments for filter demonstration...');
+    const filterDemoPayments = [
+      {
+        amount: 2990,
+        status: 'pending',
+        description: 'Платеж в обработке',
+        payment_method: 'bank_card',
+        created_at: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1)
+      },
+      {
+        amount: 4990,
+        status: 'failed',
+        description: 'Ошибка оплаты',
+        payment_method: 'sbp',
+        created_at: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 2)
+      },
+      {
+        amount: 3990,
+        status: 'refunded',
+        description: 'Возврат средств',
+        payment_method: 'yookassa',
+        created_at: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7)
+      },
+      {
+        amount: 5990,
+        status: 'canceled',
+        description: 'Отмененный платеж',
+        payment_method: 'tinkoff',
+        created_at: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 3)
+      }
+    ];
+    
+    for (const demoPayment of filterDemoPayments) {
+      const subscription = existingSubscriptions[Math.floor(Math.random() * existingSubscriptions.length)];
+      
+      const paymentData = {
+        subscription_id: subscription?.id || null,
+        external_id: `demo_filter_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+        amount: demoPayment.amount,
+        currency: 'RUB',
+        status: demoPayment.status,
+        payment_method: demoPayment.payment_method,
+        description: demoPayment.description,
+        metadata: {
+          is_demo: true,
+          filter_example: true,
+          created_via: 'demo_seeder_filter'
+        },
+        created_at: demoPayment.created_at,
+        updated_at: demoPayment.created_at
+      };
+      
+      try {
+        const payment = await Payment.create(paymentData);
+        payments.push(payment);
+        console.log(`Created filter demo payment: ${demoPayment.status} - ${demoPayment.amount} RUB`);
+      } catch (error) {
+        console.warn(`Failed to create filter demo payment:`, error.message);
+      }
+    }
+    
+    console.log(`\n✅ Created ${payments.length} demo payments`);
+    
+    // 5. Статистика по созданным платежам
+    const statusCount = {};
+    const methodCount = {};
+    
+    for (const payment of payments) {
+      statusCount[payment.status] = (statusCount[payment.status] || 0) + 1;
+      methodCount[payment.payment_method] = (methodCount[payment.payment_method] || 0) + 1;
+    }
+    
+    console.log('\n📊 Payment statistics:');
+    console.log('Statuses:');
+    Object.entries(statusCount).forEach(([status, count]) => {
+      console.log(`  - ${status}: ${count} payments`);
+    });
+    
+    console.log('\nPayment methods:');
+    Object.entries(methodCount).forEach(([method, count]) => {
+      console.log(`  - ${method}: ${count} payments`);
+    });
+    
+    const totalAmount = payments.reduce((sum, payment) => sum + parseFloat(payment.amount), 0);
+    console.log(`\n💰 Total amount: ${totalAmount.toLocaleString('ru-RU')} RUB`);
+    
+    console.log('\n✅ Demo payments seeded successfully!');
     
     await db.close();
     process.exit(0);
