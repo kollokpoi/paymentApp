@@ -9,14 +9,12 @@ export interface UpdatePortalRequest {
   company_name?: string
   admin_email?: string
   is_active?: boolean
-  b24_member_id: string
   b24_domain: string
 }
 
 export interface CreatePortalRequest {
   b24_domain: string
   company_name: string
-  b24_member_id?: string
   admin_email?: string
   is_active?: boolean
   metadata?: Metadata

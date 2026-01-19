@@ -15,6 +15,8 @@ export interface CreateApplicationRequest {
   icon_url?: string
   settings?: Metadata
   sort_order?: number
+  client_id: string
+  client_secret: string
 }
 
 export interface ApplicationSearchParams {
@@ -63,7 +65,6 @@ class ApplicationService extends BaseService {
     }
     return response as ApiResponse<ApplicationShortDTO[]>
   }
-
 
   async getApplication(id: string): Promise<ApiResponse<ApplicationDTO>> {
     return this.get<ApplicationDTO>(`/applications/${id}`)

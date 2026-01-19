@@ -51,16 +51,6 @@
                 @edit-start="()=>{globalEditing=true}"
                 @validation-change="onValidationChange('b24Domain', $event)"
               />
-              <EditableText
-                label="ID Bitrix"
-                placeholder="ID"
-                v-model:value="editData.b24MemberId"
-                :type="FieldTypes.Text"
-                :is-editing="globalEditing"
-                required
-                @edit-start="()=>{globalEditing=true}"
-                @validation-change="onValidationChange('b24MemberId', $event)"
-              />
               <div>
                 <dt class="text-sm text-gray-500">Дата создания</dt>
                 <dd>{{ formatDate(portal.createdAt) }}</dd>
@@ -181,7 +171,6 @@ const editData = reactive<PortalEditData>({
   companyName: '',
   adminEmail: '',
   b24Domain: '',
-  b24MemberId: '',
 })
 
 

@@ -369,7 +369,8 @@ const onPageChange = (event: any) => {
 
 const addTariff = () => {
   router.push({
-    path: `/tariffs/create`
+    path: `/tariffs/create`,
+    query:{appId}
   })
 }
 

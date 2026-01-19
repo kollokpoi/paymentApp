@@ -268,7 +268,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import { tariffService, applicationService } from '@/services'
 import type { CreateTariffRequest } from '@/services/tariff.service'
@@ -276,6 +276,7 @@ import { PeriodType } from '@/types/api/responses'
 import type { ApplicationDTO } from '@/types/dto/application.dto'
 import { formatDate } from '@/helpers/formatters'
 
+const route = useRoute()
 const router = useRouter()
 const toast = useToast()
 
@@ -289,7 +290,7 @@ const limitsError = ref<string | null>(null)
 const featuresError = ref<string | null>(null)
 
 const formData = reactive<CreateTariffRequest>({
-  app_id: '',
+  app_id: route.query.appId as string,
   name: '',
   code: '',
   description: '',

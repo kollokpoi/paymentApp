@@ -4,8 +4,6 @@ import { SubscriptionDTO } from './subscription.dto'
 
 export interface PortalDTOData {
   id: string
-  b24_member_id?: string | null
-  b24MemberId?: string | null
   b24_domain?: string | null
   b24Domain?: string | null
   company_name?: string | null
@@ -26,7 +24,6 @@ export interface PortalDTOData {
 
 export class PortalDTO {
   id: string
-  b24MemberId: string | null
   b24Domain: string | null
   companyName: string | null
   adminEmail: string | null
@@ -39,7 +36,6 @@ export class PortalDTO {
 
   constructor(data: PortalDTOData) {
     this.id = data.id
-    this.b24MemberId = data.b24_member_id || data.b24MemberId || null
     this.b24Domain = data.b24_domain || data.b24Domain || null
     this.companyName = data.company_name || data.companyName || null
     this.adminEmail = data.admin_email || data.adminEmail || null
