@@ -1,4 +1,4 @@
-const { Sequelize } = require('sequelize');
+const { Sequelize, Op } = require('sequelize');
 const initModels = require('./models');
 
 class Database {
@@ -49,7 +49,7 @@ class Database {
           dialectOptions: this.config.dialectOptions
         }
       );
-
+      this.sequelize.Op = Op;
       // Инициализируем модели
       this.models = initModels(this.sequelize);
 

@@ -27,6 +27,20 @@ router.get('/', authenticateToken, authorize('admin', 'superadmin', 'support'), 
 /**
  * @swagger
  * /applications:
+ *   get:
+ *     summary: Получить все приложения
+ *     tags: [Applications]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Список приложений
+ */
+router.get('/shortList', authenticateToken, authorize('admin', 'superadmin', 'support'), applicationController.getShortList);
+
+/**
+ * @swagger
+ * /applications:
  *   post:
  *     summary: Создать новое приложение
  *     tags: [Applications]
@@ -75,6 +89,21 @@ router.post('/', authenticateToken, authorize('superadmin', 'admin'), applicatio
  *         description: Статистика приложений
  */
 router.get('/count', authenticateToken, applicationController.getActiveCount);
+
+
+/**
+ * @swagger
+ * /applications/stats:
+ *   get:
+ *     summary: Получить статистику приложений
+ *     tags: [Applications]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Статистика приложений
+ */
+router.get('/stats', authenticateToken, authorize('admin', 'superadmin', 'support'), applicationController.getStat);
 
 /**
  * @swagger
@@ -154,25 +183,5 @@ router.put('/:id', authenticateToken, authorize('superadmin', 'admin'), applicat
  *         description: Приложение удалено
  */
 router.delete('/:id', authenticateToken, authorize('superadmin'), applicationController.delete);
-
-/**
- * @swagger
- * /applications/{id}/tariffs:
- *   get:
- *     summary: Получить тарифы приложения
- *     tags: [Applications]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Список тарифов приложения
- */
-router.get('/:id/tariffs', authenticateToken, authorize('admin', 'superadmin', 'support'), applicationController.getTariffs);
 
 module.exports = router;

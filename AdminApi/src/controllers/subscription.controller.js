@@ -2,38 +2,68 @@ const {
   SubscriptionDTO,
   PortalDTO,
   ApplicationDTO,
-  TariffDTO,
 } = require("@payment-app/apiModels");
 
 class SubscriptionController {
   async getAll(req, res, next) {
     try {
-      const { page = 1, limit = 20, portalId, appId, status } = req.query;
+      const {
+        page = 1,
+        limit = 20,
+        tariffId,
+        portalId,
+        appId,
+        status,
+        search,
+      } = req.query;
       const offset = (page - 1) * limit;
 
       const Subscription = req.db.getModel("Subscription");
+      const { Op } = req.db.sequelize;
       const where = {};
+
       if (portalId) where.portal_id = portalId;
       if (appId) where.app_id = appId;
       if (status) where.status = status;
+      if (tariffId) where.tariff_id = tariffId;
+
+      let includeWhere = {};
+
+      if (search) {
+        includeWhere = {
+          [Op.or]: [
+            { "$application.name$": { [Op.like]: `%${search}%` } },
+            { "$application.code$": { [Op.like]: `%${search}%` } },
+            { notes: { [Op.like]: `%${search}%` } },
+          ],
+        };
+      }
 
       const { count, rows } = await Subscription.findAndCountAll({
         where,
         include: [
           {
-            model: req.db.getModel("Portal"),
-            as: "portal",
-            attributes: ["id", "b24_domain", "company_name", "admin_email"],
-          },
-          {
             model: req.db.getModel("Application"),
             as: "application",
             attributes: ["id", "name", "code"],
+            where: search
+              ? {
+                  [Op.or]: [
+                    { name: { [Op.like]: `%${search}%` } },
+                    { code: { [Op.like]: `%${search}%` } },
+                  ],
+                }
+              : undefined,
           },
           {
             model: req.db.getModel("Tariff"),
             as: "tariff",
             attributes: ["id", "name", "code", "price", "period"],
+          },
+          {
+            model: req.db.getModel("Portal"),
+            as: "portal",
+            attributes: ["id", "b24_domain", "company_name"],
           },
         ],
         limit: parseInt(limit),
@@ -47,8 +77,8 @@ class SubscriptionController {
 
       res.json({
         success: true,
-        data: subscriptions,
-        pagination: {
+        data: {
+          items: subscriptions,
           page: parseInt(page),
           limit: parseInt(limit),
           total: count,
@@ -361,7 +391,7 @@ class SubscriptionController {
       const Subscription = req.db.getModel("Subscription");
       const count = await Subscription.count({
         where: {
-          status: 'active',
+          status: "active",
         },
       });
 
@@ -376,22 +406,263 @@ class SubscriptionController {
 
   async delete(req, res, next) {
     try {
-      const Subscription = req.db.getModel('Subscription');
-      
+      const Subscription = req.db.getModel("Subscription");
+
       const subscription = await Subscription.findByPk(req.params.id);
-      
+
       if (!subscription) {
         return res.status(404).json({
           success: false,
-          message: 'Subscription not found'
+          message: "Subscription not found",
         });
       }
-      
+
       await subscription.destroy();
-      
+
       res.json({
         success: true,
-        message: 'Subscription deleted successfully'
+        message: "Subscription deleted successfully",
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getStats(req, res, next) {
+    try {
+      const Subscription = req.db.getModel("Subscription");
+      const Tariff = req.db.getModel("Tariff");
+      const Application = req.db.getModel("Application");
+      const Portal = req.db.getModel("Portal");
+      const { Op } = req.db.sequelize;
+
+      const { startDate, endDate, appId } = req.query;
+      const now = new Date();
+
+      const where = {};
+      if (startDate || endDate) {
+        where.created_at = {};
+        if (startDate) where.created_at[Op.gte] = new Date(startDate);
+        if (endDate) where.created_at[Op.lte] = new Date(endDate);
+      }
+      if (appId) where.app_id = appId;
+
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(now.getDate() - 30);
+
+      const sixMonthsAgo = new Date();
+      sixMonthsAgo.setMonth(now.getMonth() - 6);
+
+      const weekFromNow = new Date();
+      weekFromNow.setDate(now.getDate() + 7);
+
+      const [
+        statusCounts,
+        total,
+        activeWithTrial,
+        expiringCount,
+        monthlyStats,
+        dailyStats,
+        appStats,
+        portalStats,
+        activeSubscriptions,
+      ] = await Promise.all([
+        Subscription.findAll({
+          where,
+          attributes: [
+            "status",
+            [req.db.sequelize.fn("COUNT", req.db.sequelize.col("id")), "count"],
+          ],
+          group: ["status"],
+          raw: true,
+        }),
+        Subscription.count({ where }),
+        Subscription.count({
+          where: {
+            ...where,
+            status: ["trial", "active"],
+            valid_until: { [Op.gt]: now },
+          },
+        }),
+        Subscription.count({
+          where: {
+            ...where,
+            status: ["trial", "active"],
+            valid_until: { [Op.between]: [now, weekFromNow] },
+          },
+        }),
+        Subscription.findAll({
+          where: {
+            ...where,
+            created_at: { [Op.gte]: sixMonthsAgo },
+          },
+          attributes: [
+            [
+              req.db.sequelize.fn(
+                "DATE_FORMAT",
+                req.db.sequelize.col("created_at"),
+                "%Y-%m"
+              ),
+              "month",
+            ],
+            [req.db.sequelize.fn("COUNT", req.db.sequelize.col("id")), "count"],
+          ],
+          group: [
+            req.db.sequelize.fn(
+              "DATE_FORMAT",
+              req.db.sequelize.col("created_at"),
+              "%Y-%m"
+            ),
+          ],
+          order: [[req.db.sequelize.literal("month"), "ASC"]],
+          raw: true,
+        }),
+        Subscription.findAll({
+          where: {
+            ...where,
+            created_at: { [Op.gte]: thirtyDaysAgo },
+          },
+          attributes: [
+            [
+              req.db.sequelize.fn("DATE", req.db.sequelize.col("created_at")),
+              "date",
+            ],
+            [req.db.sequelize.fn("COUNT", req.db.sequelize.col("id")), "count"],
+          ],
+          group: [
+            req.db.sequelize.fn("DATE", req.db.sequelize.col("created_at")),
+          ],
+          order: [[req.db.sequelize.literal("date"), "ASC"]],
+          raw: true,
+        }),
+        Subscription.findAll({
+          where,
+          include: [
+            {
+              model: Application,
+              as: "application",
+              attributes: ["id", "name"],
+            },
+          ],
+          attributes: [
+            "app_id",
+            [
+              req.db.sequelize.fn(
+                "COUNT",
+                req.db.sequelize.col("Subscription.id")
+              ),
+              "count",
+            ],
+          ],
+          group: ["app_id"],
+          raw: true,
+        }),
+        Subscription.findAll({
+          where,
+          include: [
+            {
+              model: Portal,
+              as: "portal",
+              attributes: ["id", "company_name", "b24_domain"],
+            },
+          ],
+          attributes: [
+            "portal_id",
+            [
+              req.db.sequelize.fn(
+                "COUNT",
+                req.db.sequelize.col("Subscription.id")
+              ),
+              "count",
+            ],
+          ],
+          group: ["portal_id"],
+          raw: true,
+        }),
+        Subscription.findAll({
+          where: {
+            ...where,
+            status: "active",
+          },
+          include: [
+            {
+              model: Tariff,
+              as: "tariff",
+              attributes: ["price"],
+            },
+          ],
+          raw: true,
+        }),
+      ]);
+
+      const statusStats = {};
+      statusCounts.forEach((item) => {
+        statusStats[item.status] = parseInt(item.count);
+      });
+
+      let monthlyRevenue = 0;
+      activeSubscriptions.forEach((sub) => {
+        if (sub["tariff.price"]) {
+          monthlyRevenue += parseFloat(sub["tariff.price"]);
+        }
+      });
+
+      const activeCount = statusStats.active || 0;
+      const trialCount = statusStats.trial || 0;
+
+      const responseData = {
+        total,
+        active: activeCount,
+        trial: trialCount,
+        activeCount,
+        suspended: statusStats.suspended || 0,
+        cancelled: statusStats.cancelled || 0,
+        expired: statusStats.expired || 0,
+        activeWithTrial,
+        expiring: expiringCount,
+        monthlyRevenue,
+        monthlyStats: monthlyStats.map((item) => ({
+          month: item.month + "-01",
+          count: parseInt(item.count),
+        })),
+        dailyStats: dailyStats.map((item) => ({
+          date: item.date,
+          count: parseInt(item.count),
+        })),
+        appStats: appStats
+          .map((item) => ({
+            appId: item.app_id,
+            appName: item["application.name"] || "Без названия",
+            count: parseInt(item.count),
+          }))
+          .sort((a, b) => b.count - a.count),
+        portalStats: portalStats
+          .map((item) => ({
+            portalId: item.portal_id,
+            portalName:
+              item["portal.company_name"] ||
+              item["portal.b24_domain"] ||
+              "Без названия",
+            count: parseInt(item.count),
+          }))
+          .sort((a, b) => b.count - a.sort)
+          .slice(0, 10),
+        summary: {
+          activePercentage:
+            total > 0 ? Math.round((activeCount / total) * 100) : 0,
+          trialPercentage:
+            total > 0 ? Math.round((trialCount / total) * 100) : 0,
+          renewalRate: total > 0 ? Math.round((activeCount / total) * 100) : 0,
+          churnRate:
+            total > 0
+              ? Math.round(((statusStats.cancelled || 0) / total) * 100)
+              : 0,
+        },
+      };
+
+      res.json({
+        success: true,
+        data: responseData,
       });
     } catch (error) {
       next(error);

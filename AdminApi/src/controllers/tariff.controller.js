@@ -1,40 +1,91 @@
 const { TariffDTO} = require("@payment-app/apiModels");
 
 class TariffController {
-  async getAll(req, res, next) {
-    try {
-      const { appId, isActive } = req.query;
-
-      const Tariff = req.db.getModel("Tariff");
-      const where = {};
-      if (appId) where.app_id = appId;
-      if (isActive !== undefined) where.is_active = isActive === "true";
-
-      const tariffs = await Tariff.findAll({
-        where,
-        include: [
-          {
-            model: req.db.getModel("Application"),
-            as: "application",
-            attributes: ["id", "name", "code"],
-          },
-        ],
-        order: [
-          ["sort_order", "ASC"],
-          ["price", "ASC"],
-        ],
-      });
-
-      const result = tariffs.map((tariff) =>
-        TariffDTO.fromSequelize(tariff).toApiResponse()
-      );
-
-      res.json({ success: true, data: result });
-    } catch (error) {
-      next(error);
+ async getAll(req, res, next) {
+  try {
+    const { 
+      page = 1, 
+      limit = 20, 
+      search, 
+      appId, 
+      isActive, 
+      period,
+      priceFrom,
+      priceTo,
+      hasTrial,
+      isDefault 
+    } = req.query;
+    
+    const offset = (page - 1) * limit;
+    
+    const Tariff = req.db.getModel('Tariff');
+    const where = {};
+    
+    // Базовые фильтры
+    if (appId) where.app_id = appId;
+    if (isActive !== undefined) where.is_active = isActive === 'true';
+    if (period) where.period = period;
+    if (isDefault !== undefined) where.is_default = isDefault === 'true';
+    
+    // Фильтр по цене
+    if (priceFrom || priceTo) {
+      where.price = {};
+      if (priceFrom) where.price[Op.gte] = parseFloat(priceFrom);
+      if (priceTo) where.price[Op.lte] = parseFloat(priceTo);
     }
+    
+    // Фильтр по пробному периоду
+    if (hasTrial !== undefined) {
+      if (hasTrial === 'true') {
+        where.trial_days = { [Op.gt]: 0 };
+      } else {
+        where.trial_days = { [Op.eq]: 0 };
+      }
+    }
+    
+    // Поиск по названию, коду, описанию
+    if (search) {
+      where[Op.or] = [
+        { name: { [Op.like]: `%${search}%` } },
+        { code: { [Op.like]: `%${search}%` } },
+        { description: { [Op.like]: `%${search}%` } }
+      ];
+    }
+    
+    const include = [{
+      model: req.db.getModel('Application'),
+      as: 'application',
+      attributes: ['id', 'name', 'code']
+    }];
+    
+    const { count, rows } = await Tariff.findAndCountAll({
+      where,
+      include,
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+      order: [['sort_order', 'ASC'], ['name', 'ASC']]
+    });
+    
+    const tariffs = rows.map(tariff => 
+      TariffDTO.fromSequelize(tariff).toApiResponse()
+    );
+    
+    res.json({ 
+      success: true, 
+      data: {
+        items: tariffs,
+        total: count,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        totalPages: Math.ceil(count / limit),
+        hasNext: parseInt(page) < Math.ceil(count / limit),
+        hasPrev: parseInt(page) > 1
+      }
+    });
+  } catch (error) {
+    next(error);
   }
-
+}
   async getById(req, res, next) {
     try {
       const Tariff = req.db.getModel("Tariff");

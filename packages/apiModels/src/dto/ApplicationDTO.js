@@ -1,7 +1,6 @@
 class ApplicationDTO {
     constructor(data) {
       this.id = data.id;
-      this.code = data.code;
       this.name = data.name;
       this.description = data.description;
       this.version = data.version;
@@ -11,12 +10,13 @@ class ApplicationDTO {
       this.sortOrder = data.sort_order || data.sortOrder || 0;
       this.createdAt = data.created_at || data.createdAt;
       this.updatedAt = data.updated_at || data.updatedAt;
+      this.clientId = data.clientId || data.client_id
+      this.clientSecret = data.clientSecret || data.client_secret
     }
   
     toJSON() {
       return {
         id: this.id,
-        code: this.code,
         name: this.name,
         description: this.description,
         version: this.version,
@@ -25,14 +25,14 @@ class ApplicationDTO {
         settings: this.settings,
         sort_order: this.sortOrder,
         created_at: this.createdAt,
-        updated_at: this.updatedAt
+        updated_at: this.updatedAt,
+        client_secret:this.clientSecret
       };
     }
   
     toApiResponse() {
       return {
         id: this.id,
-        code: this.code,
         name: this.name,
         description: this.description,
         version: this.version,
@@ -41,7 +41,8 @@ class ApplicationDTO {
         settings: this.settings,
         sortOrder: this.sortOrder,
         createdAt: this.createdAt,
-        updatedAt: this.updatedAt
+        updatedAt: this.updatedAt,
+        clientSecret: this.clientSecret
       };
     }
   

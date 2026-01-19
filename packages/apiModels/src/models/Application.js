@@ -7,16 +7,16 @@ module.exports = (sequelize) => {
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true
     },
-    code: {
+    client_id: {
       type: DataTypes.STRING(50),
       allowNull: false,
       unique: true,
-      validate: {
-        notEmpty: true,
-        len: [2, 50],
-        is: /^[a-z][a-z0-9_]*$/i
-      },
-      comment: 'Код приложения (используется в API)'
+      comment: 'Client ID для OAuth2/API аутентификации'
+    },
+    client_secret: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
+      comment: 'Client Secret для OAuth2/API аутентификации'
     },
     name: {
       type: DataTypes.STRING(100),
@@ -61,18 +61,10 @@ module.exports = (sequelize) => {
     tableName: 'applications',
     timestamps: true,
     indexes: [
-      { unique: true, fields: ['code'] },
+      { unique: true, fields: ['client_id'] },
       { fields: ['is_active'] },
       { fields: ['sort_order'] }
-    ],
-    scopes: {
-      active: {
-        where: { is_active: true }
-      },
-      withTariffs: {
-        include: ['tariffs']
-      }
-    }
+    ]
   });
 
   return Application;

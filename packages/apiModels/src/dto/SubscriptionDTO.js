@@ -11,7 +11,8 @@ class SubscriptionDTO {
       this.trialEndDate = data.trial_end_date || data.trialEndDate;
       this.createdAt = data.created_at || data.createdAt;
       this.updatedAt = data.updated_at || data.updatedAt;
-      
+      this.notes = data.notes
+
       if (data.application) {
         const ApplicationDTO = require('./ApplicationDTO');
         this.application = new ApplicationDTO(data.application);
@@ -20,6 +21,11 @@ class SubscriptionDTO {
       if (data.tariff) {
         const TariffDTO = require('./TariffDTO');
         this.tariff = new TariffDTO(data.tariff);
+      }
+
+      if(data.portal){
+        const PortalDTO = require('./PortalDTO');
+        this.portal = new PortalDTO(data.portal);
       }
     }
   
@@ -36,8 +42,10 @@ class SubscriptionDTO {
         trial_end_date: this.trialEndDate,
         created_at: this.createdAt,
         updated_at: this.updatedAt,
+        notes: this.notes,
         application: this.application ? this.application.toJSON() : null,
-        tariff: this.tariff ? this.tariff.toJSON() : null
+        tariff: this.tariff ? this.tariff.toJSON() : null,
+        portal: this.portal? this.portal.toJSON() : null
       };
     }
   
@@ -54,12 +62,13 @@ class SubscriptionDTO {
         trialEndDate: this.trialEndDate,
         createdAt: this.createdAt,
         updatedAt: this.updatedAt,
+        notes:this.notes,
         application: this.application ? this.application.toApiResponse() : null,
-        tariff: this.tariff ? this.tariff.toApiResponse() : null
+        tariff: this.tariff ? this.tariff.toApiResponse() : null,
+        portal: this.portal ? this.portal.toApiResponse() : null
       };
     }
   
-    // Вычисляемые свойства
     get isActive() {
       return ['trial', 'active'].includes(this.status) && 
              new Date(this.validUntil) > new Date();

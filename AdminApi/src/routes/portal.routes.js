@@ -45,26 +45,36 @@ router.get('/', authenticateToken, authorize('admin', 'superadmin', 'support'), 
 
 /**
  * @swagger
- * /portals/search:
+ * /portals/shortList:
  *   get:
- *     summary: Поиск портала
+ *     summary: Получить список порталов
  *     tags: [Portals]
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: query
- *         name: memberId
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *       - in: query
+ *         name: search
  *         schema:
  *           type: string
  *       - in: query
- *         name: domain
+ *         name: isActive
  *         schema:
- *           type: string
+ *           type: boolean
  *     responses:
  *       200:
- *         description: Найденный портал
+ *         description: Список порталов
  */
-router.get('/search', authenticateToken, authorize('admin', 'superadmin', 'support'), portalController.search);
+router.get('/shortList', authenticateToken, authorize('admin', 'superadmin', 'support'), portalController.getPortalsList);
 
 /**
  * @swagger

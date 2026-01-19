@@ -65,7 +65,6 @@ module.exports = (sequelize) => {
     ],
     hooks: {
       afterUpdate: async (payment) => {
-        // Если платеж стал успешным, обновляем подписку
         if (payment.changed('status') && payment.status === 'completed') {
           const subscription = await payment.getSubscription();
           if (subscription) {

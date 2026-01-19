@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "dev": "nodemon --watch src --watch bin ./bin/www"
+    "dev": "nodemon src/app.js"
   },
   "dependencies": {
     "@payment-app/apiModels":"file:../packages/apiModels",

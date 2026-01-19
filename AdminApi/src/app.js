@@ -10,7 +10,7 @@ const { Database } = require('@payment-app/apiModels')
 require('dotenv').config();
 
 const app = express();
-
+const port = process.env.PORT || 3001;
 // =========== ИСПРАВЛЕННЫЙ CORS ===========
 app.use(cors({
   origin: true, // Разрешаем все origins
@@ -132,4 +132,4 @@ app.use((err, req, res, next) => {
   res.status(status).json(response);
 });
 
-module.exports = app;
+app.listen(port,()=>console.log(`Запущен на порту ${port}`))

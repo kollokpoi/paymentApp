@@ -31,12 +31,14 @@ class PortalController {
         order: [["created_at", "DESC"]],
       });
 
-      const portals = rows.map((portal) => PortalDTO.fromSequelize(portal));
+      const portals = rows.map((portal) =>
+        PortalDTO.fromSequelize(portal).toApiResponse()
+      );
 
       res.json({
         success: true,
-        data: portals.map((p) => p.toApiResponse()),
-        pagination: {
+        data: {
+          items: portals,
           page: parseInt(page),
           limit: parseInt(limit),
           total: count,
@@ -47,7 +49,30 @@ class PortalController {
       next(error);
     }
   }
+  async getPortalsList(req, res, next) {
+    try {
+      const Portal = req.db.getModel("Portal");
 
+      const portals = await Portal.findAll({
+        attributes: ["id", "b24_domain", "company_name", "is_active"],
+        order: [
+          ["company_name", "ASC"],
+          ["b24_domain", "ASC"],
+        ],
+      });
+
+      const result = portals.map((portal) =>
+        PortalDTO.fromSequelize(portal).toApiResponse()
+      );
+
+      res.json({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
   async getById(req, res, next) {
     try {
       const Portal = req.db.getModel("Portal");
@@ -83,6 +108,13 @@ class PortalController {
         return res.status(400).json({
           success: false,
           message: "b24_member_id and b24_domain are required",
+        });
+      }
+
+      if (!req.body.company_name) {
+        return res.status(400).json({
+          success: false,
+          message: "company_name required",
         });
       }
 
@@ -127,13 +159,22 @@ class PortalController {
         });
       }
 
-      const { company_name, admin_email, is_active, metadata } = req.body;
+      const {
+        company_name,
+        admin_email,
+        is_active,
+        b24_domain,
+        b24_member_id,
+        metadata,
+      } = req.body;
 
       await portal.update({
         company_name,
         admin_email,
         is_active,
-        metadata: { ...portal.metadata, ...metadata },
+        b24_domain,
+        b24_member_id,
+        metadata: metadata || portal.metadata,
       });
 
       const portalDTO = PortalDTO.fromSequelize(portal);
@@ -197,7 +238,7 @@ class PortalController {
       const Subscription = req.db.getModel("Subscription");
       const activeSubscriptions = await Subscription.count({
         where: {
-          portalId: portal.id,
+          portal_id: portal.id,
           status: ["trial", "active"],
         },
       });
@@ -266,20 +307,17 @@ class PortalController {
       res.json({
         success: true,
         data: {
-          portal,
-          statistics: {
-            totalSubscriptions: subscriptions.length,
-            activeSubscriptions,
-            trialSubscriptions,
-            totalMonthlyRevenue,
-            subscriptions: subscriptions.map((sub) => ({
-              id: sub.id,
-              appName: sub.application?.name,
-              tariffName: sub.tariff?.name,
-              status: sub.status,
-              validUntil: sub.validUntil,
-            })),
-          },
+          totalSubscriptions: subscriptions.length,
+          activeSubscriptions,
+          trialSubscriptions,
+          totalMonthlyRevenue,
+          subscriptions: subscriptions.map((sub) => ({
+            id: sub.id,
+            appName: sub.application?.name,
+            tariffName: sub.tariff?.name,
+            status: sub.status,
+            validUntil: sub.validUntil,
+          })),
         },
       });
     } catch (error) {

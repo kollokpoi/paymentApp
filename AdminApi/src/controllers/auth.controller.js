@@ -106,7 +106,7 @@ class AuthController {
       const AdminUser = req.db.getModel('AdminUser');
       const user = await AdminUser.findByPk(decoded.id);
       
-      if (!user || !user.isActive) {
+      if (!user || !user.is_active) {
         return res.status(401).json({
           success: false,
           message: 'User not found or inactive'
