@@ -1,14 +1,16 @@
 import type { FieldTypes, ValidationResult, Validator } from "."
+import type { Metadata } from "../dto"
 
 export interface EditableComponentExpose {
+  
   cancel: () => void
-  getValue: () => string|boolean|number|Date|null
+  getValue: () => string|boolean|number|Date| null |  Metadata
   validate: () => ValidationResult
 }
 
 export interface EditableComponentProps{
   label: string
-  value: string | Date | number | boolean | null
+  value: string | Date | number | boolean | null |  Metadata
   isEditing: boolean
   validators?: Validator[]
   required?: boolean
@@ -26,6 +28,12 @@ export interface EditableNumberProps extends EditableComponentProps {
   min?: number
   max?: number
   step?: number
+}
+
+export interface EditableJsonProps extends EditableComponentProps {
+  value: Record<string, any> | string
+  rows?: number
+  autoResize?: boolean
 }
 
 export interface EditableBooleanProps extends EditableComponentProps {

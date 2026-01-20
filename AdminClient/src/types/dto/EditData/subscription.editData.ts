@@ -5,7 +5,7 @@ import type { SubscriptionStatus } from "@/types/api/responses"
 
 export interface SubscriptionEditData {
   status: SubscriptionStatus
-  validUntil: Date | string
+  validUntil: Date
   autoRenew: boolean
   notes: string
 }

@@ -162,6 +162,9 @@ class PortalController {
         metadata,
       } = req.body;
 
+      if(admin_email =='')
+        admin_email = null;
+      
       await portal.update({
         company_name,
         admin_email,

@@ -4,7 +4,7 @@ import type { PortalDTO} from "../portal.dto"
 export interface PortalEditData {
   isActive: boolean
   companyName: string
-  adminEmail: string
+  adminEmail?: string
   b24Domain: string
 }
 
@@ -25,7 +25,7 @@ export const createPortalEditData = (portal: PortalDTO): PortalEditData => ({
 export const applyPortalEditData = (portal: PortalDTO, editData: PortalEditData): void => {
   portal.isActive = editData.isActive
   portal.companyName = editData.companyName.trim() || null
-  portal.adminEmail = editData.adminEmail.trim() || null
+  portal.adminEmail = editData.adminEmail?.trim() || null
   portal.b24Domain = editData.b24Domain.trim() || null
   portal.updatedAt = new Date()
 }

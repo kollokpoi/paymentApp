@@ -42,16 +42,19 @@ export const useAuthStore = defineStore('auth', () => {
 
     try {
       const response = await authService.login(credentials)
-      user.value = response.user
-      token.value = response.tokens.accessToken
-      refreshToken.value = response.tokens.refreshToken||null
+      if (!response.success) {
+        return { success: false, user: null }
+      }
+      user.value = response.data.user
+      token.value = response.data.tokens.accessToken
+      refreshToken.value = response.data.tokens.refreshToken || null
 
       localStorage.setItem('auth_token', token.value)
-      localStorage.setItem('user', JSON.stringify( user.value))
-      if(refreshToken.value)
+      localStorage.setItem('user', JSON.stringify(user.value))
+      if (refreshToken.value)
         localStorage.setItem('refresh_token', refreshToken.value)
 
-      return { success: true, user:  user.value }
+      return { success: true, user: user.value }
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Ошибка авторизации'
       return { success: false, error: error.value }
@@ -77,8 +80,12 @@ export const useAuthStore = defineStore('auth', () => {
 
     try {
       const response = await authService.refreshToken(refreshToken.value)
-      const newAccessToken = response.accessToken
-      const newRefreshToken = response.refreshToken
+      if (!response.success) {
+        logout()
+        throw error
+      }
+      const newAccessToken = response.data.accessToken
+      const newRefreshToken = response.data.refreshToken
 
       token.value = newAccessToken
 

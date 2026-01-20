@@ -311,13 +311,6 @@ const periodOptions = [
   { value: PeriodType.YEAR, label: 'Год' }
 ]
 
-const currencyOptions = [
-  { value: 'RUB', label: 'RUB' },
-  { value: 'USD', label: 'USD' },
-  { value: 'EUR', label: 'EUR' },
-  { value: 'KZT', label: 'KZT' }
-]
-
 const applicationOptions = computed(() => {
   return applications.value
     .filter(app => app.isActive)

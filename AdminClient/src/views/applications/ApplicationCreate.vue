@@ -131,20 +131,19 @@
                 </small>
               </div>
             </div>
-            <h3 class="font-medium text-gray-700 mb-4">Настройки (опционально)</h3>
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium mb-2">Настройки в формате JSON</label>
+                <label class="block text-sm font-medium mb-2">Названия лимитов в формате JSON</label>
                 <TextareaPrime
                   v-model="jsonSettings"
-                  placeholder='{"apiKey": "your-key", "endpoint": "https://..."}'
+                  placeholder='["лимит 1", "лимит 2"]'
                   class="w-full font-mono text-sm"
                   rows="8"
                   autoResize
                   @input="handleJsonInput"
                 />
                 <small class="text-gray-500 text-xs">
-                  Дополнительные настройки приложения в формате JSON
+                  Лимиты приложения в формате JSON
                 </small>
               </div>
 

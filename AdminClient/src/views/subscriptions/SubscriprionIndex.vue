@@ -85,18 +85,6 @@
       </div>
 
       <div>
-        <label class="block text-sm font-medium mb-2">Статус</label>
-        <DropdownPrime
-          v-model="selectedStatus"
-          class="w-full"
-          :options="statusOptions"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="Все статусы"
-        />
-      </div>
-
-      <div>
         <label class="block text-sm font-medium mb-2">Приложение</label>
         <DropdownPrime
           v-model="selectedAppId"

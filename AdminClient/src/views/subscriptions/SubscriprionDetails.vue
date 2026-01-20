@@ -200,7 +200,7 @@ const validationErrors = ref<Array<{ field: string; message: string }>>([])
 const canUpdate = computed(() => validationErrors.value.length == 0)
 const editData = reactive<SubscriptionEditData>({
   status: SubscriptionStatus.TRIAL,
-  validUntil: '',
+  validUntil: new Date(),
   autoRenew: false,
   notes: '',
 })

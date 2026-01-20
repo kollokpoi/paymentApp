@@ -6,7 +6,7 @@ import router from '@/router'
 
 import type { ApiErrorResponse, ApiResponse } from '.'
 
-const API_BASE_URL = 'https://adminapi.paymentapp.kollokpoi.ddns.net/api'
+const API_BASE_URL = 'http://192.168.0.30:3001/api'
 
 export class ApiService {
   private axiosInstance: AxiosInstance
@@ -109,7 +109,6 @@ export class ApiService {
   }
 
   async post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-
     try {
       const response = await this.axiosInstance.post<ApiResponse<T>>(url, data, config)
       return response.data || response

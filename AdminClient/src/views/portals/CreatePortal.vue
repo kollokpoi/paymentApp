@@ -20,13 +20,8 @@
                 Домен Bitrix24 <span class="text-red-500">*</span>
               </label>
               <div class="flex items-center">
-                <InputText
-                  v-model="formData.b24_domain"
-                  placeholder="your-company"
-                  class="flex-1"
-                  :invalid="!isDomainValid"
-                  @input="validateDomain"
-                />
+                <InputText v-model="formData.b24_domain" placeholder="your-company" class="flex-1"
+                  :invalid="!isDomainValid" @input="validateDomain" />
               </div>
               <small v-if="!isDomainValid" class="text-red-500 text-xs">
                 Домен должен содержать только латинские буквы, цифры и дефисы
@@ -37,12 +32,8 @@
               <label class="block text-sm font-medium mb-2">
                 Название компании <span class="text-red-500">*</span>
               </label>
-              <InputText
-                v-model="formData.company_name"
-                placeholder="ООО Ромашка"
-                class="w-full"
-                :invalid="!formData.company_name"
-              />
+              <InputText v-model="formData.company_name" placeholder="ООО Ромашка" class="w-full"
+                :invalid="!formData.company_name" />
               <small v-if="!formData.company_name" class="text-red-500 text-xs">
                 Название компании обязательно
               </small>
@@ -51,13 +42,8 @@
 
             <div>
               <label class="block text-sm font-medium mb-2">Email администратора</label>
-              <InputText
-                v-model="formData.admin_email"
-                placeholder="admin@company.com"
-                type="email"
-                class="w-full"
-                :invalid="(formData.admin_email && !isEmailValid)===true"
-              />
+              <InputText v-model="formData.admin_email" placeholder="admin@company.com" type="email" class="w-full"
+                :invalid="(formData.admin_email && !isEmailValid) === true" />
               <small v-if="formData.admin_email && !isEmailValid" class="text-red-500 text-xs">
                 Введите корректный email
               </small>
@@ -67,11 +53,7 @@
             </div>
 
             <div class="flex items-center gap-3">
-              <CheckboxPrime
-                v-model="formData.is_active"
-                :binary="true"
-                inputId="isActive"
-              />
+              <CheckboxPrime v-model="formData.is_active" :binary="true" inputId="isActive" />
               <label for="isActive" class="font-medium">Портал активен</label>
             </div>
           </div>
@@ -81,14 +63,8 @@
 
             <div>
               <label class="block text-sm font-medium mb-2">Метаданные (JSON)</label>
-              <TextareaPrime
-                v-model="jsonMetadata"
-                placeholder='{"plan": "pro", "users_count": 50, "industry": "IT"}'
-                class="w-full font-mono text-sm"
-                rows="8"
-                autoResize
-                @input="handleJsonInput"
-              />
+              <TextareaPrime v-model="jsonMetadata" placeholder='{"plan": "pro", "users_count": 50, "industry": "IT"}'
+                class="w-full font-mono text-sm" rows="8" autoResize @input="handleJsonInput" />
               <small class="text-gray-500 text-xs">
                 Дополнительные метаданные портала в формате JSON
               </small>
@@ -113,11 +89,8 @@
                 </div>
                 <div class="flex justify-between">
                   <span class="text-gray-500">Статус:</span>
-                  <TagPrime
-                    :value="formData.is_active ? 'Активен' : 'Неактивен'"
-                    :severity="formData.is_active ? 'success' : 'secondary'"
-                    size="small"
-                  />
+                  <TagPrime :value="formData.is_active ? 'Активен' : 'Неактивен'"
+                    :severity="formData.is_active ? 'success' : 'secondary'" size="small" />
                 </div>
                 <div class="flex justify-between">
                   <span class="text-gray-500">Метаданные:</span>
@@ -131,18 +104,8 @@
     </CardPrime>
 
     <div class="flex gap-2 justify-end">
-      <ButtonPrime
-        label="Отмена"
-        icon="pi pi-times"
-        outlined
-        @click="cancel"
-      />
-      <ButtonPrime
-        label="Создать"
-        icon="pi pi-check"
-        :disabled="!isFormValid || creating"
-        @click="createPortal"
-      />
+      <ButtonPrime label="Отмена" icon="pi pi-times" outlined @click="cancel" />
+      <ButtonPrime label="Создать" icon="pi pi-check" :disabled="!isFormValid || creating" @click="createPortal" />
     </div>
   </div>
 </template>
@@ -170,11 +133,11 @@ const formData = reactive<CreatePortalRequest>({
 
 
 const isDomainValid = computed(() => {
-  const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]$/
+  const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-.]*[a-zA-Z0-9]$/
   return formData.b24_domain &&
-         domainRegex.test(formData.b24_domain) &&
-         formData.b24_domain.length >= 3 &&
-         !formData.b24_domain.includes('--')
+    domainRegex.test(formData.b24_domain) &&
+    formData.b24_domain.length >= 3 &&
+    !formData.b24_domain.includes('--')
 })
 
 const isEmailValid = computed(() => {
@@ -185,14 +148,13 @@ const isEmailValid = computed(() => {
 
 const isFormValid = computed(() => {
   return !!isDomainValid.value &&
-         !!formData.company_name &&
-         (formData.admin_email ? isEmailValid.value : true)
+    !!formData.company_name &&
+    (formData.admin_email ? isEmailValid.value : true)
 })
 
 const validateDomain = () => {
   formData.b24_domain = formData.b24_domain
     .toLowerCase()
-    .replace(/[^a-z0-9-]/g, '')
 }
 
 const handleJsonInput = () => {

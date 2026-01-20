@@ -31,7 +31,7 @@ export interface UpdateTariffRequest {
   limits?: Record<string, any>
   features?: string[]
   sort_order?: number
-  code?:string
+  code?: string
 }
 
 export interface TariffSearchParams {
@@ -69,6 +69,10 @@ class TariffService extends BaseService {
   }
 
   async getTariff(id: string): Promise<ApiResponse<TariffDTO>> {
+    return this.get<TariffDTO>(`/tariffs/${id}`)
+  }
+
+  async setAsDefault(id: string): Promise<ApiResponse<TariffDTO>> {
     return this.get<TariffDTO>(`/tariffs/${id}`)
   }
 

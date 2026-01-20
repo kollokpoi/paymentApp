@@ -24,6 +24,8 @@ export default defineConfig({
     devSourcemap: true 
   },
   build: {
-    sourcemap: true
+    sourcemap: true,
+    emptyOutDir: true,
+    outDir:'/var/www/AdminClient'
   }
 })

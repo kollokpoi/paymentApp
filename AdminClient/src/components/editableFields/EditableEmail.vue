@@ -1,10 +1,6 @@
 <template>
-  <EditableText
-    ref="editableRef"
-    v-bind="props"
-    @update:value="$emit('update:value', $event)"
-    @edit-start="$emit('edit-start')"
-  />
+  <EditableText ref="editableRef" v-bind="props" @update:value="$emit('update:value', $event)"
+    @edit-start="$emit('edit-start')" />
 </template>
 
 <script setup lang="ts">
@@ -17,7 +13,13 @@ interface EditableEmailProps extends EditableTextProps {
   type: FieldTypes.Email
 }
 
-const props = defineProps<EditableEmailProps>()
+const props = withDefaults(defineProps<EditableTextProps>(), {
+  placeholder: '',
+  maxLength: 255,
+  required: false,
+  validators: () => []
+})
+
 defineEmits<{
   'update:value': [value: string]
   'edit-start': []
@@ -25,13 +27,11 @@ defineEmits<{
 
 const editableRef = ref<EditableComponentExpose>()
 
-const save = () => editableRef.value?.save()
 const cancel = () => editableRef.value?.cancel()
 const getValue = () => editableRef.value?.getValue()
 const validate = () => editableRef.value?.validate() || { isValid: true }
 
 defineExpose({
-  save,
   cancel,
   getValue,
   validate
