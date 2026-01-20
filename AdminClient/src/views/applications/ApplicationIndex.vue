@@ -369,7 +369,10 @@ const toggleActiveStatus = async (id: string, isActive: boolean) => {
 }
 
 const viewTariffs = (id: string) => {
-  router.push(`/tariffs?appId=${a}`)
+  router.push({
+    path:`/tariffs`,
+    query:{appId:id}
+  })
 }
 
 const deleteApplication = async (id: string) => {

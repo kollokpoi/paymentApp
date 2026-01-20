@@ -215,11 +215,11 @@ const paymentPagination = reactive({
 })
 
 const statusOptions = [
-  { value: 'trial' as SubscriptionStatus, label: 'Триал' },
-  { value: 'active' as SubscriptionStatus, label: 'Активна' },
-  { value: 'expired' as SubscriptionStatus, label: 'Истекла' },
-  { value: 'suspended' as SubscriptionStatus, label: 'Приостановлена' },
-  { value: 'canceled' as SubscriptionStatus, label: 'Отменена' },
+  { value: SubscriptionStatus.TRIAL, label: 'Триал' },
+  { value: SubscriptionStatus.ACTIVE, label: 'Активна' },
+  { value: SubscriptionStatus.EXPIRED, label: 'Истекла' },
+  { value: SubscriptionStatus.SUSPENDED, label: 'Приостановлена' },
+  { value: SubscriptionStatus.CANCELED, label: 'Отменена' },
 ]
 
 const cancelEditing = () => {

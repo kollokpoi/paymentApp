@@ -27,13 +27,9 @@
                   :invalid="!isDomainValid"
                   @input="validateDomain"
                 />
-                <span class="ml-2 text-gray-500">.bitrix24.ru</span>
               </div>
               <small v-if="!isDomainValid" class="text-red-500 text-xs">
                 Домен должен содержать только латинские буквы, цифры и дефисы
-              </small>
-              <small class="text-gray-500 text-xs">
-                Полный адрес: {{ fullDomain }}
               </small>
             </div>
 
@@ -113,7 +109,7 @@
               <div class="bg-gray-50 p-3 rounded text-sm space-y-2">
                 <div class="flex justify-between">
                   <span class="text-gray-500">Полный URL:</span>
-                  <span class="font-mono">{{ fullDomain ? `https://${fullDomain}` : '—' }}</span>
+                  <span class="font-mono">{{ formData.b24_domain ? `https://${formData.b24_domain}` : '—' }}</span>
                 </div>
                 <div class="flex justify-between">
                   <span class="text-gray-500">Статус:</span>
@@ -172,10 +168,6 @@ const formData = reactive<CreatePortalRequest>({
   metadata: {}
 })
 
-const fullDomain = computed(() => {
-  if (!formData.b24_domain) return ''
-  return `${formData.b24_domain}.bitrix24.ru`
-})
 
 const isDomainValid = computed(() => {
   const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]$/
@@ -201,7 +193,6 @@ const validateDomain = () => {
   formData.b24_domain = formData.b24_domain
     .toLowerCase()
     .replace(/[^a-z0-9-]/g, '')
-    .replace(/\.bitrix24\.(ru|com)$/, '')
 }
 
 const handleJsonInput = () => {
@@ -235,7 +226,7 @@ const createPortal = async () => {
 
   try {
     const response = await portalService.createPortal({
-      b24_domain: fullDomain.value,
+      b24_domain: formData.b24_domain,
       company_name: formData.company_name,
       is_active: formData.is_active,
       metadata: formData.metadata,
