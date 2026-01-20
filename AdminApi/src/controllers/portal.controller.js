@@ -104,10 +104,10 @@ class PortalController {
     try {
       const Portal = req.db.getModel("Portal");
 
-      if (!req.body.b24_member_id || !req.body.b24_domain) {
+      if (!req.body.b24_domain) {
         return res.status(400).json({
           success: false,
-          message: "b24_member_id and b24_domain are required",
+          message: "b24_domain are required",
         });
       }
 
@@ -119,12 +119,7 @@ class PortalController {
       }
 
       const existing = await Portal.findOne({
-        where: {
-          [req.db.sequelize.Op.or]: [
-            { b24_member_id: req.body.b24_member_id },
-            { b24_domain: req.body.b24_domain },
-          ],
-        },
+        where: { b24_domain: req.body.b24_domain },
       });
 
       if (existing) {
@@ -164,7 +159,6 @@ class PortalController {
         admin_email,
         is_active,
         b24_domain,
-        b24_member_id,
         metadata,
       } = req.body;
 
@@ -173,7 +167,6 @@ class PortalController {
         admin_email,
         is_active,
         b24_domain,
-        b24_member_id,
         metadata: metadata || portal.metadata,
       });
 
@@ -190,18 +183,17 @@ class PortalController {
 
   async search(req, res, next) {
     try {
-      const { memberId, domain } = req.query;
+      const { domain } = req.query;
 
-      if (!memberId && !domain) {
+      if (!domain) {
         return res.status(400).json({
           success: false,
-          message: "Provide memberId or domain parameter",
+          message: "Provide domain parameter",
         });
       }
 
       const Portal = req.db.getModel("Portal");
       const where = {};
-      if (memberId) where.b24_member_id = memberId;
       if (domain) where.b24_domain = domain;
 
       const portal = await Portal.findOne({

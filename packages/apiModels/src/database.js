@@ -79,7 +79,7 @@ class Database {
       ...options
     };
 
-    return this.sequelize.sync(syncOptions);
+    return this.sequelize.sync();
   }
 
   /**

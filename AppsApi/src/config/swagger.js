@@ -35,7 +35,6 @@ const options = {
           type: 'object',
           properties: {
             id: { type: 'string', format: 'uuid' },
-            b24MemberId: { type: 'string' },
             b24Domain: { type: 'string' },
             companyName: { type: 'string' },
             adminEmail: { type: 'string', format: 'email' },

@@ -1,7 +1,6 @@
 class PortalDTO {
     constructor(data) {
       this.id = data.id;
-      this.b24MemberId = data.b24_member_id || data.b24MemberId;
       this.b24Domain = data.b24_domain || data.b24Domain;
       this.companyName = data.company_name || data.companyName;
       this.adminEmail = data.admin_email || data.adminEmail;
@@ -22,7 +21,6 @@ class PortalDTO {
     toJSON() {
       return {
         id: this.id,
-        b24_member_id: this.b24MemberId,
         b24_domain: this.b24Domain,
         company_name: this.companyName,
         admin_email: this.adminEmail,
@@ -39,7 +37,6 @@ class PortalDTO {
     toApiResponse() {
       return {
         id: this.id,
-        b24MemberId: this.b24MemberId,
         b24Domain: this.b24Domain,
         companyName: this.companyName,
         adminEmail: this.adminEmail,

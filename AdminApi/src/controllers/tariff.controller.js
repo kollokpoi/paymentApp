@@ -55,7 +55,7 @@ class TariffController {
     const include = [{
       model: req.db.getModel('Application'),
       as: 'application',
-      attributes: ['id', 'name', 'code']
+      attributes: ['id', 'name']
     }];
     
     const { count, rows } = await Tariff.findAndCountAll({

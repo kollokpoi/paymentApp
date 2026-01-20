@@ -5,9 +5,6 @@ module.exports = {
     return validator.isEmail(email);
   },
   
-  validateDomain(domain) {
-    return /^[a-zA-Z0-9][a-zA-Z0-9-]*\.bitrix24\.(ru|com|kz|ua|by)$/.test(domain);
-  },
   
   validatePhone(phone) {
     return validator.isMobilePhone(phone, 'any', { strictMode: false });

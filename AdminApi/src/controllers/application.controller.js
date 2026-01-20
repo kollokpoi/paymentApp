@@ -179,28 +179,16 @@ class ApplicationController {
         icon_url,
         settings,
         sort_order,
-        client_id,
-        client_secret,
       } = req.body;
 
-      if (!client_id || !client_secret || !name) {
+      if (!name) {
         return res.status(400).json({
           success: false,
-          message: "client_id, client_secret and name are required",
-        });
-      }
-
-      const existing = await Application.findOne({ where: { client_id } });
-      if (existing) {
-        return res.status(400).json({
-          success: false,
-          message: "Application with this client_id already exists",
+          message: "name is required",
         });
       }
       
       await application.update({
-        client_id,
-        client_secret,
         name,
         description,
         version,

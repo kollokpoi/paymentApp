@@ -1,8 +1,11 @@
 const express = require('express');
 const router = express.Router();
+const authRoutes = require('./auth.routes')
+const tariffRoutes = require('./tariff.routes')
+const applicationRoutes = require('./application.routes')
+const portalRoutes = require('./portal.routes')
+const subscriptionRoutes = require('./subscription.routes')
 
-
-// Health check endpoint
 router.get('/health', (req, res) => {
   res.json({
     success: true,
@@ -12,5 +15,10 @@ router.get('/health', (req, res) => {
   });
 });
 
+router.use('/auth',authRoutes)
+router.use('/tariffs',tariffRoutes)
+router.use('/application',applicationRoutes)
+router.use('/portal',portalRoutes)
+router.use('/subscription',subscriptionRoutes)
 
 module.exports = router;

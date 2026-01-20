@@ -33,7 +33,6 @@ class SubscriptionController {
         includeWhere = {
           [Op.or]: [
             { "$application.name$": { [Op.like]: `%${search}%` } },
-            { "$application.code$": { [Op.like]: `%${search}%` } },
             { notes: { [Op.like]: `%${search}%` } },
           ],
         };
@@ -45,14 +44,9 @@ class SubscriptionController {
           {
             model: req.db.getModel("Application"),
             as: "application",
-            attributes: ["id", "name", "code"],
+            attributes: ["id", "name"],
             where: search
-              ? {
-                  [Op.or]: [
-                    { name: { [Op.like]: `%${search}%` } },
-                    { code: { [Op.like]: `%${search}%` } },
-                  ],
-                }
+              ? { name: { [Op.like]: `%${search}%` } }
               : undefined,
           },
           {

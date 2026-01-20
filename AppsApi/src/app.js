@@ -10,39 +10,16 @@ const { Database } = require('@payment-app/apiModels')
 require('dotenv').config();
 
 const app = express();
-
+const port = process.env.PORT || 3001;
 // =========== ИСПРАВЛЕННЫЙ CORS ===========
-const corsOptions = {
-  origin: function (origin, callback) {
-    // Разрешаем все origins в development
-    if (process.env.NODE_ENV === 'development') {
-      callback(null, true);
-    } else {
-      // В production разрешаем только указанные домены
-      const allowedOrigins = [
-        'http://localhost:3000',
-        'http://localhost:3001',
-        'http://127.0.0.1:3000',
-        'http://127.0.0.1:3001',
-        process.env.ADMIN_PANEL_URL
-      ].filter(Boolean);
-      
-      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    }
-  },
+app.use(cors({
+  origin: true, // Разрешаем все origins
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
-};
+}));
 
-app.use(cors(corsOptions));
-
-app.options('*', cors(corsOptions));
-
+app.options('*', cors());
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -54,14 +31,13 @@ app.use(helmet({
       connectSrc: ["'self'", "http:", "https:", "ws:", "wss:"]
     }
   },
-  crossOriginOpenerPolicy: false, // Убираем проблемный заголовок
-  crossOriginEmbedderPolicy: false, // Убираем проблемный заголовок
-  crossOriginResourcePolicy: { policy: "cross-origin" } // Разрешаем кросс-доменные ресурсы
+  crossOriginOpenerPolicy: false,
+  crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
 app.use((req, res, next) => {
   if (req.path.startsWith('/api-docs')) {
-    // Временно удаляем все security headers для Swagger
     const removeHeaders = () => {
       res.removeHeader('Cross-Origin-Opener-Policy');
       res.removeHeader('Cross-Origin-Embedder-Policy');
@@ -109,6 +85,7 @@ app.use(async (req, res, next) => {
         port: process.env.DB_PORT
       });
       await db.connect();
+      console.log('database connected');
     }
     
     req.db = db; 
@@ -119,9 +96,10 @@ app.use(async (req, res, next) => {
   }
 });
 
+
 app.use('/api', routes);
 
-app.use((req, res) => {
+app.use((req, res, next) => {
   res.status(404).json({
     success: false,
     message: 'Route not found',
@@ -129,7 +107,7 @@ app.use((req, res) => {
   });
 });
 
-app.use((err, req, res) => {
+app.use((err, req, res, next) => {
   logger.error('Global error handler:', {
     message: err.message,
     stack: err.stack,
@@ -143,7 +121,6 @@ app.use((err, req, res) => {
     message: err.message || 'Internal server error'
   };
 
-  // В development добавляем stack trace
   if (process.env.NODE_ENV === 'development') {
     response.stack = err.stack;
     response.error = err.toString();
@@ -152,4 +129,4 @@ app.use((err, req, res) => {
   res.status(status).json(response);
 });
 
-module.exports = app;
+app.listen(port,()=>console.log(`Запущен на порту ${port}`))

@@ -121,7 +121,6 @@ module.exports = (sequelize) => {
     ],
     hooks: {
       beforeCreate: async (tariff) => {
-        // Если устанавливаем тариф по умолчанию, сбрасываем у других
         if (tariff.is_default) {
           await sequelize.models.Tariff.update(
             { is_default: false },
@@ -130,7 +129,6 @@ module.exports = (sequelize) => {
         }
       },
       beforeUpdate: async (tariff) => {
-        // Если устанавливаем тариф по умолчанию, сбрасываем у других
         if (tariff.changed('is_default') && tariff.is_default) {
           await sequelize.models.Tariff.update(
             { is_default: false },
@@ -159,7 +157,6 @@ module.exports = (sequelize) => {
     }
   });
 
-  // Методы экземпляра
   Tariff.prototype.getPeriodInDays = function() {
     switch (this.period) {
       case 'day': return 1;
