@@ -1,91 +1,91 @@
-const { TariffDTO} = require("@payment-app/apiModels");
+const { TariffDTO } = require("@payment-app/apiModels");
 
 class TariffController {
- async getAll(req, res, next) {
-  try {
-    const { 
-      page = 1, 
-      limit = 20, 
-      search, 
-      appId, 
-      isActive, 
-      period,
-      priceFrom,
-      priceTo,
-      hasTrial,
-      isDefault 
-    } = req.query;
-    
-    const offset = (page - 1) * limit;
-    
-    const Tariff = req.db.getModel('Tariff');
-    const where = {};
-    
-    // Базовые фильтры
-    if (appId) where.app_id = appId;
-    if (isActive !== undefined) where.is_active = isActive === 'true';
-    if (period) where.period = period;
-    if (isDefault !== undefined) where.is_default = isDefault === 'true';
-    
-    // Фильтр по цене
-    if (priceFrom || priceTo) {
-      where.price = {};
-      if (priceFrom) where.price[Op.gte] = parseFloat(priceFrom);
-      if (priceTo) where.price[Op.lte] = parseFloat(priceTo);
-    }
-    
-    // Фильтр по пробному периоду
-    if (hasTrial !== undefined) {
-      if (hasTrial === 'true') {
-        where.trial_days = { [Op.gt]: 0 };
-      } else {
-        where.trial_days = { [Op.eq]: 0 };
+  async getAll(req, res, next) {
+    try {
+      const {
+        page = 1,
+        limit = 20,
+        search,
+        appId,
+        isActive,
+        period,
+        priceFrom,
+        priceTo,
+        hasTrial,
+        isDefault
+      } = req.query;
+
+      const offset = (page - 1) * limit;
+
+      const Tariff = req.db.getModel('Tariff');
+      const where = {};
+
+      // Базовые фильтры
+      if (appId) where.app_id = appId;
+      if (isActive !== undefined) where.is_active = isActive === 'true';
+      if (period) where.period = period;
+      if (isDefault !== undefined) where.is_default = isDefault === 'true';
+
+      // Фильтр по цене
+      if (priceFrom || priceTo) {
+        where.price = {};
+        if (priceFrom) where.price[Op.gte] = parseFloat(priceFrom);
+        if (priceTo) where.price[Op.lte] = parseFloat(priceTo);
       }
-    }
-    
-    // Поиск по названию, коду, описанию
-    if (search) {
-      where[Op.or] = [
-        { name: { [Op.like]: `%${search}%` } },
-        { code: { [Op.like]: `%${search}%` } },
-        { description: { [Op.like]: `%${search}%` } }
-      ];
-    }
-    
-    const include = [{
-      model: req.db.getModel('Application'),
-      as: 'application',
-      attributes: ['id', 'name']
-    }];
-    
-    const { count, rows } = await Tariff.findAndCountAll({
-      where,
-      include,
-      limit: parseInt(limit),
-      offset: parseInt(offset),
-      order: [['sort_order', 'ASC'], ['name', 'ASC']]
-    });
-    
-    const tariffs = rows.map(tariff => 
-      TariffDTO.fromSequelize(tariff).toApiResponse()
-    );
-    
-    res.json({ 
-      success: true, 
-      data: {
-        items: tariffs,
-        total: count,
-        page: parseInt(page),
+
+      // Фильтр по пробному периоду
+      if (hasTrial !== undefined) {
+        if (hasTrial === 'true') {
+          where.trial_days = { [Op.gt]: 0 };
+        } else {
+          where.trial_days = { [Op.eq]: 0 };
+        }
+      }
+
+      // Поиск по названию, коду, описанию
+      if (search) {
+        where[Op.or] = [
+          { name: { [Op.like]: `%${search}%` } },
+          { code: { [Op.like]: `%${search}%` } },
+          { description: { [Op.like]: `%${search}%` } }
+        ];
+      }
+
+      const include = [{
+        model: req.db.getModel('Application'),
+        as: 'application',
+        attributes: ['id', 'name']
+      }];
+
+      const { count, rows } = await Tariff.findAndCountAll({
+        where,
+        include,
         limit: parseInt(limit),
-        totalPages: Math.ceil(count / limit),
-        hasNext: parseInt(page) < Math.ceil(count / limit),
-        hasPrev: parseInt(page) > 1
-      }
-    });
-  } catch (error) {
-    next(error);
+        offset: parseInt(offset),
+        order: [['sort_order', 'ASC'], ['name', 'ASC']]
+      });
+
+      const tariffs = rows.map(tariff =>
+        TariffDTO.fromSequelize(tariff).toApiResponse()
+      );
+
+      res.json({
+        success: true,
+        data: {
+          items: tariffs,
+          total: count,
+          page: parseInt(page),
+          limit: parseInt(limit),
+          totalPages: Math.ceil(count / limit),
+          hasNext: parseInt(page) < Math.ceil(count / limit),
+          hasPrev: parseInt(page) > 1
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
   }
-}
   async getById(req, res, next) {
     try {
       const Tariff = req.db.getModel("Tariff");
@@ -152,9 +152,17 @@ class TariffController {
           message: "Tariff with this code already exists for this application",
         });
       }
-
+      let makeDefault = false;
       if (is_default) {
         await Tariff.update({ is_default: false }, { where: { app_id } });
+      }
+      else {
+        makeDefault = await Tariff.count({
+          where: {
+            is_default: true,
+            app_id
+          }
+        }) === 0;
       }
 
       const tariff = await Tariff.create({
@@ -166,7 +174,7 @@ class TariffController {
         period: period || "month",
         trial_days: trial_days || 0,
         is_active: is_active !== undefined ? is_active : true,
-        is_default: is_default || false,
+        is_default: makeDefault ? true : is_default || false,
         limits: limits || {},
         features: features || [],
         sort_order: sort_order || 0,
@@ -210,6 +218,7 @@ class TariffController {
       } = req.body;
 
       if (is_default && !tariff.is_default) {
+
         await Tariff.update(
           { is_default: false },
           { where: { app_id: tariff.app_id } }
@@ -223,8 +232,7 @@ class TariffController {
         period,
         trial_days,
         is_active,
-        is_default,
-        limits: limits ? { ...tariff.limits, ...limits } : tariff.limits,
+        limits,
         features: features || tariff.features,
         sort_order,
       });

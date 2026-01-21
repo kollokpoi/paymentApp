@@ -60,12 +60,12 @@ module.exports = (sequelize) => {
     },
     is_active: {
       type: DataTypes.BOOLEAN,
-      defaultValue: true,
+      defaultValue: false,
       comment: 'Активен ли тариф'
     },
     is_default: {
       type: DataTypes.BOOLEAN,
-      defaultValue: false,
+      defaultValue: true,
       comment: 'Тариф по умолчанию для приложения'
     },
     limits: {

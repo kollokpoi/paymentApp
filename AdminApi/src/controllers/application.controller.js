@@ -194,7 +194,7 @@ class ApplicationController {
         version,
         is_active,
         icon_url,
-        settings: { ...application.settings, ...settings },
+        settings,
         sort_order,
         updatedAt: new Date(),
       });

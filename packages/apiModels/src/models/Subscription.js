@@ -71,6 +71,11 @@ module.exports = sequelize => {
         defaultValue: {},
         comment: 'Метаданные подписки'
       },
+      used_limits: {
+        type: DataTypes.JSON,
+        defaultValue: {},
+        comment: 'Использовано из ограничений'
+      },
       notes: {
         type: DataTypes.TEXT,
         allowNull: true,
@@ -121,12 +126,12 @@ module.exports = sequelize => {
             valid_until: { [Op.lt]: new Date() }
           }
         },
-        forPortal (portalId) {
+        forPortal(portalId) {
           return {
             where: { portal_id: portalId }
           }
         },
-        forApp (appId) {
+        forApp(appId) {
           return {
             where: { app_id: appId }
           }

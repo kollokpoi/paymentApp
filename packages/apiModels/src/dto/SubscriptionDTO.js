@@ -12,6 +12,7 @@ class SubscriptionDTO {
       this.createdAt = data.created_at || data.createdAt;
       this.updatedAt = data.updated_at || data.updatedAt;
       this.notes = data.notes
+      this.usedLimits = data.used_limits || data.usedLimits
 
       if (data.application) {
         const ApplicationDTO = require('./ApplicationDTO');
@@ -43,6 +44,7 @@ class SubscriptionDTO {
         created_at: this.createdAt,
         updated_at: this.updatedAt,
         notes: this.notes,
+        used_limits: this.usedLimits || {},
         application: this.application ? this.application.toJSON() : null,
         tariff: this.tariff ? this.tariff.toJSON() : null,
         portal: this.portal? this.portal.toJSON() : null
@@ -63,6 +65,7 @@ class SubscriptionDTO {
         createdAt: this.createdAt,
         updatedAt: this.updatedAt,
         notes:this.notes,
+        usedLimits:this.usedLimits,
         application: this.application ? this.application.toApiResponse() : null,
         tariff: this.tariff ? this.tariff.toApiResponse() : null,
         portal: this.portal ? this.portal.toApiResponse() : null

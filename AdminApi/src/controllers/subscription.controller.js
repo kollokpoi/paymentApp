@@ -2,6 +2,7 @@ const {
   SubscriptionDTO,
   PortalDTO,
   ApplicationDTO,
+  TariffDTO,
 } = require("@payment-app/apiModels");
 
 class SubscriptionController {
@@ -107,11 +108,6 @@ class SubscriptionController {
 
   async create(req, res, next) {
     try {
-      const Subscription = req.db.getModel("Subscription");
-      const Portal = req.db.getModel("Portal");
-      const Application = req.db.getModel("Application");
-      const Tariff = req.db.getModel("Tariff");
-
       const {
         portal_id,
         app_id,
@@ -130,6 +126,10 @@ class SubscriptionController {
           message: "portal_id, app_id and tariff_id are required",
         });
       }
+
+      const Portal = req.db.getModel("Portal");
+      const Application = req.db.getModel("Application");
+      const Tariff = req.db.getModel("Tariff");
 
       const [portal, application, tariff] = await Promise.all([
         Portal.findByPk(portal_id),
@@ -150,6 +150,7 @@ class SubscriptionController {
           .status(404)
           .json({ success: false, message: "Tariff not found" });
 
+      const Subscription = req.db.getModel("Subscription");
       const existing = await Subscription.findOne({
         where: {
           portal_id,
@@ -191,6 +192,26 @@ class SubscriptionController {
             endDate.setMonth(endDate.getMonth() + 1);
         }
       }
+      const usedApp = ApplicationDTO.fromSequelize(application);
+      let used_limits = {}
+      if (usedApp.settings) {
+        const resetLimits = (limits) => {
+          if (!limits || typeof limits !== 'object') return {};
+
+          const result = {};
+          for (const [key, value] of Object.entries(limits)) {
+            if (value === null) result[key] = null;
+            else if (typeof value === 'number') result[key] = 0;
+            else if (typeof value === 'boolean') result[key] = false;
+            else if (Array.isArray(value)) result[key] = [];
+            else if (typeof value === 'object') result[key] = resetLimits(value);
+            else result[key] = null;
+          }
+          return result;
+        };
+
+        used_limits = resetLimits(usedApp.settings);
+      }
 
       const subscription = await Subscription.create({
         portal_id,
@@ -202,6 +223,7 @@ class SubscriptionController {
         auto_renew: auto_renew !== undefined ? auto_renew : true,
         trial_end_date: trial_end_date ? new Date(trial_end_date) : null,
         notes,
+        used_limits
       });
 
       const subscriptionDTO = SubscriptionDTO.fromSequelize(subscription);
