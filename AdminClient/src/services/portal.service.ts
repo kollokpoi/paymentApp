@@ -6,9 +6,9 @@ import type { AxiosRequestConfig } from 'axios'
 
 
 export interface UpdatePortalRequest {
-  company_name?: string
-  admin_email?: string
-  is_active?: boolean
+  company_name: string
+  admin_email: string | null
+  is_active: boolean
   b24_domain: string
 }
 

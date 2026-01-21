@@ -32,7 +32,7 @@
                 :validators="domainValidators" :type="FieldTypes.Text" :is-editing="globalEditing" required
                 @edit-start="() => { globalEditing = true }"
                 @validation-change="onValidationChange('b24Domain', $event)" />
-              <EditableText label="Почта администратора" placeholder="Почта" v-model:value="editData.adminEmail"
+              <EditableEmail label="Почта администратора" placeholder="Почта" v-model:value="editData.adminEmail"
                 :type="FieldTypes.Email" :is-editing="globalEditing"
                 @edit-start="() => { globalEditing = true }" />
               <div>
@@ -114,6 +114,7 @@ import { formatDate } from '@/helpers/formatters'
 import EditableText from '@/components/editableFields/EditableText.vue'
 import { FieldTypes, type ValidationResult } from '@/types/editable'
 import EditableBoolean from '@/components/editableFields/EditableBoolean.vue'
+import EditableEmail from '@/components/editableFields/EditableEmail.vue'
 import { portalDataToRequest, applyPortalEditData, createPortalEditData } from '@/types/dto'
 import { domainValidators, companyValidators } from '@/helpers/validators'
 import SubscriptionTable from '@/components/SubscriptionTable.vue'
@@ -128,8 +129,8 @@ const portalId = route.params.id as string
 const portal = ref<PortalDTO | null>(null)
 const editData = reactive<PortalEditData>({
   isActive: false,
+  adminEmail: null,
   companyName: '',
-  adminEmail:'',
   b24Domain: '',
 })
 

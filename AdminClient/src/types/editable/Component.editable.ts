@@ -2,15 +2,15 @@ import type { FieldTypes, ValidationResult, Validator } from "."
 import type { Metadata } from "../dto"
 
 export interface EditableComponentExpose {
-  
+
   cancel: () => void
-  getValue: () => string|boolean|number|Date| null |  Metadata
+  getValue: () => string | boolean | number | Date | null | Metadata
   validate: () => ValidationResult
 }
 
-export interface EditableComponentProps{
+export interface EditableComponentProps {
   label: string
-  value: string | Date | number | boolean | null |  Metadata
+  value: string | Date | number | boolean | null | Metadata
   isEditing: boolean
   validators?: Validator[]
   required?: boolean
@@ -21,6 +21,11 @@ export interface EditableTextProps extends EditableComponentProps {
   type: FieldTypes.Text | FieldTypes.Email | FieldTypes.TextArea | FieldTypes.Number
   maxLength?: number
   value: string | number
+}
+
+export interface EditableEmailProps extends EditableComponentProps {
+  type: FieldTypes.Email
+  value: string | null
 }
 
 export interface EditableNumberProps extends EditableComponentProps {
@@ -44,11 +49,11 @@ export interface EditableBooleanProps extends EditableComponentProps {
 export interface EditableDateProps extends EditableComponentProps {
   showTime?: boolean
   dateFormat?: string
-  value:Date|string
+  value: Date | string
   minDate?: Date
   maxDate?: Date
 }
 
 export interface EditableSelect extends EditableComponentProps {
-  items: Array<{label:string, value:string}>
+  items: Array<{ label: string, value: string }>
 }

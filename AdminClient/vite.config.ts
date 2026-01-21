@@ -7,7 +7,13 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   plugins: [
-    vue(),
+    vue({
+      template:{
+        compilerOptions:{
+          sourceMap:true
+        }
+      }
+    }),
     vueDevTools(),
     tailwindcss()
   ],
@@ -18,7 +24,7 @@ export default defineConfig({
   },
   server: {
     port: 5173, 
-    host: true  
+    host: true,
   },
   css: {
     devSourcemap: true 
