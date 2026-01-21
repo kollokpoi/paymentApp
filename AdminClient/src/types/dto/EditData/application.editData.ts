@@ -7,7 +7,7 @@ export interface ApplicationEditData{
     version: string
     isActive: boolean
     iconUrl: string
-    settings: Metadata
+    settings?: Metadata
     sortOrder: number
 }
 

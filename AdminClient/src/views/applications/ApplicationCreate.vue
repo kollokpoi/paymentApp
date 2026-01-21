@@ -31,18 +31,6 @@
               </div>
 
               <div>
-                <label class="block text-sm font-medium mb-2">Код приложения</label>
-                <InputText
-                  v-model="formData.code"
-                  placeholder="Например: crm, tasks, calendar"
-                  class="w-full"
-                />
-                <small class="text-gray-500 text-xs">
-                  Уникальный код для идентификации в системе
-                </small>
-              </div>
-
-              <div>
                 <label class="block text-sm font-medium mb-2">Описание</label>
                 <TextareaPrime
                   v-model="formData.description"
@@ -100,7 +88,7 @@
           </div>
 
           <div>
-            <h3 class="font-medium text-gray-700 mb-4">Данные из маркетплейса</h3>
+            <h3 class="font-medium text-gray-700 mb-4">Данные для маркетплейса</h3>
             <div class="space-y-4 mb-4">
               <div>
                 <label class="block text-sm font-medium mb-2">
@@ -133,17 +121,17 @@
             </div>
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium mb-2">Названия лимитов в формате JSON</label>
+                <label class="block text-sm font-medium mb-2">Базовые лимиты в формате JSON</label>
                 <TextareaPrime
                   v-model="jsonSettings"
-                  placeholder='["лимит 1", "лимит 2"]'
+                  placeholder='{"users":10, "update":{"count":10, "period":"month"}}'
                   class="w-full font-mono text-sm"
                   rows="8"
                   autoResize
                   @input="handleJsonInput"
                 />
                 <small class="text-gray-500 text-xs">
-                  Лимиты приложения в формате JSON
+                  Базовые лимиты приложения в формате JSON
                 </small>
               </div>
 
@@ -152,7 +140,7 @@
               </div>
 
               <div v-if="Object.keys(formData.settings || {}).length > 0" class="mt-4">
-                <h4 class="font-medium mb-2">Предварительный просмотр настроек:</h4>
+                <h4 class="font-medium mb-2">Предварительный просмотр:</h4>
                 <pre class="bg-gray-50 p-3 rounded text-xs overflow-auto max-h-40"
                   >{{ JSON.stringify(formData.settings, null, 2) }}
                 </pre>
@@ -191,7 +179,6 @@ const jsonSettings = ref('')
 
 const formData = reactive<CreateApplicationRequest>({
   name: '',
-  code: '',
   description: '',
   version: '',
   is_active: true,

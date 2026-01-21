@@ -15,6 +15,7 @@
         class="w-full border rounded px-2 py-1"
         :placeholder="placeholder"
         :maxlength="maxLength"
+        :invalid="!!errorMessage"
       />
       <InputText
         v-else
@@ -23,6 +24,7 @@
         class="w-full border rounded px-2 py-1"
         :placeholder="placeholder"
         :maxlength="maxLength"
+        :invalid="!!errorMessage"
       />
       <div v-if="errorMessage" class="text-red-500 text-sm mt-1">
         {{ errorMessage }}

@@ -15,7 +15,8 @@
         :min="min"
         :max="max"
         :step="step"
-        :placeholder="placeholder"/>
+        :placeholder="placeholder"
+        />
       <div v-if="errorMessage" class="text-red-500 text-sm mt-1">
         {{ errorMessage }}
       </div>

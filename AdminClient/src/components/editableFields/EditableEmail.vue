@@ -15,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import {type EditableComponentExpose, type EditableEmailProps, type ValidationResult } from '@/types/editable'
 import { emailValidators } from '@/helpers/validators';
 
@@ -63,7 +63,8 @@ const validate = (): ValidationResult => {
     return result
   }
 
-  for (const validator of props.validators) {
+  const allValidators = [...props.validators,...emailValidators]
+  for (const validator of allValidators) {
     const result = validator(localValue.value)
     if (!result.isValid) {
       errorMessage.value = result.message || 'ошибка валидации'
@@ -89,9 +90,6 @@ watch(localValue, () => {
   emit('update:value', localValue.value)
 })
 
-onMounted(()=>{
-  props.validators.push(...emailValidators)
-})
 
 defineExpose<EditableComponentExpose>({
   cancel,

@@ -1,6 +1,5 @@
 export interface ApplicationShortDTOData {
   id: string
-  code?: string
   name?: string
   is_active?: boolean
   isActive?: boolean
@@ -12,7 +11,6 @@ export interface ApplicationShortDTOData {
 
 export class ApplicationShortDTO {
   id: string
-  code: string
   name: string
   isActive: boolean
   iconUrl: string | null
@@ -20,7 +18,6 @@ export class ApplicationShortDTO {
 
   constructor(data: ApplicationShortDTOData) {
     this.id = data.id
-    this.code = data.code || ''
     this.name = data.name || ''
     this.isActive = data.isActive ?? data.is_active ?? true
     this.iconUrl = data.iconUrl || data.icon_url || null
@@ -31,7 +28,6 @@ export class ApplicationShortDTO {
     return {
       value: this.id,
       label: this.name,
-      code: this.code
     }
   }
 

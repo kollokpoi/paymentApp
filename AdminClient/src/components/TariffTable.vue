@@ -1,11 +1,5 @@
 <template>
-  <DataTable
-    :value="tariffs"
-    :loading="loading"
-    :rowClass="rowClass"
-    @row-click="handleRowClick"
-    striped-rows
-  >
+  <DataTable :value="tariffs" :loading="loading" :rowClass="rowClass" @row-click="handleRowClick" striped-rows>
     <ColumnPrime field="application.name" header="Приложение" sortable />
     <ColumnPrime field="name" header="Название тарифа" sortable>
       <template #body="{ data }">
@@ -43,15 +37,9 @@
     <ColumnPrime field="isActive" header="Статус" sortable>
       <template #body="{ data }">
         <div class="flex items-center gap-2">
-          <TagPrime
-            :value="data.isActive ? 'Активен' : 'Неактивен'"
-            :severity="data.isActive ? 'success' : 'secondary'"
-          />
-          <i
-            v-if="data.isDefault"
-            class="pi pi-star-fill text-yellow-500"
-            title="Тариф по умолчанию"
-          />
+          <TagPrime :value="data.isActive ? 'Активен' : 'Неактивен'"
+            :severity="data.isActive ? 'success' : 'secondary'" />
+          <i v-if="data.isDefault" class="pi pi-star-fill text-yellow-500" title="Тариф по умолчанию" />
         </div>
       </template>
     </ColumnPrime>
@@ -61,24 +49,14 @@
     <ColumnPrime header="Действия">
       <template #body="{ data }">
         <div class="relative">
-          <ButtonPrime
-            icon="pi pi-ellipsis-h"
-            text
-            @click.stop="showMenu($event, data)"
-            aria-haspopup="true"
-            aria-controls="tariff-menu"
-          />
+          <ButtonPrime icon="pi pi-ellipsis-h" text @click.stop="showMenu($event, data)" aria-haspopup="true"
+            aria-controls="tariff-menu" />
         </div>
       </template>
     </ColumnPrime>
   </DataTable>
 
-  <Menu
-    id="tariff-menu"
-    ref="menuRef"
-    :model="menuItems"
-    :popup="true"
-  />
+  <Menu id="tariff-menu" ref="menuRef" :model="menuItems" :popup="true" />
   <ConfirmDialog :draggable="true" />
 </template>
 
@@ -140,7 +118,7 @@ const menuItems = computed(() => {
       icon: 'pi pi-trash',
       command: () => confirmDelete(id),
       class: 'text-red-500',
-      disabled: tariff.isDefault 
+      disabled: tariff.isDefault
     }
   ]
 })
@@ -264,7 +242,10 @@ const confirmDelete = (id: string) => {
     acceptClass: 'p-button-danger',
     acceptLabel: 'Удалить',
     rejectLabel: 'Отмена',
-    accept: () => deleteTariff(id)
+    accept: async () => {
+      await deleteTariff(id)
+      confirm.close()
+    }
   })
 }
 

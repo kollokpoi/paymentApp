@@ -2,7 +2,7 @@
 import type { AxiosRequestConfig } from 'axios'
 import type { ApiResponse, PaginatedResponse } from '.'
 import { BaseService } from './base.service'
-import { TariffDTO, type TariffDTOData } from '@/types/dto'
+import { TariffDTO, type Metadata, type TariffDTOData } from '@/types/dto'
 import type { PeriodType } from '@/types/api/responses'
 
 export interface CreateTariffRequest {
@@ -15,7 +15,7 @@ export interface CreateTariffRequest {
   trial_days?: number
   is_active?: boolean
   is_default?: boolean
-  limits?: Record<string, any>
+  limits?: Metadata
   features?: string[]
   sort_order?: number
 }
@@ -28,7 +28,7 @@ export interface UpdateTariffRequest {
   trial_days?: number
   is_active?: boolean
   is_default?: boolean
-  limits?: Record<string, any>
+  limits?: Metadata
   features?: string[]
   sort_order?: number
   code?: string

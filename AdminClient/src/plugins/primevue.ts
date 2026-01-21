@@ -28,6 +28,7 @@ import InputSwitch from 'primevue/inputswitch'
 import Paginator from 'primevue/paginator'
 import Select from 'primevue/select'
 import Checkbox from 'primevue/checkbox'
+import Badge from 'primevue/badge'
 import { AutoComplete } from 'primevue'
 
 import ConfirmationService from 'primevue/confirmationservice'
@@ -74,5 +75,6 @@ export default {
     app.component('PaginatorPrime',Paginator)
     app.component('SelectPrime',Select)
     app.component('CheckboxPrime',Checkbox)
+    app.component('BadgePrime',Badge)
   },
 }

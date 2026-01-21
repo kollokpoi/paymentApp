@@ -5,177 +5,120 @@
       <i class="pi pi-chevron-right mx-2"></i>
       <span>Создание подписки</span>
     </div>
-    
+
     <h1 class="text-2xl font-bold">Создание новой подписки</h1>
-    
+
     <CardPrime>
       <template #title>Основная информация</template>
       <template #content>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="space-y-4">
             <h3 class="font-medium text-gray-700 mb-4">Данные подписки</h3>
-            
+
             <div>
               <label class="block text-sm font-medium mb-2">
                 Портал <span class="text-red-500">*</span>
               </label>
-              <SelectPrime 
-                v-model="formData.portal_id"
-                :options="portalOptions"
-                optionLabel="label"
-                optionValue="value"
-                placeholder="Выберите портал"
-                class="w-full"
-                :filter="true"
-                :loading="portalsLoading"
-                :invalid="!formData.portal_id"
-              />
+              <SelectPrime v-model="formData.portal_id" :options="portalOptions" optionLabel="label" optionValue="value"
+                placeholder="Выберите портал" class="w-full" :filter="true" :loading="portalsLoading"
+                :invalid="!formData.portal_id" />
               <small v-if="!formData.portal_id" class="text-red-500 text-xs">
                 Выберите портал
               </small>
             </div>
-            
+
             <div>
               <label class="block text-sm font-medium mb-2">
                 Приложение <span class="text-red-500">*</span>
               </label>
-              <SelectPrime 
-                v-model="formData.app_id"
-                :options="applicationOptions"
-                optionLabel="label"
-                optionValue="value"
-                placeholder="Выберите приложение"
-                class="w-full"
-                :filter="true"
-                :loading="applicationsLoading"
-                :invalid="!formData.app_id"
-                @change="onApplicationChange"
-              />
+              <SelectPrime v-model="formData.app_id" :options="applicationOptions" optionLabel="label"
+                optionValue="value" placeholder="Выберите приложение" class="w-full" :filter="true"
+                :loading="applicationsLoading" :invalid="!formData.app_id" @change="onApplicationChange" />
               <small v-if="!formData.app_id" class="text-red-500 text-xs">
                 Выберите приложение
               </small>
             </div>
-            
+
             <div>
               <label class="block text-sm font-medium mb-2">
                 Тариф <span class="text-red-500">*</span>
               </label>
-              <SelectPrime 
-                v-model="formData.tariff_id"
-                :options="tariffOptions"
-                optionLabel="label"
-                optionValue="value"
-                placeholder="Выберите тариф"
-                class="w-full"
-                :filter="true"
-                :loading="tariffsLoading"
-                :invalid="!formData.tariff_id"
-              />
+              <SelectPrime v-model="formData.tariff_id" :options="tariffOptions" optionLabel="label" optionValue="value"
+                placeholder="Выберите тариф" class="w-full" :filter="true" :loading="tariffsLoading"
+                :invalid="!formData.tariff_id" />
               <small v-if="!formData.tariff_id" class="text-red-500 text-xs">
                 Выберите тариф
               </small>
             </div>
-            
+
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="block text-sm font-medium mb-2">
                   Дата начала <span class="text-red-500">*</span>
                 </label>
-                <DatePicker 
-                  v-model="formData.valid_from" 
-                  :showIcon="true"
-                  dateFormat="dd.mm.yy"
-                  class="w-full"
-                  :invalid="!formData.valid_from"
-                />
+                <DatePicker v-model="formData.valid_from" :showIcon="true" dateFormat="dd.mm.yy" class="w-full"
+                  :invalid="!formData.valid_from" />
                 <small v-if="!formData.valid_from" class="text-red-500 text-xs">
                   Укажите дату начала
                 </small>
               </div>
-              
+
               <div>
                 <label class="block text-sm font-medium mb-2">
                   Дата окончания <span class="text-red-500">*</span>
                 </label>
-                <DatePicker 
-                  v-model="formData.valid_until" 
-                  :showIcon="true"
-                  dateFormat="dd.mm.yy"
-                  :minDate="minEndDate"
-                  class="w-full"
-                  :invalid="!formData.valid_until"
-                />
+                <DatePicker v-model="formData.valid_until" :showIcon="true" dateFormat="dd.mm.yy" :minDate="minEndDate"
+                  class="w-full" :invalid="!formData.valid_until" />
                 <small v-if="!formData.valid_until" class="text-red-500 text-xs">
                   Укажите дату окончания
                 </small>
               </div>
             </div>
-            
+
             <div>
               <label class="block text-sm font-medium mb-2">
                 Статус <span class="text-red-500">*</span>
               </label>
-              <SelectPrime 
-                v-model="formData.status"
-                :options="statusOptions"
-                optionLabel="label"
-                optionValue="value"
-                placeholder="Выберите статус"
-                class="w-full"
-              />
+              <SelectPrime v-model="formData.status" :options="statusOptions" optionLabel="label" optionValue="value"
+                placeholder="Выберите статус" class="w-full" />
             </div>
-            
+
             <div>
               <label class="block text-sm font-medium mb-2">Примечания</label>
-              <TextareaPrime 
-                v-model="formData.notes" 
-                placeholder="Дополнительные примечания"
-                class="w-full"
-                rows="3"
-                autoResize
-              />
+              <TextareaPrime v-model="formData.notes" placeholder="Дополнительные примечания" class="w-full" rows="3"
+                autoResize />
             </div>
-            
+
             <div class="flex items-center gap-3">
-              <CheckboxPrime 
-                v-model="formData.auto_renew" 
-                :binary="true" 
-                inputId="autoRenew"
-              />
+              <CheckboxPrime v-model="formData.auto_renew" :binary="true" inputId="autoRenew" />
               <label for="autoRenew" class="font-medium">Автопродление</label>
             </div>
-            
+
             <div v-if="formData.status === 'trial'">
               <label class="block text-sm font-medium mb-2">Дата окончания триала</label>
-              <DatePicker 
-                v-model="formData.trial_end_date" 
-                :showIcon="true"
-                dateFormat="dd.mm.yy"
-                :minDate="formData.valid_from"
-                :maxDate="formData.valid_until"
-                class="w-full"
-              />
+              <DatePicker v-model="formData.trial_end_date" :showIcon="true" dateFormat="dd.mm.yy"
+                :minDate="formData.valid_from" :maxDate="formData.valid_until" class="w-full" />
             </div>
           </div>
-          
+
           <div class="space-y-4">
             <h3 class="font-medium text-gray-700 mb-4">Информация</h3>
-            
+
             <div class="bg-gray-50 p-4 rounded space-y-3">
               <h4 class="font-medium">Выбранные данные:</h4>
-              
+
               <div v-if="selectedPortalInfo" class="space-y-1">
                 <div class="text-sm text-gray-500">Портал:</div>
                 <div class="font-medium">{{ selectedPortalInfo.name }}</div>
                 <div class="text-xs text-gray-500">{{ selectedPortalInfo.domain }}</div>
               </div>
-              
+
               <div v-if="selectedApplicationInfo" class="space-y-1">
                 <div class="text-sm text-gray-500">Приложение:</div>
                 <div class="font-medium">{{ selectedApplicationInfo.name }}</div>
                 <div class="text-xs text-gray-500">{{ selectedApplicationInfo.description }}</div>
               </div>
-              
+
               <div v-if="selectedTariffInfo" class="space-y-1">
                 <div class="text-sm text-gray-500">Тариф:</div>
                 <div class="font-medium">{{ selectedTariffInfo.name }}</div>
@@ -183,7 +126,7 @@
                   {{ formatCurrency(selectedTariffInfo.price) }} / {{ selectedTariffInfo.period }}
                 </div>
               </div>
-              
+
               <div v-if="formData.valid_from && formData.valid_until" class="space-y-1">
                 <div class="text-sm text-gray-500">Период:</div>
                 <div class="font-medium">
@@ -193,35 +136,30 @@
                   {{ calculateDays }} дней
                 </div>
               </div>
-              
+
               <div v-if="selectedTariffInfo" class="pt-3 border-t">
                 <div class="text-sm text-gray-500">Итоговая стоимость:</div>
                 <div class="text-lg font-bold">
                   {{ calculateTotalPrice }}
                 </div>
                 <div class="text-xs text-gray-500">
-                  {{ selectedTariffInfo.price }} × {{ calculateDays / getDaysInPeriod(selectedTariffInfo.period) || 1 }} периодов
+                  {{ selectedTariffInfo.price }} × {{ calculateDays / getDaysInPeriod(selectedTariffInfo.period) || 1 }}
+                  периодов
                 </div>
               </div>
             </div>
-            
+
             <div>
               <label class="block text-sm font-medium mb-2">Метаданные (JSON)</label>
-              <TextareaPrime 
-                v-model="jsonMetadata" 
-                placeholder='{"source": "manual", "sales_person": "Иван Иванов"}'
-                class="w-full font-mono text-sm"
-                rows="6"
-                autoResize
-                @input="handleJsonInput"
-              />
+              <TextareaPrime v-model="jsonMetadata" placeholder='{"source": "manual", "sales_person": "Иван Иванов"}'
+                class="w-full font-mono text-sm" rows="6" autoResize @input="handleJsonInput" />
               <small class="text-gray-500 text-xs">
                 Дополнительные метаданные подписки в формате JSON
               </small>
               <div v-if="jsonError" class="text-red-500 text-sm mt-1">
                 {{ jsonError }}
               </div>
-              
+
               <div v-if="Object.keys(formData.metadata || {}).length > 0" class="mt-2">
                 <pre class="bg-gray-50 p-2 rounded text-xs overflow-auto max-h-32">
 {{ JSON.stringify(formData.metadata, null, 2) }}
@@ -232,27 +170,18 @@
         </div>
       </template>
     </CardPrime>
-    
+
     <div class="flex gap-2 justify-end">
-      <ButtonPrime 
-        label="Отмена" 
-        icon="pi pi-times" 
-        outlined
-        @click="cancel"
-      />
-      <ButtonPrime 
-        label="Создать" 
-        icon="pi pi-check" 
-        :disabled="!isFormValid || creating"
-        @click="createSubscription"
-      />
+      <ButtonPrime label="Отмена" icon="pi pi-times" outlined @click="cancel" />
+      <ButtonPrime label="Создать" icon="pi pi-check" :disabled="!isFormValid || creating"
+        @click="createSubscription" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import { subscriptionService, portalService, applicationService, tariffService } from '@/services'
 import type { CreateSubscriptionRequest } from '@/services/subscription.service'
@@ -262,6 +191,7 @@ import type { TariffDTO } from '@/types/dto/tariff.dto'
 import { formatDate, formatCurrency } from '@/helpers/formatters'
 import type { PortalShortDTO } from '@/types/dto'
 
+const route = useRoute()
 const router = useRouter()
 const toast = useToast()
 
@@ -315,7 +245,7 @@ const applicationOptions = computed(() => {
 
 const tariffOptions = computed(() => {
   if (!formData.app_id) return []
-  
+
   return tariffs.value
     .filter(tariff => tariff.appId === formData.app_id && tariff.isActive)
     .map(tariff => ({
@@ -342,7 +272,7 @@ const minEndDate = computed(() => {
 
 const calculateDays = computed(() => {
   if (!formData.valid_from || !formData.valid_until) return 0
-  
+
   const start = new Date(formData.valid_from)
   const end = new Date(formData.valid_until)
   const diff = end.getTime() - start.getTime()
@@ -351,36 +281,36 @@ const calculateDays = computed(() => {
 
 const calculateTotalPrice = computed(() => {
   if (!selectedTariffInfo.value || !calculateDays.value) return '0'
-  
+
   const tariff = selectedTariffInfo.value
   const daysInPeriod = getDaysInPeriod(tariff.period) || 30
   const periods = calculateDays.value / daysInPeriod
-  
+
   return formatCurrency(tariff.price * periods)
 })
 
 const isFormValid = computed(() => {
-  return !!formData.portal_id && 
-         !!formData.app_id && 
-         !!formData.tariff_id && 
-         !!formData.valid_from && 
-         !!formData.valid_until && 
-         !!formData.status &&
-         calculateDays.value > 0
+  return !!formData.portal_id &&
+    !!formData.app_id &&
+    !!formData.tariff_id &&
+    !!formData.valid_from &&
+    !!formData.valid_until &&
+    !!formData.status &&
+    calculateDays.value > 0
 })
 
 const handleJsonInput = () => {
   jsonError.value = null
-  
+
   if (!jsonMetadata.value.trim()) {
     formData.metadata = {}
     return
   }
-  
+
   try {
     const parsed = JSON.parse(jsonMetadata.value)
     formData.metadata = parsed
-  } catch{
+  } catch {
     jsonError.value = 'Некорректный JSON формат'
   }
 }
@@ -422,9 +352,9 @@ const loadPortals = async () => {
 const loadApplications = async () => {
   applicationsLoading.value = true
   try {
-    const response = await applicationService.getApplications({ 
+    const response = await applicationService.getApplications({
       limit: 1000,
-      isActive: true 
+      isActive: true
     })
     if (response.success) {
       applications.value = response.data.items
@@ -447,7 +377,7 @@ const loadTariffs = async () => {
     tariffs.value = []
     return
   }
-  
+
   tariffsLoading.value = true
   try {
     const response = await tariffService.getTariffs({
@@ -480,7 +410,7 @@ const createSubscription = async () => {
     })
     return
   }
-  
+
   if (calculateDays.value <= 0) {
     toast.add({
       severity: 'warn',
@@ -490,12 +420,12 @@ const createSubscription = async () => {
     })
     return
   }
-  
+
   creating.value = true
-  
+
   try {
     const response = await subscriptionService.createSubscription(formData)
-    
+
     if (response.success) {
       toast.add({
         severity: 'success',
@@ -503,7 +433,7 @@ const createSubscription = async () => {
         detail: 'Подписка создана',
         life: 3000
       })
-      
+
       router.push(`/subscriptions/${response.data.id}`)
     } else {
       toast.add({
@@ -532,13 +462,21 @@ const cancel = () => {
       return
     }
   }
-  
+
   router.push('/subscriptions')
 }
 
 onMounted(() => {
   loadPortals()
   loadApplications()
+  if (route.query.portalId) {
+    formData.portal_id = route.query.portalId as string
+  }
+  if (route.query.appId)
+    formData.app_id = route.query.appId as string
+  if (route.query.tariffId)
+    formData.tariff_id = route.query.tariffId as string
+
 })
 
 watch(() => formData.app_id, () => {

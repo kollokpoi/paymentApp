@@ -7,13 +7,12 @@ import type { AxiosRequestConfig } from 'axios'
 import type { PaginatedResponse } from '@/types/api/responses'
 
 export interface CreateApplicationRequest {
-  code: string
   name: string
   description?: string
   version?: string
   is_active?: boolean
   icon_url?: string
-  settings?: Metadata
+  settings: Metadata
   sort_order?: number
   client_id: string
   client_secret: string

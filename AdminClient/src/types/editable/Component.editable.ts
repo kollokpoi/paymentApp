@@ -4,13 +4,13 @@ import type { Metadata } from "../dto"
 export interface EditableComponentExpose {
 
   cancel: () => void
-  getValue: () => string | boolean | number | Date | null | Metadata
+  getValue: () => string | boolean | number | Date | null | Metadata | undefined
   validate: () => ValidationResult
 }
 
 export interface EditableComponentProps {
   label: string
-  value: string | Date | number | boolean | null | Metadata
+  value: string | Date | number | boolean | null | Metadata | undefined
   isEditing: boolean
   validators?: Validator[]
   required?: boolean
@@ -36,7 +36,7 @@ export interface EditableNumberProps extends EditableComponentProps {
 }
 
 export interface EditableJsonProps extends EditableComponentProps {
-  value: Record<string, any> | string
+  value: Metadata | undefined
   rows?: number
   autoResize?: boolean
 }
@@ -56,4 +56,21 @@ export interface EditableDateProps extends EditableComponentProps {
 
 export interface EditableSelect extends EditableComponentProps {
   items: Array<{ label: string, value: string }>
+}
+
+export interface LimitField {
+  key: string
+  fullPath: string
+  label: string
+  type: 'string' | 'number' | 'boolean' | 'array' | 'object' | 'enum'
+  description?: string
+  required?: boolean
+  defaultValue?: any
+  min?: number
+  max?: number
+  step?: number
+  options?: Array<{ label: string, value: any }>
+  isObject: boolean
+  children?: LimitField[]
+  parent?: string
 }

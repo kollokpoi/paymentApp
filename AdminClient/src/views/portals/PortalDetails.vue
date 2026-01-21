@@ -86,7 +86,7 @@
       <template #content>
         <div class="flex flex-wrap gap-3">
           <ButtonPrime label="Отправить уведомление" icon="pi pi-send" severity="secondary" />
-          <ButtonPrime label="Создать подписку" icon="pi pi-plus" severity="success" @click="" />
+          <ButtonPrime label="Создать подписку" icon="pi pi-plus" severity="success" @click="goToCreateSubscription" />
         </div>
       </template>
     </CardPrime>

@@ -162,7 +162,10 @@ const confirmDelete = (id: string) => {
     acceptClass: 'p-button-danger',
     acceptLabel: 'Удалить',
     rejectLabel: 'Отмена',
-    accept: () => deletePayment(id)
+    accept: async () => {
+      await deletePayment(id)
+      confirm.close()
+    }
   })
 }
 

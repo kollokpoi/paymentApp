@@ -22,6 +22,8 @@ export interface SubscriptionDTOData {
   autoRenew?: boolean
   trial_end_date?: Date | null
   trialEndDate?: Date | null
+  used_limits?: Metadata
+  usedLimits?: Metadata
   notes?: string
   metadata?: Metadata
   application?: any
@@ -41,6 +43,7 @@ export class SubscriptionDTO {
   trialEndDate: Date | null
   notes: string
   metadata: Metadata
+  usedLimits: Metadata
   application: ApplicationDTO | null
   tariff: TariffDTO | null
   portal: PortalDTO | null
@@ -58,6 +61,7 @@ export class SubscriptionDTO {
     this.trialEndDate = data.trialEndDate || data.trial_end_date || null
     this.notes = data.notes || ''
     this.metadata = data.metadata || {}
+    this.usedLimits = data.used_limits || data.usedLimits || {}
 
     this.application = data.application ? new ApplicationDTO(data.application) : null
     this.tariff = data.tariff ? new TariffDTO(data.tariff) : null

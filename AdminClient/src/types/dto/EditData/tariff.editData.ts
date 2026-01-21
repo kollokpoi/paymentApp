@@ -1,5 +1,5 @@
 import type { UpdateTariffRequest } from '@/services'
-import type { TariffDTO, TariffLimits } from '..'
+import type { Metadata, TariffDTO } from '..'
 import type { PeriodType } from '@/types/api/responses'
 
 export interface TariffEditData {
@@ -11,7 +11,7 @@ export interface TariffEditData {
   trialDays: number
   isActive: boolean
   isDefault: boolean
-  limits: TariffLimits
+  limits: Metadata
   features: string[]
   sortOrder: number
 }
@@ -39,7 +39,7 @@ export const createTariffEditData = (tariff: TariffDTO): TariffEditData => ({
   trialDays: tariff.trialDays,
   isActive: tariff.isActive,
   isDefault: tariff.isDefault,
-  limits: { ...tariff.limits },
+  limits: tariff.limits ,
   features: [...tariff.features],
   sortOrder: tariff.sortOrder,
 })

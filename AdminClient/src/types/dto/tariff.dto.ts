@@ -1,10 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import type { Metadata } from '.'
 import { PeriodType } from '../api/responses'
 import { ApplicationDTO } from './application.dto'
-
-export interface TariffLimits {
-  [key: string]: any
-}
 
 export interface TariffDTOData {
   id: string
@@ -21,7 +18,7 @@ export interface TariffDTOData {
   isActive?: boolean
   is_default?: boolean
   isDefault?: boolean
-  limits?: TariffLimits
+  limits?: Metadata
   features?: string[]
   sort_order?: number
   sortOrder?: number
@@ -43,7 +40,7 @@ export class TariffDTO {
   trialDays: number
   isActive: boolean
   isDefault: boolean
-  limits: TariffLimits
+  limits: Metadata
   features: string[]
   sortOrder: number
   createdAt: string | Date

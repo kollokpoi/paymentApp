@@ -23,19 +23,15 @@
             <dl class="space-y-3">
               <div>
                 <dt class="text-sm text-gray-500">Портал</dt>
-                <router-link
-                  :to="`/portals/${subscription.portalId}`"
-                  class="font-medium text-primary-600 hover:text-primary-500"
-                >
+                <router-link :to="`/portals/${subscription.portalId}`"
+                  class="font-medium text-primary-600 hover:text-primary-500">
                   <dd>{{ subscription.companyName }}</dd>
                 </router-link>
               </div>
               <div>
                 <dt class="text-sm text-gray-500">Приложение</dt>
-                <router-link
-                  :to="`/applications/${subscription.appId}`"
-                  class="font-medium text-primary-600 hover:text-primary-500"
-                >
+                <router-link :to="`/applications/${subscription.appId}`"
+                  class="font-medium text-primary-600 hover:text-primary-500">
                   <dd>{{ subscription.application?.name }}</dd>
                 </router-link>
               </div>
@@ -43,18 +39,11 @@
                 <dt class="text-sm text-gray-500">Тариф</dt>
                 <dd>{{ subscription.tariff?.name }}</dd>
               </div>
-              <EditableSelect
-                label="Статус"
-                v-model:value="editData.status"
-                required
-                @edit-start="
-                  () => {
-                    globalEditing = true
-                  }
-                "
-                :is-editing="globalEditing"
-                :items="statusOptions"
-              />
+              <EditableSelect label="Статус" v-model:value="editData.status" required @edit-start="
+                () => {
+                  globalEditing = true
+                }
+              " :is-editing="globalEditing" :items="statusOptions" />
               <div>
                 <dt class="text-sm text-gray-500">Дата начала</dt>
                 <dd>{{ formatDate(subscription.validFrom) }}</dd>
@@ -68,65 +57,50 @@
                 <dd>{{ subscription.daysLeft }}</dd>
               </div>
 
-              <EditableBoolean
-                label="Автопродление"
-                v-model:value="editData.autoRenew"
-                :is-editing="globalEditing"
-                true-label="Включено"
-                false-label="отключено"
-                @edit-start="
+              <EditableBoolean label="Автопродление" v-model:value="editData.autoRenew" :is-editing="globalEditing"
+                true-label="Включено" false-label="отключено" @edit-start="
                   () => {
                     globalEditing = true
                   }
-                "
-              />
-              <EditableText
-                label="Пометки"
-                v-model:value="editData.notes"
-                :is-editing="globalEditing"
-                @edit-start="
-                  () => {
-                    globalEditing = true
-                  }
-                "
-                :type="FieldTypes.TextArea"
-              />
+                " />
+              <EditableText label="Пометки" v-model:value="editData.notes" :is-editing="globalEditing" @edit-start="
+                () => {
+                  globalEditing = true
+                }
+              " :type="FieldTypes.TextArea" />
             </dl>
           </div>
           <div>
-            <h3 class="font-medium text-gray-700 mb-4">Метаданные</h3>
-            <div v-if="subscription.metadata && Object.keys(subscription.metadata).length > 0">
-              <pre class="bg-gray-50 p-4 rounded text-sm overflow-auto">{{
-                JSON.stringify(subscription.metadata, null, 2)
-              }}</pre>
+            <div class="mb-4">
+              <h3 class="font-medium text-gray-700 mb-4">Метаданные</h3>
+              <div v-if="subscription.metadata && Object.keys(subscription.metadata).length > 0">
+                <pre class="bg-gray-50 p-4 rounded text-sm overflow-auto">{{
+                  JSON.stringify(subscription.metadata, null, 2)
+                }}</pre>
+              </div>
+              <div v-else class="text-gray-500">Нет метаданных</div>
             </div>
-            <div v-else class="text-gray-500">Нет метаданных</div>
+            <div>
+              <h3 class="font-medium text-gray-700 mb-4">Использованные возможности</h3>
+              <div v-if="subscription.usedLimits && Object.keys(subscription.usedLimits).length > 0">
+                <pre class="bg-gray-50 p-4 rounded text-sm overflow-auto">{{
+                  JSON.stringify(subscription.usedLimits, null, 2)
+                }}</pre>
+              </div>
+              <div v-else class="text-gray-500">Нет данных</div>
+            </div>
           </div>
         </div>
       </template>
     </CardPrime>
     <div v-if="globalEditing" class="flex gap-2 items-center justify-end">
-      <ButtonPrime
-        label="Сохранить"
-        icon="pi pi-check"
-        @click="updateSubscription"
-        :disabled="!canUpdate"
-      />
+      <ButtonPrime label="Сохранить" icon="pi pi-check" @click="updateSubscription" :disabled="!canUpdate" />
       <ButtonPrime label="Отмена" severity="danger" outline @click="cancelEditing" />
     </div>
     <div v-else class="flex gap-2 items-center justify-end">
-      <ButtonPrime
-        label="Продлить"
-        icon="pi pi-pencil"
-        @click="goToExtend"
-        :disabled="globalEditing"
-      />
-      <ButtonPrime
-        label="Редактировать"
-        icon="pi pi-pencil"
-        @click="globalEditing = !globalEditing"
-        :disabled="globalEditing"
-      />
+      <ButtonPrime label="Продлить" icon="pi pi-pencil" @click="goToExtend" :disabled="globalEditing" />
+      <ButtonPrime label="Редактировать" icon="pi pi-pencil" @click="globalEditing = !globalEditing"
+        :disabled="globalEditing" />
       <ButtonPrime label="Удалить" icon="pi pi-trash" severity="danger" @click="confirmDelete" />
     </div>
     <CardPrime>
@@ -139,12 +113,8 @@
       <template #content>
         <div v-if="payments">
           <PaymentTable :payments="payments" :loading="paymentsLoading" />
-          <PaginatorPrime
-            v-if="paymentPagination?.total > paymentPagination.limit"
-            :rows="paymentPagination.limit"
-            :totalRecords="paymentPagination.total"
-            @page="onPageChange"
-          />
+          <PaginatorPrime v-if="paymentPagination?.total > paymentPagination.limit" :rows="paymentPagination.limit"
+            :totalRecords="paymentPagination.total" @page="onPageChange" />
         </div>
         <div v-else class="text-center py-12">
           <i class="pi pi-exclamation-circle text-4xl text-gray-300 mb-4"></i>

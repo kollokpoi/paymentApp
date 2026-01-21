@@ -125,7 +125,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, watch, reactive, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import { subscriptionService, portalService, applicationService } from '@/services'
 import type { PortalShortDTO, SubscriptionDTO } from '@/types/dto'
@@ -135,8 +135,12 @@ import type { SubscriptionSearchParams } from '@/services/subscription.service'
 import type { ApplicationShortDTO } from '@/types/dto/ApplicationShortDTO'
 import { SubscriptionStatus } from '@/types/api/responses'
 
+const route = useRoute()
 const router = useRouter()
 const toast = useToast()
+
+
+const appId = route.query.appId
 
 const portals = ref<PortalShortDTO[]>([])
 const applications = ref<ApplicationShortDTO[]>([])
@@ -145,7 +149,7 @@ const subscriptions = ref<SubscriptionDTO[]>([])
 const search = ref('')
 const selectedPortalId = ref<string>()
 const selectedStatus = ref<string>()
-const selectedAppId = ref<string>()
+const selectedAppId = ref<string | undefined>(appId as string)
 const dateFrom = ref<Date>()
 const dateTo = ref<Date>()
 

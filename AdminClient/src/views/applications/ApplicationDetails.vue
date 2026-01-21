@@ -17,11 +17,13 @@
             <h3 class="font-medium text-gray-700 mb-4">Данные приложения</h3>
             <dl class="space-y-3">
               <EditableText v-model:value="editData.name" label="Название" required :type="FieldTypes.Text"
-                :is-editing="globalEditing" @edit-start="() => { globalEditing = true }" />
+                :is-editing="globalEditing" @edit-start="() => { globalEditing = true }"
+                @validation-change="onValidationChange('name', $event)" />
               <EditableText v-model:value="editData.description" label="Описание" :type="FieldTypes.TextArea"
                 :is-editing="globalEditing" @edit-start="() => { globalEditing = true }" />
               <EditableText v-model:value="editData.version" label="Версия" required :type="FieldTypes.Text"
-                :is-editing="globalEditing" @edit-start="() => { globalEditing = true }" />
+                :is-editing="globalEditing" @edit-start="() => { globalEditing = true }"
+                @validation-change="onValidationChange('version', $event)" />
               <EditableBoolean v-model:value="editData.isActive" label="Активно" true-label="Активно"
                 false-label="Не активно" :is-editing="globalEditing" @edit-start="() => { globalEditing = true }" />
               <EditableText v-model:value="editData.iconUrl" placeholder="Ссылка на иконку" :type="FieldTypes.Text"
@@ -41,41 +43,47 @@
           </div>
           <div>
             <div>
-              <h3 class="font-medium text-gray-700 mb-4">Настройки</h3>
-              <div v-if="application.settings && Object.keys(application.settings).length > 0">
-                <pre class="bg-gray-50 p-4 rounded text-sm overflow-auto">{{
-                  JSON.stringify(application.settings, null, 2)
-                }}</pre>
-              </div>
-              <div v-else class="text-gray-500">Нет настроек</div>
+              <h3 class="font-medium text-gray-700 mb-4">Базовые лимиты</h3>
+              <EditableJson :is-editing="globalEditing" @edit-start="() => { globalEditing = true }"
+                label="Базовые лимиты" v-model:value="editData.settings"
+                @validation-change="onValidationChange('settings', $event)" />
             </div>
           </div>
         </div>
       </template>
     </CardPrime>
     <div v-if="globalEditing" class="flex gap-2 items-center justify-end">
-      <ButtonPrime label="Сохранить" icon="pi pi-check" @click="updateApplication" />
+      <ButtonPrime label="Сохранить" icon="pi pi-check" @click="updateApplication" :disabled="!canUpdate" />
       <ButtonPrime label="Отмена" severity="danger" outline @click="cancelEditing" />
     </div>
     <div v-else class="flex gap-2 items-center justify-end">
       <ButtonPrime label="Редактировать" icon="pi pi-pencil" @click="globalEditing = !globalEditing"
         :disabled="globalEditing" />
       <ButtonPrime label="Удалить" icon="pi pi-trash" severity="danger" @click="confirmDelete" />
+
     </div>
+    <CardPrime>
+      <template #title>Быстрые действия</template>
+      <template #content>
+        <div class="flex flex-wrap gap-3">
+          <ButtonPrime label="Перейти к тарифам" icon="pi pi-send" severity="secondary" @click="goToTariffs" />
+          <ButtonPrime label="Создать тариф" icon="pi pi-plus" severity="secondary" @click="goToCreateTariff" />
+          <ButtonPrime label="Создать подписку" icon="pi pi-plus" severity="secondary"
+            @click="goToCreateSubscription" />
+        </div>
+      </template>
+    </CardPrime>
+
     <CardPrime>
       <template #title>
         <div class="flex justify-between">
           <p>Подписки на это приложение</p>
-          <ButtonPrime
-            label="Просмотреть все"
-            icon="pi pi-external-link"
-            @click="goToSubscriptions"
-          />
+          <ButtonPrime label="Просмотреть все" icon="pi pi-external-link" @click="goToSubscriptions" />
         </div>
       </template>
       <template #content>
         <div v-if="subscriptions && subscriptions.length > 0">
-          <SubscriptionTable :subscriptions="subscriptions" :loading="subscriptionsLoading" show-company/>
+          <SubscriptionTable :subscriptions="subscriptions" :loading="subscriptionsLoading" show-company />
         </div>
         <div v-else class="text-center py-12">
           <i class="pi pi-exclamation-circle text-4xl text-gray-300 mb-4"></i>
@@ -99,12 +107,13 @@ import EditableBoolean from '@/components/editableFields/EditableBoolean.vue';
 import EditableNumber from '@/components/editableFields/EditableNumber.vue';
 import EditableText from '@/components/editableFields/EditableText.vue';
 import SubscriptionTable from '@/components/SubscriptionTable.vue';
+import EditableJson from '@/components/editableFields/EditableJson.vue';
 import { formatDate } from '@/helpers/formatters';
 import { applicationService, subscriptionService } from '@/services';
 import { applicationDataToRequest, applyApplicationEditData, createApplicationEditData, SubscriptionDTO, type ApplicationDTO, type ApplicationEditData } from '@/types/dto';
-import { FieldTypes } from '@/types/editable';
+import { FieldTypes, type ValidationResult } from '@/types/editable';
 import { useToast, useConfirm } from 'primevue';
-import { onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute()
@@ -126,9 +135,24 @@ const editData = reactive<ApplicationEditData>({
   version: '',
   isActive: true,
   iconUrl: '',
-  settings: {},
   sortOrder: 0,
 })
+
+const validationErrors = ref<Array<{ field: string, message: string }>>([])
+
+const onValidationChange = (field: string, result: ValidationResult) => {
+  validationErrors.value = validationErrors.value.filter(e => e.field !== field)
+
+  if (!result.isValid && result.message) {
+    validationErrors.value.push({
+      field,
+      message: result.message
+    })
+  }
+  console.log(validationErrors)
+}
+
+const canUpdate = computed(() => validationErrors.value.length == 0);
 
 const cancelEditing = () => {
   globalEditing.value = false;
@@ -138,7 +162,8 @@ const cancelEditing = () => {
 }
 
 const updateApplication = async () => {
-  if (!application.value)
+
+  if (!application.value || !canUpdate.value)
     return;
   globalEditing.value = false;
 
@@ -245,7 +270,7 @@ const loadSubscriptions = async () => {
     const response = await subscriptionService.getSubscriptions({
       appId: applicationId,
       limit: 5,
-      page:1
+      page: 1
     })
     if (response.success) {
       subscriptions.value = response.data.items
@@ -258,7 +283,30 @@ const loadSubscriptions = async () => {
 }
 
 const goToSubscriptions = () => {
-  router.push(`/subscriptions?appId=${applicationId}`)
+  router.push({
+    path: `/subscriptions`,
+    query: { appId: applicationId }
+  })
+}
+const goToTariffs = () => {
+  router.push({
+    path: `/tariffs`,
+    query: { appId: applicationId }
+  })
+}
+
+const goToCreateTariff = () => {
+  router.push({
+    path: `/tariffs/create`,
+    query: { appId: applicationId }
+  })
+}
+
+const goToCreateSubscription = () => {
+  router.push({
+    path: `/subscriptions/create`,
+    query: { appId: applicationId }
+  })
 }
 
 onMounted(() => {

@@ -1,20 +1,11 @@
 <template>
-  <DataTable
-    :value="subscriptions"
-    :loading="loading"
-    :rowClass="rowClass"
-    @row-click="handleRowClick"
-    striped-rows
-  >
+  <DataTable :value="subscriptions" :loading="loading" :rowClass="rowClass" @row-click="handleRowClick" striped-rows>
     <ColumnPrime field="application.name" header="Приложение" sortable />
     <ColumnPrime v-if="showCompany" field="companyName" header="Компания" sortable />
     <ColumnPrime field="tariff.name" header="Тариф" sortable />
     <ColumnPrime field="status" header="Статус" sortable>
       <template #body="{ data }">
-        <TagPrime
-          :value="data.status"
-          :severity="getStatusSeverity(data.status)"
-        />
+        <TagPrime :value="data.status" :severity="getStatusSeverity(data.status)" />
       </template>
     </ColumnPrime>
     <ColumnPrime field="validUntil" header="Действует до" sortable>
@@ -28,27 +19,16 @@
     <ColumnPrime header="Действия">
       <template #body="{ data }">
         <div class="relative">
-          <ButtonPrime
-            icon="pi pi-ellipsis-h"
-            text
-            @click.stop="showMenu($event, data)"
-            aria-haspopup="true"
-            aria-controls="subscription-menu"
-          />
+          <ButtonPrime icon="pi pi-ellipsis-h" text @click.stop="showMenu($event, data)" aria-haspopup="true"
+            aria-controls="subscription-menu" />
 
         </div>
       </template>
     </ColumnPrime>
   </DataTable>
 
-  <Menu
-    id="subscription-menu"
-    ref="menuRef"
-    :model="menuItems"
-    :popup="true"
-  />
-  <ConfirmDialog
-    :draggable="true" />
+  <Menu id="subscription-menu" ref="menuRef" :model="menuItems" :popup="true" />
+  <ConfirmDialog :draggable="true" />
 </template>
 
 <script setup lang="ts">
@@ -65,7 +45,7 @@ import type { DataTableRowClickEvent } from 'primevue/datatable'
 interface Props {
   subscriptions: SubscriptionDTO[]
   loading: boolean
-  showCompany?:boolean
+  showCompany?: boolean
 }
 
 interface Emits {
@@ -133,7 +113,7 @@ const extendSubscription = (id: string) => {
 }
 
 const deleteSubscription = async (id: string) => {
-  try{
+  try {
     const response = await subscriptionService.deleteSubscription(id)
 
     if (response.success) {
@@ -152,13 +132,13 @@ const deleteSubscription = async (id: string) => {
         life: 3000
       })
     }
-  }catch{
-      toast.add({
-        severity: 'error',
-        summary: 'Ошибка',
-        detail: 'Не удалось удалить подписку',
-        life: 3000
-      })
+  } catch {
+    toast.add({
+      severity: 'error',
+      summary: 'Ошибка',
+      detail: 'Не удалось удалить подписку',
+      life: 3000
+    })
   }
 }
 
@@ -167,10 +147,13 @@ const confirmDelete = (id: string) => {
     message: 'Вы уверены, что хотите удалить подписку?',
     header: 'Подтверждение удаления',
     icon: 'pi pi-exclamation-triangle',
-    acceptClass:"p-button-danger",
+    acceptClass: "p-button-danger",
     acceptLabel: 'Удалить',
     rejectLabel: 'Отмена',
-    accept: () => deleteSubscription(id)
+    accept: async () => {
+      await deleteSubscription(id)
+      confirm.close()
+    }
   })
 }
 

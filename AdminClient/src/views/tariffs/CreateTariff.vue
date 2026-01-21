@@ -19,17 +19,9 @@
               <label class="block text-sm font-medium mb-2">
                 Приложение <span class="text-red-500">*</span>
               </label>
-              <SelectPrime
-                v-model="formData.app_id"
-                :options="applicationOptions"
-                optionLabel="label"
-                optionValue="value"
-                placeholder="Выберите приложение"
-                class="w-full"
-                :filter="true"
-                :loading="applicationsLoading"
-                :invalid="!formData.app_id"
-              />
+              <SelectPrime v-model="formData.app_id" :options="applicationOptions" optionLabel="label"
+                optionValue="value" placeholder="Выберите приложение" class="w-full" :filter="true"
+                :loading="applicationsLoading" :invalid="!formData.app_id" />
               <small v-if="!formData.app_id" class="text-red-500 text-xs">
                 Выберите приложение
               </small>
@@ -39,12 +31,8 @@
               <label class="block text-sm font-medium mb-2">
                 Название <span class="text-red-500">*</span>
               </label>
-              <InputText
-                v-model="formData.name"
-                placeholder="Например: Базовый, Профессиональный, Корпоративный"
-                class="w-full"
-                :invalid="!formData.name"
-              />
+              <InputText v-model="formData.name" placeholder="Например: Базовый, Профессиональный, Корпоративный"
+                class="w-full" :invalid="!formData.name" />
               <small v-if="!formData.name" class="text-red-500 text-xs">
                 Название обязательно
               </small>
@@ -54,12 +42,8 @@
               <label class="block text-sm font-medium mb-2">
                 Код тарифа <span class="text-red-500">*</span>
               </label>
-              <InputText
-                v-model="formData.code"
-                placeholder="Например: basic, pro, enterprise"
-                class="w-full"
-                :invalid="!formData.code"
-              />
+              <InputText v-model="formData.code" placeholder="Например: basic, pro, enterprise" class="w-full"
+                :invalid="!formData.code" />
               <small v-if="!formData.code" class="text-red-500 text-xs">
                 Код тарифа обязателен
               </small>
@@ -70,13 +54,8 @@
 
             <div>
               <label class="block text-sm font-medium mb-2">Описание</label>
-              <TextareaPrime
-                v-model="formData.description"
-                placeholder="Описание тарифа, преимущества"
-                class="w-full"
-                rows="3"
-                autoResize
-              />
+              <TextareaPrime v-model="formData.description" placeholder="Описание тарифа, преимущества" class="w-full"
+                rows="3" autoResize />
             </div>
 
             <div>
@@ -84,15 +63,8 @@
                 Цена <span class="text-red-500">*</span>
               </label>
               <div class="flex gap-2">
-                <InputNumber
-                  v-model="formData.price"
-                  :min="0"
-                  :max="99999"
-                  :minFractionDigits="1"
-                  :maxFractionDigits="2"
-                  class="flex-1"
-                  :invalid="formData.price < 0"
-                />
+                <InputNumber v-model="formData.price" :min="0" :max="99999" :minFractionDigits="1"
+                  :maxFractionDigits="2" class="flex-1" :invalid="formData.price < 0" />
               </div>
               <small v-if="formData.price < 0" class="text-red-500 text-xs">
                 Цена должна быть положительной
@@ -103,25 +75,13 @@
               <label class="block text-sm font-medium mb-2">
                 Период <span class="text-red-500">*</span>
               </label>
-              <SelectPrime
-                v-model="formData.period"
-                :options="periodOptions"
-                optionLabel="label"
-                optionValue="value"
-                placeholder="Выберите период"
-                class="w-full"
-              />
+              <SelectPrime v-model="formData.period" :options="periodOptions" optionLabel="label" optionValue="value"
+                placeholder="Выберите период" class="w-full" />
             </div>
 
             <div>
               <label class="block text-sm font-medium mb-2">Пробных дней</label>
-              <InputNumber
-                v-model="formData.trial_days"
-                :min="0"
-                :max="365"
-                :step="1"
-                class="w-full"
-              />
+              <InputNumber v-model="formData.trial_days" :min="0" :max="365" :step="1" class="w-full" />
               <small class="text-gray-500 text-xs">
                 Количество бесплатных дней пробного периода
               </small>
@@ -129,14 +89,8 @@
 
             <div>
               <label class="block text-sm font-medium mb-2">Порядок сортировки</label>
-              <InputNumber
-                v-model="formData.sort_order"
-                :min="0"
-                :max="999"
-                :step="1"
-                :showButtons="true"
-                class="w-full"
-              />
+              <InputNumber v-model="formData.sort_order" :min="0" :max="999" :step="1" :showButtons="true"
+                class="w-full" />
               <small class="text-gray-500 text-xs">
                 Чем меньше число, тем выше в списке (0 - самый верхний)
               </small>
@@ -144,20 +98,12 @@
 
             <div class="space-y-2">
               <div class="flex items-center gap-3">
-                <CheckboxPrime
-                  v-model="formData.is_active"
-                  :binary="true"
-                  inputId="isActive"
-                />
+                <CheckboxPrime v-model="formData.is_active" :binary="true" inputId="isActive" />
                 <label for="isActive" class="font-medium">Тариф активен</label>
               </div>
 
               <div class="flex items-center gap-3">
-                <CheckboxPrime
-                  v-model="formData.is_default"
-                  :binary="true"
-                  inputId="isDefault"
-                />
+                <CheckboxPrime v-model="formData.is_default" :binary="true" inputId="isDefault" />
                 <label for="isDefault" class="font-medium">Тариф по умолчанию</label>
               </div>
               <small class="text-gray-500 text-xs">
@@ -168,40 +114,17 @@
 
           <div class="space-y-4">
             <div>
-              <h3 class="font-medium text-gray-700 mb-2">Лимиты (JSON)</h3>
-              <TextareaPrime
-                v-model="jsonLimits"
-                placeholder='{"users": 10, "storage_gb": 5, "api_calls": 1000}'
-                class="w-full font-mono text-sm"
-                rows="6"
-                autoResize
-                @input="handleLimitsInput"
-              />
-              <small class="text-gray-500 text-xs">
-                Ограничения тарифа в формате JSON
-              </small>
-              <div v-if="limitsError" class="text-red-500 text-sm mt-1">
-                {{ limitsError }}
-              </div>
+              <h3 class="font-medium text-gray-700 mb-2">Лимиты</h3>
 
-              <div v-if="Object.keys(formData.limits || {}).length > 0" class="mt-2">
-                <h4 class="font-medium mb-2">Предварительный просмотр лимитов:</h4>
-                <pre class="bg-gray-50 p-2 rounded text-xs overflow-auto max-h-32">
-{{ JSON.stringify(formData.limits, null, 2) }}
-                </pre>
-              </div>
+              <EditableLimits :settings="selectedApplicationInfo?.settings || {}" v-model:value="formData.limits" label=""
+                :is-editing="true" :empty-message="'Выберите приложение для настройки лимитов'" />
             </div>
 
             <div>
               <h3 class="font-medium text-gray-700 mb-2">Возможности (JSON)</h3>
-              <TextareaPrime
-                v-model="jsonFeatures"
+              <TextareaPrime v-model="jsonFeatures"
                 placeholder='["Базовые отчеты", "Техподдержка по email", "5 пользователей"]'
-                class="w-full font-mono text-sm"
-                rows="6"
-                autoResize
-                @input="handleFeaturesInput"
-              />
+                class="w-full font-mono text-sm" rows="6" autoResize @input="handleFeaturesInput" />
               <small class="text-gray-500 text-xs">
                 Список возможностей тарифа в формате JSON массива
               </small>
@@ -212,8 +135,8 @@
               <div v-if="formData.features && formData.features.length > 0" class="mt-2">
                 <h4 class="font-medium mb-2">Предварительный просмотр возможностей:</h4>
                 <pre class="bg-gray-50 p-2 rounded text-xs overflow-auto max-h-32">
-{{ JSON.stringify(formData.features, null, 2) }}
-                </pre>
+      {{ JSON.stringify(formData.features, null, 2) }}
+    </pre>
               </div>
             </div>
 
@@ -229,11 +152,8 @@
 
                   <div class="text-gray-500">Статус:</div>
                   <div>
-                    <TagPrime
-                      :value="selectedApplicationInfo.isActive ? 'Активно' : 'Неактивно'"
-                      :severity="selectedApplicationInfo.isActive ? 'success' : 'secondary'"
-                      size="small"
-                    />
+                    <TagPrime :value="selectedApplicationInfo.isActive ? 'Активно' : 'Неактивно'"
+                      :severity="selectedApplicationInfo.isActive ? 'success' : 'secondary'" size="small" />
                   </div>
 
                   <div class="text-gray-500">Дата создания:</div>
@@ -250,24 +170,14 @@
     </CardPrime>
 
     <div class="flex gap-2 justify-end">
-      <ButtonPrime
-        label="Отмена"
-        icon="pi pi-times"
-        outlined
-        @click="cancel"
-      />
-      <ButtonPrime
-        label="Создать"
-        icon="pi pi-check"
-        :disabled="!isFormValid || creating"
-        @click="createTariff"
-      />
+      <ButtonPrime label="Отмена" icon="pi pi-times" outlined @click="cancel" />
+      <ButtonPrime label="Создать" icon="pi pi-check" :disabled="!isFormValid || creating" @click="createTariff" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import { tariffService, applicationService } from '@/services'
@@ -275,6 +185,7 @@ import type { CreateTariffRequest } from '@/services/tariff.service'
 import { PeriodType } from '@/types/api/responses'
 import type { ApplicationDTO } from '@/types/dto/application.dto'
 import { formatDate } from '@/helpers/formatters'
+import EditableLimits from '@/components/editableFields/EditableLimits.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -284,9 +195,7 @@ const creating = ref(false)
 const applications = ref<ApplicationDTO[]>([])
 const applicationsLoading = ref(false)
 
-const jsonLimits = ref('')
 const jsonFeatures = ref('')
-const limitsError = ref<string | null>(null)
 const featuresError = ref<string | null>(null)
 
 const formData = reactive<CreateTariffRequest>({
@@ -326,28 +235,12 @@ const selectedApplicationInfo = computed(() => {
 
 const isFormValid = computed(() => {
   return !!formData.app_id &&
-         !!formData.name &&
-         !!formData.code &&
-         formData.price !== undefined &&
-         formData.price >= 0 &&
-         !!formData.period
+    !!formData.name &&
+    !!formData.code &&
+    formData.price !== undefined &&
+    formData.price >= 0 &&
+    !!formData.period
 })
-
-const handleLimitsInput = () => {
-  limitsError.value = null
-
-  if (!jsonLimits.value.trim()) {
-    formData.limits = {}
-    return
-  }
-
-  try {
-    const parsed = JSON.parse(jsonLimits.value)
-    formData.limits = parsed
-  } catch{
-    limitsError.value = 'Некорректный JSON формат для лимитов'
-  }
-}
 
 const handleFeaturesInput = () => {
   featuresError.value = null
@@ -364,7 +257,7 @@ const handleFeaturesInput = () => {
     } else {
       featuresError.value = 'Возможности должны быть массивом'
     }
-  } catch{
+  } catch {
     featuresError.value = 'Некорректный JSON формат для возможностей'
   }
 }
@@ -404,7 +297,6 @@ const createTariff = async () => {
   }
 
   creating.value = true
-
   try {
     const response = await tariffService.createTariff(formData)
 
@@ -440,7 +332,7 @@ const createTariff = async () => {
 }
 
 const cancel = () => {
-  if (formData.app_id || formData.name || formData.code || jsonLimits.value || jsonFeatures.value) {
+  if (formData.app_id || formData.name || formData.code || jsonFeatures.value) {
     if (!confirm('Вы уверены? Введенные данные будут потеряны.')) {
       return
     }
@@ -448,16 +340,10 @@ const cancel = () => {
 
   router.push('/tariffs')
 }
-
+watch(formData,(newValue)=>{
+  console.log(newValue)
+})
 onMounted(() => {
   loadApplications()
 })
 </script>
-
-<style scoped>
-:deep(.p-inputtext.p-invalid),
-:deep(.p-dropdown.p-invalid),
-:deep(.p-inputnumber.p-invalid) {
-  border-color: #f87171;
-}
-</style>

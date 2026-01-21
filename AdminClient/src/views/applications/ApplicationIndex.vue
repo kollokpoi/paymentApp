@@ -46,7 +46,6 @@
               />
               <div>
                 <div class="font-medium">{{ data.name }}</div>
-                <div class="text-sm text-gray-500">{{ data.code }}</div>
               </div>
             </div>
           </template>
@@ -413,7 +412,7 @@ const confirmDelete = (id: string) => {
     acceptClass: 'p-button-danger',
     acceptLabel: 'Удалить',
     rejectLabel: 'Отмена',
-    accept: () => deleteApplication(id)
+    accept: async () => await deleteApplication(id)
   })
 }
 

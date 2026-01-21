@@ -11,7 +11,7 @@ export interface PortalEditData {
 export const portalDataToRequest = (data: PortalEditData):UpdatePortalRequest=>({
   is_active: data.isActive,
   company_name:data.companyName,
-  admin_email:data.adminEmail,
+  admin_email:data.adminEmail?.trim() || null,
   b24_domain:data.b24Domain
 })
 

@@ -15,16 +15,9 @@
         <h1 class="text-2xl font-bold">{{ tariff.name }}</h1>
         <div class="flex items-center gap-2 mt-2">
           <TagPrime :value="tariff.code" severity="info" />
-          <TagPrime
-            :value="tariff.isActive ? 'Активен' : 'Неактивен'"
-            :severity="tariff.isActive ? 'success' : 'secondary'"
-          />
-          <TagPrime
-            v-if="tariff.isDefault"
-            value="По умолчанию"
-            severity="warning"
-            icon="pi pi-star"
-          />
+          <TagPrime :value="tariff.isActive ? 'Активен' : 'Неактивен'"
+            :severity="tariff.isActive ? 'success' : 'secondary'" />
+          <TagPrime v-if="tariff.isDefault" value="По умолчанию" severity="warning" icon="pi pi-star" />
         </div>
       </div>
     </div>
@@ -38,105 +31,47 @@
             <dl class="space-y-3">
               <div>
                 <dt class="text-sm text-gray-500">Приложение</dt>
-                <router-link
-                  v-if="tariff.application"
-                  :to="`/applications/${tariff.appId}`"
-                  class="font-medium text-primary-600 hover:text-primary-500"
-                >
+                <router-link v-if="tariff.application" :to="`/applications/${tariff.appId}`"
+                  class="font-medium text-primary-600 hover:text-primary-500">
                   <dd>{{ tariff.application.name }}</dd>
                 </router-link>
                 <dd v-else class="text-gray-500">{{ tariff.appId }}</dd>
               </div>
 
-              <EditableText
-                label="Название"
-                :type="FieldTypes.Text"
-                v-model:value="editData.name"
-                required
-                :is-editing="globalEditing"
-                @edit-start="startEditing"
-              />
+              <EditableText label="Название" :type="FieldTypes.Text" v-model:value="editData.name" required
+                :is-editing="globalEditing" @edit-start="startEditing" @validation-change="onValidationChange('name', $event)"/>
 
-              <EditableText
-                label="Код"
-                :type="FieldTypes.Text"
-                v-model:value="editData.code"
-                required
-                :is-editing="globalEditing"
-                @edit-start="startEditing"
-              />
+              <EditableText label="Код" :type="FieldTypes.Text" v-model:value="editData.code" required
+                :is-editing="globalEditing" @edit-start="startEditing" @validation-change="onValidationChange('code', $event)"/>
 
-              <EditableText
-                label="Описание"
-                v-model:value="editData.description"
-                :type="FieldTypes.TextArea"
-                :is-editing="globalEditing"
-                @edit-start="startEditing"
-              />
+              <EditableText label="Описание" v-model:value="editData.description" :type="FieldTypes.TextArea"
+                :is-editing="globalEditing" @edit-start="startEditing" />
 
-              <EditableNumber
-                label="Цена"
-                v-model:value="editData.price"
-                required
-                :min="0"
-                :step="0.01"
-                :is-editing="globalEditing"
-                @edit-start="startEditing"
-              />
+              <EditableNumber label="Цена" v-model:value="editData.price" required :min="0" :step="0.01"
+                :is-editing="globalEditing" @edit-start="startEditing" @validation-change="onValidationChange('price', $event)"/>
 
-              <EditableSelect
-                label="Период"
-                v-model:value="editData.period"
-                required
-                :items="periodOptions"
-                :is-editing="globalEditing"
-                @edit-start="startEditing"
-              />
+              <EditableSelect label="Период" v-model:value="editData.period" required :items="periodOptions"
+                :is-editing="globalEditing" @edit-start="startEditing" />
 
-              <EditableNumber
-                label="Пробных дней"
-                v-model:value="editData.trialDays"
-                :min="0"
-                :step="1"
-                :is-editing="globalEditing"
-                @edit-start="startEditing"
-              />
+              <EditableNumber label="Пробных дней" v-model:value="editData.trialDays" :min="0" :step="1"
+                :is-editing="globalEditing" @edit-start="startEditing" />
 
-              <EditableNumber
-                label="Порядок сортировки"
-                v-model:value="editData.sortOrder"
-                :min="0"
-                :step="1"
-                :is-editing="globalEditing"
-                @edit-start="startEditing"
-              />
+              <EditableNumber label="Порядок сортировки" v-model:value="editData.sortOrder" :min="0" :step="1"
+                :is-editing="globalEditing" @edit-start="startEditing" />
 
-              <EditableBoolean
-                label="Активен"
-                v-model:value="editData.isActive"
-                true-label="Да"
-                false-label="Нет"
-                :is-editing="globalEditing"
-                @edit-start="startEditing"
-              />
+              <EditableBoolean label="Активен" v-model:value="editData.isActive" true-label="Да" false-label="Нет"
+                :is-editing="globalEditing" @edit-start="startEditing" />
 
-              <EditableBoolean
-                label="По умолчанию"
-                v-model:value="editData.isDefault"
-                true-label="Да"
-                false-label="Нет"
-                :is-editing="globalEditing"
-                @edit-start="startEditing"
-              />
+              <EditableBoolean label="По умолчанию" v-model:value="editData.isDefault" true-label="Да" false-label="Нет"
+                :is-editing="globalEditing" @edit-start="startEditing" />
             </dl>
           </div>
 
           <div>
             <h3 class="font-medium text-gray-700 mt-6 mb-4">Лимиты</h3>
             <div v-if="editData.limits && Object.keys(editData.limits).length > 0">
-              <pre class="bg-gray-50 p-4 rounded text-sm overflow-auto">{{
-                JSON.stringify(editData.limits, null, 2)
-              }}</pre>
+              <EditableLimits label="Ограничения для тарифа" :settings="editData.limits || {}"
+                v-model="editData.limits" :is-editing="globalEditing" @edit-start="startEditing"/>
             </div>
             <div v-else class="text-gray-500">Лимиты не установлены</div>
           </div>
@@ -145,48 +80,25 @@
     </CardPrime>
 
     <div v-if="globalEditing" class="flex gap-2 items-center justify-end">
-      <ButtonPrime
-        label="Сохранить"
-        icon="pi pi-check"
-        @click="updateTariff"
-        :disabled="!canUpdate"
-      />
-      <ButtonPrime
-        label="Отмена"
-        severity="danger"
-        outline
-        @click="cancelEditing"
-      />
+      <ButtonPrime label="Сохранить" icon="pi pi-check" @click="updateTariff" :disabled="!canUpdate" />
+      <ButtonPrime label="Отмена" severity="danger" outline @click="cancelEditing" />
     </div>
     <div v-else class="flex gap-2 items-center justify-end">
-      <ButtonPrime
-        label="Редактировать"
-        icon="pi pi-pencil"
-        @click="startEditing"
-      />
-      <ButtonPrime
-        label="Удалить"
-        icon="pi pi-trash"
-        severity="danger"
-        @click="confirmDelete"
-        :disabled="tariff.isDefault"
-      />
+      <ButtonPrime label="Редактировать" icon="pi pi-pencil" @click="startEditing" />
+      <ButtonPrime label="Удалить" icon="pi pi-trash" severity="danger" @click="confirmDelete"
+        :disabled="tariff.isDefault" />
     </div>
 
     <CardPrime>
       <template #title>
         <div class="flex justify-between">
           <p>Подписки на этот тариф</p>
-          <ButtonPrime
-            label="Просмотреть все"
-            icon="pi pi-external-link"
-            @click="goToSubscriptions"
-          />
+          <ButtonPrime label="Просмотреть все" icon="pi pi-external-link" @click="goToSubscriptions" />
         </div>
       </template>
       <template #content>
         <div v-if="subscriptions && subscriptions.length > 0">
-          <SubscriptionTable :subscriptions="subscriptions" :loading="subscriptionsLoading" show-company/>
+          <SubscriptionTable :subscriptions="subscriptions" :loading="subscriptionsLoading" show-company />
         </div>
         <div v-else class="text-center py-12">
           <i class="pi pi-exclamation-circle text-4xl text-gray-300 mb-4"></i>
@@ -208,21 +120,22 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useToast, useConfirm } from 'primevue'
 import ProgressSpinner from 'primevue/progressspinner'
 import ConfirmDialog from 'primevue/confirmdialog'
 
 import { tariffService, subscriptionService } from '@/services'
-import {applyTariffEditData, createTariffEditData, SubscriptionDTO, tariffDataToRequest, TariffDTO, type TariffEditData} from '@/types/dto'
-import { FieldTypes } from '@/types/editable'
+import { applyTariffEditData, createTariffEditData, SubscriptionDTO, tariffDataToRequest, TariffDTO, type TariffEditData } from '@/types/dto'
+import { FieldTypes, type ValidationResult } from '@/types/editable'
 import { PeriodType } from '@/types/api/responses'
 import EditableText from '@/components/editableFields/EditableText.vue'
 import EditableNumber from '@/components/editableFields/EditableNumber.vue'
 import EditableBoolean from '@/components/editableFields/EditableBoolean.vue'
 import EditableSelect from '@/components/editableFields/EditableSelect.vue'
 import SubscriptionTable from '@/components/SubscriptionTable.vue'
+import EditableLimits from '@/components/editableFields/EditableLimits.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -237,7 +150,17 @@ const tariff = ref<TariffDTO>()
 const subscriptions = ref<SubscriptionDTO[]>([])
 const globalEditing = ref(false)
 const validationErrors = ref<Array<{ field: string; message: string }>>([])
+const onValidationChange = (field: string, result: ValidationResult) => {
+  validationErrors.value = validationErrors.value.filter(e => e.field !== field)
 
+  if (!result.isValid && result.message) {
+    validationErrors.value.push({
+      field,
+      message: result.message
+    })
+  }
+  console.log(validationErrors)
+}
 const canUpdate = computed(() => validationErrors.value.length === 0)
 
 const editData = reactive<TariffEditData>({
@@ -382,7 +305,7 @@ const loadSubscriptions = async () => {
     const response = await subscriptionService.getSubscriptions({
       tariffId: tariffId,
       limit: 5,
-      page:1
+      page: 1
     })
     if (response.success) {
       subscriptions.value = response.data.items
@@ -397,7 +320,9 @@ const loadSubscriptions = async () => {
 const goToSubscriptions = () => {
   router.push(`/subscriptions?tariffId=${tariffId}`)
 }
-
+watch(editData,(newValue)=>{
+  console.log(newValue)
+})
 onMounted(() => {
   loadTariff()
 })
