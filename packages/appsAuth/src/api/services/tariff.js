@@ -1,0 +1,20 @@
+export class TariffService {
+  constructor(apiClient) {
+    this.api = apiClient;
+  }
+
+  async getCurrent() {
+    const response = await this.api.get('/api/tariffs/current');
+    return response;
+  }
+
+  async getById(tariffId) {
+    const response = await this.api.get(`/api/tariffs/${tariffId}`);
+    return response;
+  }
+
+  async getAll() {
+    const response = await this.api.get('/api/tariffs');
+    return response;
+  }
+}
