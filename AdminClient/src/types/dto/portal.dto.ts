@@ -19,6 +19,7 @@ export interface PortalDTOData {
   updated_at?: string | Date
   updatedAt?: string | Date
   metadata?: Metadata
+  balance: number
   subscriptions?: any[]
 }
 
@@ -32,6 +33,7 @@ export class PortalDTO {
   createdAt: string | Date
   updatedAt: string | Date
   metadata: Metadata
+  balance: number
   subscriptions: SubscriptionDTO[]
 
   constructor(data: PortalDTOData) {
@@ -41,6 +43,7 @@ export class PortalDTO {
     this.adminEmail = data.admin_email || data.adminEmail || null
     this.isActive = data.is_active !== undefined ? data.is_active : (data.isActive ?? true)
     this.lastSyncAt = data.last_sync_at || data.lastSyncAt || null
+    this.balance = data.balance
     this.createdAt = data.created_at || data.createdAt || new Date().toISOString()
     this.updatedAt = data.updated_at || data.updatedAt || new Date().toISOString()
     this.metadata = data.metadata || {}

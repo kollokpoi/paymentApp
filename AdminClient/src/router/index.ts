@@ -45,6 +45,8 @@ const TariffCreate = () => import('@/views/tariffs/CreateTariff.vue')
 
 const UsersIndex = () => import('@/views/users/UserIndex.vue')
 const UsersDetails = () => import('@/views/users/UserDetails.vue')
+const UsersMe = () => import('@/views/users/UserMe.vue')
+const UserCreate = () => import('@/views/users/CreateUser.vue')
 
 const SettingsPage = () => import('@/views/SettingsPage.vue')
 const AnalyticsPage = () => import('@/views/AnalyticsPage.vue')
@@ -274,6 +276,22 @@ const routes: Array<RouteRecordRaw> = [
         component: UsersIndex,
         meta: {
           title: 'Пользователи',
+        },
+      },
+      {
+        path: 'me',
+        name: 'user-me',
+        component: UsersMe,
+        meta: {
+          title: 'Пользователь',
+        },
+      },
+      {
+        path: 'create',
+        name: 'user-create',
+        component: UserCreate,
+        meta: {
+          title: 'Добавление пользователя',
         },
       },
       {

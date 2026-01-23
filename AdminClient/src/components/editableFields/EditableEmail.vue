@@ -1,12 +1,11 @@
 <template>
   <div class="editable-field">
-    <dt class="text-sm text-gray-500">{{ label }}</dt>
+    <dt class="text-sm text-gray-500">{{ label }}<span v-if="props.required && isEditing" style="color: red;">*</span></dt>
     <dd v-if="!localIsEditing" class="font-medium cursor-pointer hover:bg-gray-50 p-1 rounded" @dblclick="startEditing">
       {{ displayValue }}
     </dd>
     <div v-else class="edit-mode">
-      <InputText v-model="localValue" type="email"
-        class="w-full border rounded px-2 py-1" :placeholder="placeholder" />
+      <InputText v-model="localValue" type="email" class="w-full border rounded px-2 py-1" :placeholder="placeholder" />
       <div v-if="errorMessage" class="text-red-500 text-sm mt-1">
         {{ errorMessage }}
       </div>
@@ -16,7 +15,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import {type EditableComponentExpose, type EditableEmailProps, type ValidationResult } from '@/types/editable'
+import { type EditableComponentExpose, type EditableEmailProps, type ValidationResult } from '@/types/editable'
 import { emailValidators } from '@/helpers/validators';
 
 const props = withDefaults(defineProps<EditableEmailProps>(), {
@@ -31,7 +30,7 @@ const emit = defineEmits([
   'validation-change'
 ])
 
-const localIsEditing = ref(false)
+const localIsEditing = ref(props.isEditing)
 const localValue = ref(props.value as string)
 const errorMessage = ref('')
 
@@ -63,7 +62,7 @@ const validate = (): ValidationResult => {
     return result
   }
 
-  const allValidators = [...props.validators,...emailValidators]
+  const allValidators = [...props.validators, ...emailValidators]
   for (const validator of allValidators) {
     const result = validator(localValue.value)
     if (!result.isValid) {
@@ -72,7 +71,7 @@ const validate = (): ValidationResult => {
     }
   }
 
-  
+
 
   return { isValid: true }
 }

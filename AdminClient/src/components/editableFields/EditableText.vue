@@ -1,6 +1,6 @@
 <template>
   <div class="editable-field">
-    <dt class="text-sm text-gray-500">{{ label }}</dt>
+    <dt class="text-sm text-gray-500">{{ label}}<span v-if="props.required && isEditing" style="color: red;">*</span></dt>
     <dd
       v-if="!localIsEditing"
       class="font-medium cursor-pointer hover:bg-gray-50 p-1 rounded"
@@ -20,7 +20,7 @@
       <InputText
         v-else
         v-model="localValue"
-        :type="type === FieldTypes.Email ? 'email' : 'text'"
+        :type="type === FieldTypes.Email ? 'email' : type === FieldTypes.Password ? 'password' : 'text'"
         class="w-full border rounded px-2 py-1"
         :placeholder="placeholder"
         :maxlength="maxLength"
@@ -34,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { FieldTypes, type EditableComponentExpose, type EditableTextProps, type ValidationResult } from '@/types/editable'
 
 const props = withDefaults(defineProps<EditableTextProps>(), {
@@ -50,7 +50,7 @@ const emit = defineEmits([
   'validation-change'
 ])
 
-const localIsEditing = ref(false)
+const localIsEditing = ref(props.isEditing)
 const localValue = ref(props.value as string)
 const errorMessage = ref('')
 
@@ -112,7 +112,10 @@ watch(localValue, () => {
   emit('validation-change', validation)
   emit('update:value',localValue.value)
 })
-
+onMounted(()=>{
+  const validation = validate()
+  emit('validation-change', validation)
+})
 defineExpose<EditableComponentExpose>({
   cancel,
   getValue: () => localValue.value,

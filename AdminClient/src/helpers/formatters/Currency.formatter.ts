@@ -11,23 +11,3 @@ export const formatCurrency = (amount: number, currency: string = 'RUB'): string
 
   return formatter.format(amount)
 }
-
-export const formatCurrencySimple = (amount: number, currency: string = 'RUB'): string => {
-  if (isNaN(amount)) return '0 ₽'
-
-  const formattedAmount = amount.toLocaleString('ru-RU', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2
-  })
-
-  const currencySymbols: Record<string, string> = {
-    'RUB': '₽',
-    'USD': '$',
-    'EUR': '€',
-    'KZT': '₸'
-  }
-
-  const symbol = currencySymbols[currency] || currency
-
-  return `${formattedAmount} ${symbol}`
-}

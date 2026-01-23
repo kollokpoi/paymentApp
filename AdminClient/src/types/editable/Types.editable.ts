@@ -6,5 +6,6 @@ export enum FieldTypes {
   Phone,
   Date,
   Number,
-  TextArea
+  TextArea,
+
 }

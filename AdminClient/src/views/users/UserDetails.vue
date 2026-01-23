@@ -15,14 +15,9 @@
         <h1 class="text-2xl font-bold">{{ user.name }}</h1>
         <div class="flex items-center gap-2 mt-2">
           <TagPrime :value="user.email" severity="info" />
-          <TagPrime
-            :value="user.isActive ? 'Активен' : 'Неактивен'"
-            :severity="user.isActive ? 'success' : 'secondary'"
-          />
-          <TagPrime
-            :value="getRoleLabel(user.role)"
-            :severity="getRoleSeverity(user.role)"
-          />
+          <TagPrime :value="user.isActive ? 'Активен' : 'Неактивен'"
+            :severity="user.isActive ? 'success' : 'secondary'" />
+          <TagPrime :value="getRoleLabel(user.role)" :severity="getRoleSeverity(user.role)" />
         </div>
       </div>
     </div>
@@ -34,37 +29,18 @@
           <div>
             <h3 class="font-medium text-gray-700 mb-4">Данные пользователя</h3>
             <dl class="space-y-3">
-              <EditableText
-                label="Имя"
-                :type="FieldTypes.Text"
-                v-model:value="editData.name"
-                required
-                :is-editing="globalEditing"
-                @edit-start="startEditing"
-              />
+              <EditableText label="Имя" :type="FieldTypes.Text" v-model:value="editData.name" required
+                :is-editing="globalEditing" @edit-start="startEditing"
+                v-on:validation-change="onValidationChange('name', $event)" />
 
-              <div>
-                <dt class="text-sm text-gray-500">Email</dt>
-                <dd class="text-gray-900 font-medium">{{ user.email }}</dd>
-              </div>
+              <EditableEmail required label="Email" v-model:value="editData.email" :is-editing="globalEditing"
+                :type="FieldTypes.Email" @edit-start="startEditing" v-on:validation-change="onValidationChange('email', $event)"/>
 
-              <EditableSelect
-                label="Роль"
-                v-model:value="editData.role"
-                required
-                :items="roleOptions"
-                :is-editing="globalEditing"
-                @edit-start="startEditing"
-              />
+              <EditableSelect label="Роль" v-model:value="editData.role" required :items="roleOptions"
+                :is-editing="globalEditing" @edit-start="startEditing" />
 
-              <EditableBoolean
-                label="Активен"
-                v-model:value="editData.isActive"
-                true-label="Да"
-                false-label="Нет"
-                :is-editing="globalEditing"
-                @edit-start="startEditing"
-              />
+              <EditableBoolean label="Активен" v-model:value="editData.isActive" true-label="Да" false-label="Нет"
+                :is-editing="globalEditing" @edit-start="startEditing" />
 
               <div>
                 <dt class="text-sm text-gray-500">Последний вход</dt>
@@ -103,31 +79,12 @@
     </CardPrime>
 
     <div v-if="globalEditing" class="flex gap-2 items-center justify-end">
-      <ButtonPrime
-        label="Сохранить"
-        icon="pi pi-check"
-        @click="updateUser"
-        :disabled="!canUpdate"
-      />
-      <ButtonPrime
-        label="Отмена"
-        severity="danger"
-        outline
-        @click="cancelEditing"
-      />
+      <ButtonPrime label="Сохранить" icon="pi pi-check" @click="updateUser" :disabled="!canUpdate" />
+      <ButtonPrime label="Отмена" severity="danger" outline @click="cancelEditing" />
     </div>
     <div v-else class="flex gap-2 items-center justify-end">
-      <ButtonPrime
-        label="Редактировать"
-        icon="pi pi-pencil"
-        @click="startEditing"
-      />
-      <ButtonPrime
-        label="Удалить"
-        icon="pi pi-trash"
-        severity="danger"
-        @click="confirmDelete"
-      />
+      <ButtonPrime label="Редактировать" icon="pi pi-pencil" @click="startEditing" />
+      <ButtonPrime label="Удалить" icon="pi pi-trash" severity="danger" @click="confirmDelete" />
     </div>
   </div>
 
@@ -159,8 +116,9 @@ import { formatDate, formatRelativeTime } from '@/helpers/formatters'
 import EditableText from '@/components/editableFields/EditableText.vue'
 import EditableBoolean from '@/components/editableFields/EditableBoolean.vue'
 import EditableSelect from '@/components/editableFields/EditableSelect.vue'
+import EditableEmail from '@/components/editableFields/EditableEmail.vue'
 import { AdminUserDTO, type AdminUserEditData, createAdminUserEditData, adminUserDataToRequest, applyAdminUserEditData } from '@/types/dto'
-import { FieldTypes } from '@/types/editable'
+import { FieldTypes, type ValidationResult } from '@/types/editable'
 
 const route = useRoute()
 const router = useRouter()
@@ -174,9 +132,22 @@ const user = ref<AdminUserDTO>()
 const globalEditing = ref(false)
 const validationErrors = ref<Array<{ field: string; message: string }>>([])
 
+const onValidationChange = (field: string, result: ValidationResult) => {
+  validationErrors.value = validationErrors.value.filter(e => e.field !== field)
+
+  if (!result.isValid && result.message) {
+    validationErrors.value.push({
+      field,
+      message: result.message
+    })
+  }
+  console.log(validationErrors)
+}
+
 const canUpdate = computed(() => validationErrors.value.length === 0)
 
 const editData = reactive<AdminUserEditData>({
+  email: '',
   name: '',
   role: AdminRole.SUPPORT,
   isActive: true,

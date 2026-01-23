@@ -21,6 +21,7 @@
       </div>
     </div>
 
+
     <CardPrime>
       <template #content>
         <h3 class="font-medium text-gray-700 mb-4">Информация о подписке</h3>
@@ -28,19 +29,15 @@
           <div class="space-y-3">
             <div>
               <dt class="text-sm text-gray-500">Портал</dt>
-              <router-link
-                :to="`/portals/${subscription.portalId}`"
-                class="font-medium text-primary-600 hover:text-primary-500"
-              >
+              <router-link :to="`/portals/${subscription.portalId}`"
+                class="font-medium text-primary-600 hover:text-primary-500">
                 <dd>{{ subscription.companyName }}</dd>
               </router-link>
             </div>
             <div>
               <dt class="text-sm text-gray-500">Приложение</dt>
-              <router-link
-                :to="`/applications/${subscription.appId}`"
-                class="font-medium text-primary-600 hover:text-primary-500"
-              >
+              <router-link :to="`/applications/${subscription.appId}`"
+                class="font-medium text-primary-600 hover:text-primary-500">
                 <dd>{{ subscription.application?.name }}</dd>
               </router-link>
             </div>
@@ -48,15 +45,16 @@
               <dt class="text-sm text-gray-500">Тариф</dt>
               <dd>{{ subscription.tariff?.name }}</dd>
             </div>
+            <div>
+              <dt class="text-sm text-gray-500">Средства на балансе портала</dt>
+              <dd>{{ formatCurrency(portalBalance) }}</dd>
+            </div>
           </div>
           <div class="space-y-3">
             <div>
               <dt class="text-sm text-gray-500">Статус</dt>
               <dd>
-                <TagPrime
-                  :value="subscription.status"
-                  :severity="getStatusSeverity(subscription.status)"
-                />
+                <TagPrime :value="subscription.status" :severity="getStatusSeverity(subscription.status)" />
               </dd>
             </div>
             <div>
@@ -95,16 +93,8 @@
                   Срок продления <span class="text-red-500">*</span>
                 </label>
                 <div class="flex gap-2">
-                  <InputNumber
-                    v-model="days"
-                    placeholder="Введите количество дней"
-                    :min="1"
-                    :max="3650"
-                    :maxFractionDigits="0"
-                    class="flex-1"
-                    :disabled="fromTariff"
-                    :invalid="!isDaysValid"
-                  />
+                  <InputNumber v-model="days" placeholder="Введите количество дней" :min="1" :max="3650"
+                    :maxFractionDigits="0" class="flex-1" :disabled="fromTariff" :invalid="!isDaysValid" />
                   <div class="flex items-center px-3 bg-gray-50 rounded border">
                     <span class="text-gray-700">дней</span>
                   </div>
@@ -143,8 +133,9 @@
 
                 <div v-if="calculatedPrice" class="text-blue-600">Стоимость продления:</div>
                 <div v-if="calculatedPrice" class="font-medium text-lg">
-                  {{ calculatedPrice }}
+                  {{ formatCurrency(calculatedPrice) }}
                 </div>
+
               </div>
             </div>
 
@@ -153,10 +144,8 @@
               <div class="space-y-2 text-sm">
                 <div class="flex justify-between">
                   <span class="text-gray-500">Текущий период:</span>
-                  <span
-                    >{{ formatDate(subscription.validFrom) }} —
-                    {{ formatDate(subscription.validUntil) }}</span
-                  >
+                  <span>{{ formatDate(subscription.validFrom) }} —
+                    {{ formatDate(subscription.validUntil) }}</span>
                 </div>
                 <div class="flex justify-between">
                   <span class="text-gray-500">Продление на:</span>
@@ -169,12 +158,10 @@
                     {{ newEndDate ? formatDate(newEndDate) : '—' }}
                   </span>
                 </div>
-                <div
-                  v-if="subscription.tariff && subscription.tariff.price > 0"
-                  class="flex justify-between pt-2 border-t"
-                >
+                <div v-if="subscription.tariff && subscription.tariff.price > 0"
+                  class="flex justify-between pt-2 border-t">
                   <span class="text-gray-500">Стоимость:</span>
-                  <span class="font-bold text-lg">{{ calculatedPrice }}</span>
+                  <span class="font-bold text-lg">{{ formatCurrency(calculatedPrice) }}</span>
                 </div>
               </div>
             </div>
@@ -185,12 +172,8 @@
 
     <div class="flex gap-2 justify-end">
       <ButtonPrime label="Отмена" icon="pi pi-times" outlined @click="cancel" />
-      <ButtonPrime
-        label="Продлить"
-        icon="pi pi-check"
-        :disabled="!canExtend || extending"
-        @click="extendSubscription"
-      />
+      <ButtonPrime label="Продлить" icon="pi pi-check" :disabled="!canExtend || extending"
+        @click="extendSubscription" />
     </div>
 
     <CardPrime>
@@ -203,12 +186,8 @@
       <template #content>
         <div v-if="payments && payments.length > 0">
           <PaymentTable :payments="payments" :loading="paymentsLoading" />
-          <PaginatorPrime
-            v-if="paymentPagination?.total > paymentPagination.limit"
-            :rows="paymentPagination.limit"
-            :totalRecords="paymentPagination.total"
-            @page="onPageChange"
-          />
+          <PaginatorPrime v-if="paymentPagination?.total > paymentPagination.limit" :rows="paymentPagination.limit"
+            :totalRecords="paymentPagination.total" @page="onPageChange" />
         </div>
         <div v-else class="text-center py-8">
           <i class="pi pi-credit-card text-3xl text-gray-300 mb-3"></i>
@@ -225,7 +204,7 @@
       Вернуться к списку подписок
     </router-link>
   </div>
-   <ConfirmDialog :draggable="true" />
+  <ConfirmDialog :draggable="true" />
 </template>
 
 <script setup lang="ts">
@@ -239,12 +218,10 @@ import type { SubscriptionDTO, PaymentDTO } from '@/types/dto'
 import { PeriodType } from '@/types/api/responses'
 import { formatDate, formatCurrency, pluralizeDays } from '@/helpers/formatters'
 import PaymentTable from '@/components/PaymentTable.vue'
-import { useConfirm } from 'primevue'
 
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
-const confirm = useConfirm()
 
 const subscriptionId = route.params.id as string
 const fromPayment = computed(() => route.query.fromPayment === 'true')
@@ -257,6 +234,7 @@ const payments = ref<PaymentDTO[]>([])
 
 const days = ref<number>(30)
 const fromTariff = ref<boolean>(true)
+const portalBalance = ref(0)
 
 const paymentPagination = reactive({
   total: 0,
@@ -290,15 +268,15 @@ const newEndDate = computed(() => {
 })
 
 const calculatedPrice = computed(() => {
-  if (!subscription.value?.tariff?.price) return 'Бесплатно'
+  if (!subscription.value?.tariff?.price) return 0
 
   const tariff = subscription.value.tariff
   const periods = days.value / tariffDaysInPeriod.value
 
-  if (periods <= 0) return formatCurrency(tariff.price)
+  if (periods <= 0) return tariff.price
 
   const totalPrice = tariff.price * periods
-  return formatCurrency(totalPrice)
+  return totalPrice
 })
 
 const isDaysValid = computed(() => {
@@ -307,6 +285,10 @@ const isDaysValid = computed(() => {
 
 const canExtend = computed(() => {
   return isDaysValid.value && !extending.value
+})
+
+const isBalanceEnough = computed(() => {
+  return portalBalance.value > calculatedPrice.value
 })
 
 
@@ -341,6 +323,9 @@ const loadSubscription = async () => {
 
       if (subscription.value.tariff) {
         days.value = tariffDaysInPeriod.value
+      }
+      if (subscription.value.portal) {
+        portalBalance.value = subscription.value.portal.balance
       }
     } else {
       toast.add({
@@ -403,13 +388,40 @@ const goToPayments = () => {
 
 // Продление подписки
 const extendSubscription = async () => {
-  if (!canExtend.value || !subscription.value) return
+  if (!subscription.value) {
+    toast.add({
+      severity: 'error',
+      summary: 'Ошибка',
+      detail: 'Ошибка в работе приложения',
+      life: 3000,
+    })
+    return;
+  }
+  if (!isBalanceEnough.value) {
+    toast.add({
+      severity: 'warn',
+      summary: 'Ошибка',
+      detail: 'Недостаточно средств на балансе',
+      life: 3000,
+    })
+    return;
+  }
+  if (!canExtend.value) {
+    toast.add({
+      severity: 'warning',
+      summary: 'Ошибка',
+      detail: 'Не указано количество дней',
+      life: 3000,
+    })
+    return;
+  }
 
   extending.value = true
 
   try {
     const requestData: RenewSubscriptionRequest = {
       days: days.value,
+      amount: calculatedPrice.value
     }
 
     const response = await subscriptionService.renewSubscription(subscriptionId, requestData)
@@ -418,28 +430,7 @@ const extendSubscription = async () => {
       if (fromPayment.value) {
         router.back()
       } else {
-        confirm.require({
-          message: `Создать платеж за продление на сумму ${calculatedPrice.value}?`,
-          header: 'Создание платежа',
-          icon: 'pi pi-credit-card',
-          acceptClass: 'p-button-success',
-          acceptLabel: 'Создать платеж',
-          rejectLabel: 'К подписке',
-
-          accept() {
-            router.push({
-              path: '/payments/create',
-              query: {
-                fromExtend: 'true',
-                subscriptionId: subscriptionId,
-                amount: calculatedPrice.value,
-              },
-            })
-          },
-          reject() {
-            router.push(`/subscriptions/${subscriptionId}`)
-          },
-        })
+        router.push(`/subscriptions/${subscriptionId}`)
       }
     } else {
       toast.add({

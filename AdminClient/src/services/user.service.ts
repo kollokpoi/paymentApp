@@ -11,10 +11,11 @@ export interface CreateUserRequest {
 }
 
 export interface UpdateAdminUserRequest {
-  email?: string
-  name?: string
-  role?: AdminRole
+  email: string
+  name: string
+  role: AdminRole
   is_active?: boolean
+  password?:string
 }
 
 export interface AdminRoleStatistics {

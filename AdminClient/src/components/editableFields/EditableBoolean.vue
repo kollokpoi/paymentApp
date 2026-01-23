@@ -1,26 +1,14 @@
 <template>
   <div class="editable-field">
-    <dt class="text-sm text-gray-500">{{ label }}</dt>
-    <dd
-      v-if="!localIsEditing"
-      class="font-medium cursor-pointer hover:bg-gray-50 p-1 rounded flex items-center"
-      @dblclick="startEditing"
-    >
-      <CheckboxPrime
-        v-model="displayValueModel"
-        :binary="true"
-        disabled
-        class="mr-2"
-      />
+    <dt class="text-sm text-gray-500">{{ label }}<span v-if="props.required && isEditing" style="color: red;">*</span></dt>
+    <dd v-if="!localIsEditing" class="font-medium cursor-pointer hover:bg-gray-50 p-1 rounded flex items-center"
+      @dblclick="startEditing">
+      <CheckboxPrime v-model="displayValueModel" :binary="true" disabled class="mr-2" />
       <span>{{ displayText }}</span>
     </dd>
     <div v-else class="edit-mode flex items-center gap-4">
       <div class="flex items-center gap-2">
-        <CheckboxPrime
-          v-model="localValue"
-          :binary="true"
-          inputId="editable-checkbox"
-        />
+        <CheckboxPrime v-model="localValue" :binary="true" inputId="editable-checkbox" />
         <label for="editable-checkbox" class="cursor-pointer ml-2">
           {{ localValue ? trueLabel : falseLabel }}
         </label>
@@ -31,13 +19,13 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { type EditableBooleanProps} from '@/types/editable'
+import { type EditableBooleanProps } from '@/types/editable'
 
 const props = withDefaults(defineProps<EditableBooleanProps>(), {
   trueLabel: 'Активен',
   falseLabel: 'Не активен',
   required: false,
-  validators: ()=>[]
+  validators: () => []
 })
 
 const emit = defineEmits<{
@@ -45,7 +33,7 @@ const emit = defineEmits<{
   'edit-start': []
 }>()
 
-const localIsEditing = ref(false)
+const localIsEditing = ref(props.isEditing)
 const localValue = ref(props.value as unknown as boolean)
 const originalValue = ref(props.value as unknown as boolean)
 
@@ -65,15 +53,15 @@ const startEditing = () => {
 
 }
 
-watch(()=>props.isEditing, (newVal) => {
-  if(!newVal && localIsEditing.value){
+watch(() => props.isEditing, (newVal) => {
+  if (!newVal && localIsEditing.value) {
     localValue.value = props.value as boolean
   }
   localIsEditing.value = newVal
 })
 
 watch(localValue, () => {
-  emit('update:value',localValue.value)
+  emit('update:value', localValue.value)
 })
 
 </script>

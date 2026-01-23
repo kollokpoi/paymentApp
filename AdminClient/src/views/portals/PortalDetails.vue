@@ -33,8 +33,11 @@
                 @edit-start="() => { globalEditing = true }"
                 @validation-change="onValidationChange('b24Domain', $event)" />
               <EditableEmail label="Почта администратора" placeholder="Почта" v-model:value="editData.adminEmail"
-                :type="FieldTypes.Email" :is-editing="globalEditing"
-                @edit-start="() => { globalEditing = true }" />
+                :type="FieldTypes.Email" :is-editing="globalEditing" @edit-start="() => { globalEditing = true }" />
+              <div>
+                <dt class="text-sm text-gray-500">Баланс</dt>
+                <dd>{{ formatCurrency(portal.balance) }}</dd>
+              </div>
               <div>
                 <dt class="text-sm text-gray-500">Дата создания</dt>
                 <dd>{{ formatDate(portal.createdAt) }}</dd>
@@ -110,7 +113,7 @@ import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
 import type { PortalDTO, PortalEditData } from '@/types/dto'
 import { portalService } from '@/services'
-import { formatDate } from '@/helpers/formatters'
+import { formatCurrency, formatDate } from '@/helpers/formatters'
 import EditableText from '@/components/editableFields/EditableText.vue'
 import { FieldTypes, type ValidationResult } from '@/types/editable'
 import EditableBoolean from '@/components/editableFields/EditableBoolean.vue'

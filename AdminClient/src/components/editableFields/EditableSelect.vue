@@ -1,26 +1,15 @@
 <template>
   <div class="editable-field">
-    <dt class="text-sm text-gray-500">{{ label }}</dt>
-    <dd
-      v-if="!localIsEditing"
-      class="font-medium cursor-pointer hover:bg-gray-50 p-1 rounded flex items-center"
-      @dblclick="startEditing"
-    >
+    <dt class="text-sm text-gray-500">{{ label }}<span v-if="props.required && isEditing" style="color: red;">*</span></dt>
+    <dd v-if="!localIsEditing" class="font-medium cursor-pointer hover:bg-gray-50 p-1 rounded flex items-center"
+      @dblclick="startEditing">
       <span>{{ displayText }}</span>
       <i class="pi pi-chevron-down ml-2 text-xs text-gray-400"></i>
     </dd>
     <div v-else class="edit-mode">
-      <SelectPrime
-        v-model="localValue"
-        :options="items"
-        optionLabel="label"
-        optionValue="value"
-        :placeholder="placeholder || 'Выберите...'"
-        :class="{ 'p-invalid': hasError }"
-        class="w-full"
-        @change="onChange"
-        @blur="onBlur"
-      />
+      <SelectPrime v-model="localValue" :options="items" optionLabel="label" optionValue="value"
+        :placeholder="placeholder || 'Выберите...'" :class="{ 'p-invalid': hasError }" class="w-full" @change="onChange"
+        @blur="onBlur" />
       <small v-if="errorMessage" class="p-error">{{ errorMessage }}</small>
     </div>
   </div>
@@ -40,7 +29,7 @@ const emit = defineEmits<{
   'edit-start': []
 }>()
 
-const localIsEditing = ref(false)
+const localIsEditing = ref(props.isEditing)
 const localValue = ref<string | null>(props.value as string | null)
 const originalValue = ref<string | null>(props.value as string | null)
 const isTouched = ref(false)
@@ -147,7 +136,6 @@ defineExpose({
 </script>
 
 <style scoped>
-
 :deep(.p-dropdown) {
   width: 100%;
 }

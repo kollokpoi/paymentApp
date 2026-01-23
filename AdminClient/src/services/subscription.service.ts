@@ -41,6 +41,7 @@ export interface SubscriptionSearchParams {
 
 export interface RenewSubscriptionRequest {
   days?: number
+  amount?: number
 }
 
 export interface ChangeTariffRequest {

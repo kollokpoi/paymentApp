@@ -1,6 +1,6 @@
 <template>
   <div class="editable-field">
-    <dt class="text-sm text-gray-500">{{ label }}</dt>
+    <dt class="text-sm text-gray-500">{{ label}}<span v-if="props.required && isEditing" style="color: red;">*</span></dt>
     <dd
       v-if="!localIsEditing"
       class="font-medium cursor-pointer hover:bg-gray-50 p-1 rounded flex items-center"
@@ -50,7 +50,7 @@ const emit = defineEmits<{
   'edit-start': []
 }>()
 
-const localIsEditing = ref(false)
+const localIsEditing = ref(props.isEditing)
 const localValue = ref<Date | null>(props.value ? new Date(props.value) : null)
 const originalValue = ref<Date | null>(props.value ? new Date(props.value) : null)
 const isTouched = ref(false)

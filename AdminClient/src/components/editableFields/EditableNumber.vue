@@ -1,6 +1,6 @@
 <template>
   <div class="editable-field">
-    <dt class="text-sm text-gray-500">{{ label }}</dt>
+        <dt class="text-sm text-gray-500">{{ label}}<span v-if="props.required && isEditing" style="color: red;">*</span></dt>
     <dd
       v-if="!localIsEditing"
       class="font-medium cursor-pointer hover:bg-gray-50 p-1 rounded"
@@ -40,7 +40,7 @@ const emit = defineEmits([
   'validation-change'
 ])
 
-const localIsEditing = ref(false)
+const localIsEditing = ref(props.isEditing)
 const localValue = ref(props.value)
 const errorMessage = ref('')
 

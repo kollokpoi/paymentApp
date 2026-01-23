@@ -18,13 +18,12 @@ export interface EditableComponentProps {
 }
 
 export interface EditableTextProps extends EditableComponentProps {
-  type: FieldTypes.Text | FieldTypes.Email | FieldTypes.TextArea | FieldTypes.Number
+  type: FieldTypes.Text | FieldTypes.Email | FieldTypes.TextArea | FieldTypes.Number | FieldTypes.Password
   maxLength?: number
-  value: string | number
+  value: string | number | undefined
 }
 
 export interface EditableEmailProps extends EditableComponentProps {
-  type: FieldTypes.Email
   value: string | null
 }
 

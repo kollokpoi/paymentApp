@@ -9,15 +9,9 @@
       <div class="flex-1">
         <InputText v-model="search" placeholder="Поиск по email или имени" class="w-full" />
       </div>
-      <ButtonPrime
-        label="Фильтры"
-        icon="pi pi-filter"
-        outlined
-        @click="showFilters = true"
-        :badge="hasActiveFilters ? '!' : null"
-        :severity="hasActiveFilters ? 'warning' : 'secondary'"
-        :badgeClass="hasActiveFilters ? 'p-badge-danger' : ''"
-      />
+      <ButtonPrime label="Фильтры" icon="pi pi-filter" outlined @click="showFilters = true"
+        :badge="hasActiveFilters ? '!' : null" :severity="hasActiveFilters ? 'warning' : 'secondary'"
+        :badgeClass="hasActiveFilters ? 'p-badge-danger' : ''" />
       <ButtonPrime label="Добавить" icon="pi pi-plus" @click="addUser" />
     </div>
   </div>
@@ -28,22 +22,11 @@
 
   <div v-else class="space-y-6">
     <div v-if="hasUsers">
-      <DataTable
-        :value="users"
-        :loading="loading"
-        :rowClass="rowClass"
-        @row-click="handleRowClick"
-        striped-rows
-      >
+      <DataTable :value="users" :loading="loading" :rowClass="rowClass" @row-click="handleRowClick" striped-rows>
         <ColumnPrime field="email" header="Email" sortable>
           <template #body="{ data }">
             <div class="flex items-center gap-3">
-              <Avatar
-                :label="data.name.charAt(0)"
-                class="bg-primary text-white"
-                size="normal"
-                shape="circle"
-              />
+              <Avatar :label="data.name.charAt(0)" class="bg-primary text-white" size="normal" shape="circle" />
               <div>
                 <div class="font-medium">{{ data.email }}</div>
                 <div class="text-sm text-gray-500">{{ data.name }}</div>
@@ -54,19 +37,14 @@
 
         <ColumnPrime field="role" header="Роль" sortable>
           <template #body="{ data }">
-            <TagPrime
-              :value="getRoleLabel(data.role)"
-              :severity="getRoleSeverity(data.role)"
-            />
+            <TagPrime :value="getRoleLabel(data.role)" :severity="getRoleSeverity(data.role)" />
           </template>
         </ColumnPrime>
 
         <ColumnPrime field="isActive" header="Статус" sortable>
           <template #body="{ data }">
-            <TagPrime
-              :value="data.isActive ? 'Активен' : 'Неактивен'"
-              :severity="data.isActive ? 'success' : 'secondary'"
-            />
+            <TagPrime :value="data.isActive ? 'Активен' : 'Неактивен'"
+              :severity="data.isActive ? 'success' : 'secondary'" />
           </template>
         </ColumnPrime>
 
@@ -91,31 +69,17 @@
         <ColumnPrime header="Действия">
           <template #body="{ data }">
             <div class="relative">
-              <ButtonPrime
-                icon="pi pi-ellipsis-h"
-                text
-                @click.stop="showMenu($event, data)"
-                aria-haspopup="true"
-                aria-controls="user-menu"
-              />
+              <ButtonPrime icon="pi pi-ellipsis-h" text @click.stop="showMenu($event, data)" aria-haspopup="true"
+                aria-controls="user-menu" />
             </div>
           </template>
         </ColumnPrime>
       </DataTable>
 
-      <Menu
-        id="user-menu"
-        ref="menuRef"
-        :model="menuItems"
-        :popup="true"
-      />
+      <Menu id="user-menu" ref="menuRef" :model="menuItems" :popup="true" />
 
-      <PaginatorPrime
-        v-if="pagination?.total > pagination.limit"
-        :rows="pagination.limit"
-        :totalRecords="pagination.total"
-        @page="onPageChange"
-      />
+      <PaginatorPrime v-if="pagination?.total > pagination.limit" :rows="pagination.limit"
+        :totalRecords="pagination.total" @page="onPageChange" />
     </div>
 
     <div v-else class="text-center py-12">
@@ -130,58 +94,27 @@
     </div>
   </div>
 
-  <DialogPrime
-    v-model:visible="showFilters"
-    modal
-    header="Фильтры пользователей"
-    :style="{ width: '60%' }"
-  >
+  <DialogPrime v-model:visible="showFilters" modal header="Фильтры пользователей" :style="{ width: '60%' }">
     <div class="flex flex-col gap-4">
       <div>
         <label class="block text-sm font-medium mb-2">Статус</label>
-        <SelectPrime
-          v-model="selectedStatus"
-          class="w-full"
-          :options="statusOptions"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="Все статусы"
-        />
+        <SelectPrime v-model="selectedStatus" class="w-full" :options="statusOptions" optionLabel="label"
+          optionValue="value" placeholder="Все статусы" />
       </div>
 
       <div>
         <label class="block text-sm font-medium mb-2">Роль</label>
-        <SelectPrime
-          v-model="selectedRole"
-          class="w-full"
-          :options="roleOptions"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="Все роли"
-        />
+        <SelectPrime v-model="selectedRole" class="w-full" :options="roleOptions" optionLabel="label"
+          optionValue="value" placeholder="Все роли" />
       </div>
     </div>
 
     <template #footer>
       <div class="flex justify-between w-full">
-        <ButtonPrime
-          label="Сбросить"
-          icon="pi pi-filter-slash"
-          @click="resetFilters"
-          outlined
-          severity="secondary"
-        />
+        <ButtonPrime label="Сбросить" icon="pi pi-filter-slash" @click="resetFilters" outlined severity="secondary" />
         <div class="flex gap-2">
-          <ButtonPrime
-            label="Отмена"
-            @click="showFilters = false"
-            outlined
-          />
-          <ButtonPrime
-            label="Применить"
-            @click="applyFilters"
-            icon="pi pi-check"
-          />
+          <ButtonPrime label="Отмена" @click="showFilters = false" outlined />
+          <ButtonPrime label="Применить" @click="applyFilters" icon="pi pi-check" />
         </div>
       </div>
     </template>
@@ -204,10 +137,13 @@ import { AdminRole } from '@/types/api/responses'
 import { useDebouncedFn } from '@/composables/useDebounce'
 import { formatDate, formatRelativeTime } from '@/helpers/formatters'
 import { userService, type AdminUserSearchParams } from '@/services/user.service'
+import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
 const toast = useToast()
 const confirm = useConfirm()
+
+const store = useAuthStore()
 
 const users = ref<AdminUserDTO[]>([])
 const search = ref('')
@@ -245,6 +181,7 @@ const menuItems = computed(() => {
 
   const user = selectedUser.value
   const id = user.id
+  const userId = store.user?.id
 
   return [
     {
@@ -253,16 +190,11 @@ const menuItems = computed(() => {
       command: () => editUser(id)
     },
     {
-      label: user.isActive ? 'Деактивировать' : 'Активировать',
-      icon: user.isActive ? 'pi pi-ban' : 'pi pi-check-circle',
-      command: () => toggleActiveStatus(id, user.isActive)
-    },
-    {
       label: 'Удалить',
       icon: 'pi pi-trash',
       command: () => confirmDelete(id),
       class: 'text-red-500',
-      disabled: user.role === AdminRole.ADMIN // Нельзя удалить администратора
+      disabled: user.role === AdminRole.ADMIN || id === userId
     }
   ]
 })
@@ -355,7 +287,13 @@ const getRoleSeverity = (role: AdminRole) => {
 
 const handleRowClick = (event: DataTableRowClickEvent<AdminUserDTO>) => {
   const id = event.data.id
-  router.push(`/users/${id}`)
+  const userId = store.user?.id
+  if (userId !== id) {
+    router.push(`/users/${id}`)
+  } else {
+    router.push(`/users/me`)
+  }
+
 }
 
 const showMenu = (event: Event, user: AdminUserDTO) => {
@@ -370,38 +308,6 @@ const showMenu = (event: Event, user: AdminUserDTO) => {
 
 const editUser = (id: string) => {
   router.push(`/users/${id}`)
-}
-
-const toggleActiveStatus = async (id: string, isActive: boolean) => {
-  try {
-    const response = await userService.update(id, {
-      is_active: !isActive
-    })
-
-    if (response.success) {
-      toast.add({
-        severity: 'success',
-        summary: 'Успешно',
-        detail: `Пользователь ${!isActive ? 'активирован' : 'деактивирован'}`,
-        life: 3000
-      })
-      loadUsers()
-    } else {
-      toast.add({
-        severity: 'error',
-        summary: 'Ошибка',
-        detail: response.message || 'Не удалось изменить статус',
-        life: 3000
-      })
-    }
-  } catch {
-    toast.add({
-      severity: 'error',
-      summary: 'Ошибка',
-      detail: 'Не удалось изменить статус',
-      life: 3000
-    })
-  }
 }
 
 const deleteUser = async (id: string) => {
@@ -436,7 +342,19 @@ const deleteUser = async (id: string) => {
 
 const confirmDelete = (id: string) => {
   const user = selectedUser.value
-  const isAdmin = user?.role === AdminRole.ADMIN
+  const isAdmin = user?.role === AdminRole.SUPERADMIN || user?.role === AdminRole.ADMIN
+  const userId = store.user?.id
+  const isSelfdelete = id === userId
+
+  if (isSelfdelete) {
+    toast.add({
+      severity: 'error',
+      summary: 'Ошибка',
+      detail: 'Нельзя удалить свой аккаунт',
+      life: 3000
+    })
+    return
+  }
 
   if (isAdmin) {
     toast.add({
@@ -480,7 +398,7 @@ const onPageChange = (event: any) => {
 
 const addUser = () => {
   router.push({
-    path: `/admin-users/create`
+    path: `/users/create`
   })
 }
 
