@@ -1,4 +1,4 @@
-const { AdminUserDTO } = require("@payment-app/apiModels");
+const { AdminUserDTO, USER_ROLES } = require("@payment-app/apiModels");
 
 class UserController {
   async getAll(req, res, next) {
@@ -46,8 +46,8 @@ class UserController {
 
       res.json({
         success: true,
-        data:{
-          items:result,
+        data: {
+          items: result,
           page: parseInt(page),
           limit: parseInt(limit),
           total: count,
@@ -112,10 +112,10 @@ class UserController {
     try {
       const { email, password, name, role } = req.body;
 
-      if (!email || !password || !name || !role) {
+      if (!email || !name || !role) {
         return res.status(400).json({
           success: false,
-          message: "email, name, password and role are required",
+          message: "email, name and role are required",
         });
       }
 
@@ -136,19 +136,59 @@ class UserController {
           message: "User not found",
         });
       }
-
-      await user.update({
+      const updates = {
         email,
-        password,
         name,
         role,
-      });
+      }
+      if (password)
+        updates.password = password
 
-      const adminUserDTO = AdminUser.fromSequelize(user);
+      await user.update(updates);
+
+      const adminUserDTO = AdminUserDTO.fromSequelize(user);
       res.json({
         success: true,
         data: adminUserDTO.toApiResponse(),
         message: "Payment updated successfully",
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async delete(req, res, next) {
+    try {
+      const userId = req.params.id;
+      if (!userId) {
+        return res.status(400).json({
+          success: false,
+          message: "id required",
+        });
+      }
+
+      const AdminUser = req.db.getModel("AdminUser");
+      const user = await AdminUser.findByPk(req.params.id);
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: "User not found",
+        });
+      }
+
+      if ([USER_ROLES.ADMIN, USER_ROLES.SUPERADMIN].includes(user.role)) {
+        return res.status(400).json({
+          success: false,
+          message: "Нельзя удалить администратора",
+        });
+      }
+      
+      await user.destroy();
+
+      res.json({
+        success: true,
+        message: "Пользователь успешно удален",
       });
     } catch (error) {
       next(error);

@@ -32,7 +32,7 @@ const { authenticateToken, authorize } = require('../middleware/auth');
  *       200:
  *         description: Список пользователей
  */
-router.get('/',authenticateToken, authorize('superadmin'), userController.getAll);
+router.get('/', authenticateToken, authorize('superadmin'), userController.getAll);
 
 /**
  * @swagger
@@ -67,7 +67,28 @@ router.get('/',authenticateToken, authorize('superadmin'), userController.getAll
  *       201:
  *         description: Пользователь создан
  */
-router.post('/',authenticateToken, authorize('superadmin'), userController.create);
+router.post('/', authenticateToken, authorize('superadmin'), userController.create);
+
+/**
+ * @swagger
+ * /users/id:
+ *   delete:
+ *     summary: Удалить пользователя
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       201:
+ *         description: Пользователь создан
+ */
+router.delete('/:id', authenticateToken, authorize('superadmin'), userController.delete);
+
 
 /**
  * @swagger
@@ -81,7 +102,7 @@ router.post('/',authenticateToken, authorize('superadmin'), userController.creat
  *       200:
  *         description: Количество пользователей
  */
-router.get('/count',authenticateToken, userController.getActiveCount);
+router.get('/count', authenticateToken, userController.getActiveCount);
 
 /**
  * @swagger
@@ -95,7 +116,7 @@ router.get('/count',authenticateToken, userController.getActiveCount);
  *       200:
  *         description: Статистика пользователей
  */
-router.get('/stats',authenticateToken, authorize('superadmin'), userController.getAdminStats);
+router.get('/stats', authenticateToken, authorize('superadmin'), userController.getAdminStats);
 
 /**
  * @swagger
@@ -115,7 +136,7 @@ router.get('/stats',authenticateToken, authorize('superadmin'), userController.g
  *       200:
  *         description: Данные платежа
  */
-router.get('/:id',authenticateToken, authorize('superadmin'), userController.getById);
+router.get('/:id', authenticateToken, authorize('superadmin'), userController.getById);
 
 /**
  * @swagger
@@ -156,7 +177,7 @@ router.get('/:id',authenticateToken, authorize('superadmin'), userController.get
  *       200:
  *         description: Пользователь обновлен
  */
-router.put('/:id',authenticateToken, authorize('superadmin'), userController.update);
+router.put('/:id', authenticateToken, authorize('superadmin'), userController.update);
 
 /**
  * @swagger
@@ -170,6 +191,6 @@ router.put('/:id',authenticateToken, authorize('superadmin'), userController.upd
  *       200:
  *         description: Количество пользователей
  */
-router.get('/count',authenticateToken, userController.getActiveCount);
+router.get('/count', authenticateToken, userController.getActiveCount);
 
 module.exports = router;

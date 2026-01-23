@@ -166,7 +166,7 @@ class PaymentController {
           message: "Subscription not found",
         });
       }
-      const portal = subscription.getPortal();
+      const portal = await subscription.getPortal();
       await portal.update({
         balance: parseFloat(portal.balance) + parseFloat(amount)
       })

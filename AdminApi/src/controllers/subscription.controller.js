@@ -171,9 +171,9 @@ class SubscriptionController {
           message:
             "На балансе портала недостаточно средств",
         });
-      }else{
+      } else {
         await portal.update({
-          balance:portal.balance - tariff.amount
+          balance: portal.balance - tariff.amount
         })
       }
 
@@ -277,7 +277,14 @@ class SubscriptionController {
         });
       }
 
-      const { days } = req.body;
+      const { days, amount } = req.body;
+
+      if (!amount) {
+        return res.status(400).json({
+          success: false,
+          message: "Укажите сумму",
+        });
+      }
 
       if (!days && !subscription.tariff) {
         return res.status(400).json({
@@ -285,6 +292,16 @@ class SubscriptionController {
           message: "Provide days or subscription must have a tariff",
         });
       }
+
+      const portal = await subscription.getPortal();
+
+      if (portal.balance < amount) {
+        return res.status(400).json({
+          success: false,
+          message: "Портал имеет недостаточно средств",
+        });
+      }
+
 
       const newValidUntil = new Date(subscription.valid_until);
 
@@ -305,6 +322,10 @@ class SubscriptionController {
             newValidUntil.setMonth(newValidUntil.getMonth() + 1);
         }
       }
+      
+      await portal.update({
+        balance: portal.balance - amount
+      })
 
       await subscription.update({
         valid_until: newValidUntil,
@@ -374,9 +395,9 @@ class SubscriptionController {
             newValidUntil.setMonth(newValidUntil.getMonth() + 1);
         }
 
-        await subscription.update({ valid_until: newValidUntil, used_limits:{}});
+        await subscription.update({ valid_until: newValidUntil, used_limits: {} });
       } else {
-        await subscription.update({ tariff_id , used_limits:{}});
+        await subscription.update({ tariff_id, used_limits: {} });
       }
 
       const subscriptionDTO = SubscriptionDTO.fromSequelize(subscription);
