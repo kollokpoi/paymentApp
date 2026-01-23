@@ -29,7 +29,7 @@
                 :is-editing="globalEditing" @edit-start="() => { globalEditing = true }" label="Описание" />
               <div>
                 <dt class="text-sm text-gray-500">Сумма платежа</dt>
-                <dd>{{ formatCurrency(payment.amount, payment.currency) }}</dd>
+                <dd>{{ formatCurrency(payment.amount) }}</dd>
               </div>
               <EditableText v-model:value="editData.external_id" placeholder="Внешний Id платежа"
                 label="Внешний Id платежа" :type="FieldTypes.Text" :is-editing="globalEditing"

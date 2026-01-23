@@ -8,8 +8,13 @@ export const useAuthStore = defineStore('auth', () => {
   const subscription = ref(null);
   const currentTariff = ref(null);
   const domain = ref(null);
+  const appId = ref(null);
   const isLoading = ref(false);
+  const isInitialized = ref(false);
   const error = ref(null);
+
+  // API клиент
+  let api = null;
 
   // Computed
   const isAuthenticated = computed(() => {
@@ -32,47 +37,40 @@ export const useAuthStore = defineStore('auth', () => {
     return Math.ceil(diff / (1000 * 60 * 60 * 24));
   });
 
+  const availablePages = computed(() => {
+    if (!currentTariff.value?.limits?.availablePages) return [];
+
+    const pages = currentTariff.value.limits.availablePages;
+    return Array.isArray(pages) ? pages : [pages];
+  });
+
   // Actions
-  async function initialize(api, config) {
+  async function initialize(config, apiClient) {
+    if (!config.appId) throw new Error('appId is required');
+    if (!config.domain) throw new Error('domain is required');
+    if (!apiClient) throw new Error('apiClient is required');
+
     isLoading.value = true;
     error.value = null;
 
+    // Сохраняем конфиг и API
+    appId.value = config.appId;
+    domain.value = config.domain;
+    api = apiClient;
+
     try {
-      // Определяем домен
-      if (typeof BX24 !== 'undefined') {
-        try {
-          domain.value = BX24.getDomain();
-        } catch (error) {
-          console.warn('Cannot get domain from BX24:', error);
-        }
-      }
-
-      if (!domain.value) {
-        const url = new URL(window.location.href);
-        const params = new URLSearchParams(url.search);
-        if (params.has('DOMAIN')) {
-          domain.value = params.get('DOMAIN');
-        } else if (document.referrer) {
-          try {
-            const referrerUrl = new URL(document.referrer);
-            domain.value = referrerUrl.hostname;
-          } catch (e) {
-            domain.value = window.location.hostname;
-          }
-        }
-      }
-
       // Загружаем сохраненные токены
       loadTokens();
-
-      // Если есть токены, загружаем подписку
+      isInitialized.value = true
+      // Если есть токены, устанавливаем их в API и загружаем подписку
       if (accessToken.value && refreshToken.value) {
         api.setTokens(accessToken.value, refreshToken.value);
-        await loadSubscriptionAndTariff(api);
+        await loadSubscriptionAndTariff();
       }
     } catch (err) {
       console.error('Auth initialization failed:', err);
       error.value = err.message;
+      throw err;
     } finally {
       isLoading.value = false;
     }
@@ -95,7 +93,9 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function loadSubscriptionAndTariff(api) {
+  async function loadSubscriptionAndTariff() {
+    if (!api) return;
+
     try {
       const subscriptionResponse = await api.subscriptions.getCurrent();
       const tariffResponse = await api.tariffs.getCurrent();
@@ -111,16 +111,16 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function login(api, appId) {
+  async function login() {
+    if (!api || !appId.value || !domain.value) {
+      throw new Error('Store not properly initialized');
+    }
+
     isLoading.value = true;
     error.value = null;
 
     try {
-      if (!domain.value || !appId) {
-        throw new Error('Domain or App ID not available');
-      }
-
-      const loginResponse = await api.auth.login(domain.value, appId);
+      const loginResponse = await api.auth.login(domain.value, appId.value);
 
       if (loginResponse.success) {
         const { subscription: subData, tokens } = loginResponse.data;
@@ -146,6 +146,17 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  const canAccessPage = (pageName) => {
+    if (!currentTariff.value) return false;
+
+    const pages = currentTariff.value.limits?.availablePages;
+    if (!pages) return true; // Если ограничений нет - доступ есть
+
+    return Array.isArray(pages)
+      ? pages.includes(pageName)
+      : pages === pageName;
+  };
+
   function saveTokens(access, refresh) {
     try {
       if (!domain.value) return;
@@ -165,19 +176,19 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  function logout(api) {
+  async function logout() {
     try {
-      if (refreshToken.value) {
-        api.auth.logout(refreshToken.value);
+      if (refreshToken.value && api) {
+        await api.auth.logout(refreshToken.value);
       }
     } catch (err) {
       console.warn('Logout API call failed:', err);
     } finally {
-      clearAuth(api);
+      clearAuth();
     }
   }
 
-  function clearAuth(api) {
+  function clearAuth() {
     try {
       if (domain.value) {
         const storageKey = `b24app_${domain.value}`;
@@ -189,9 +200,27 @@ export const useAuthStore = defineStore('auth', () => {
       subscription.value = null;
       currentTariff.value = null;
       error.value = null;
-      api.clearTokens();
+
+      if (api) {
+        api.clearTokens();
+      }
     } catch (err) {
       console.error('Failed to clear auth:', err);
+    }
+  }
+
+
+  async function isActionAvailable(action){
+    try{
+      const response = await api.subscriptions.checkActionAvalible(action)
+      if(response.success){
+        return response.data
+      }else{
+        return {available:false, message: 'Действие недоступно'};
+      }
+    }catch(err){
+      console.error('Failed to clear auth:', err);
+      return {available:false, message: 'Действие недоступно'};
     }
   }
 
@@ -202,18 +231,23 @@ export const useAuthStore = defineStore('auth', () => {
     subscription,
     currentTariff,
     domain,
+    appId,
     isLoading,
     error,
+    isInitialized,  
 
     // Computed
     isAuthenticated,
     isSubscriptionActive,
     daysLeft,
+    availablePages,
 
     // Actions
     initialize,
     login,
     logout,
     clearAuth,
+    canAccessPage,
+    isActionAvailable
   };
 });

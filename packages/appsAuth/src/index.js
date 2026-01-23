@@ -52,15 +52,26 @@ export class B24AuthSDK {
   }
 
   /**
-   * Инициализировать SDK и store
+   * Инициализировать SDK и создать готовый store
    */
-  async init() {
+  async createStore() {
+    // Определяем домен
     await this.determineDomain();
-    return this.domain;
+    
+    // Создаем store
+    const store = useAuthStore();
+    
+    // Инициализируем store с конфигом и доменом
+    await store.initialize({
+      ...this.config,
+      domain: this.domain  // Передаем уже определенный домен!
+    }, this.api);
+    
+    return store;
   }
 }
 
-// Экспорт всего что нужно
+// Экспорт
 export { ApiService } from './api/index.js';
 export { useAuthStore } from './store.js';
 

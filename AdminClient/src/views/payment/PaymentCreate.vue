@@ -49,13 +49,6 @@
                   class="flex-1"
                   :invalid="!formData.amount || formData.amount <= 0"
                 />
-                <SelectPrime
-                  v-model="formData.currency"
-                  :options="currencyOptions"
-                  optionLabel="label"
-                  optionValue="value"
-                  class="w-32"
-                />
               </div>
               <small v-if="!formData.amount || formData.amount <= 0" class="text-red-500 text-xs">
                 Сумма должна быть больше 0
@@ -203,12 +196,10 @@ const jsonError = ref<string | null>(null)
 const jsonMetadata = ref('')
 const subscriptions = ref<SubscriptionDTO[]>([])
 const subscriptionsLoading = ref(false)
-const fromExtend = computed(() => route.query.fromExtend === 'true')
 
 const formData = reactive<CreatePaymentRequest>({
   subscription_id: '',
   amount: 0,
-  currency: 'RUB',
   status: PaymentStatus.PENDING,
   description: '',
   payment_method: '',
@@ -221,13 +212,6 @@ const statusOptions = [
   { value: PaymentStatus.COMPLETED, label: 'Выполнен' },
   { value: PaymentStatus.FAILED, label: 'Ошибка' },
   { value: PaymentStatus.REFUNDED, label: 'Возврат' },
-]
-
-const currencyOptions = [
-  { value: 'RUB', label: 'RUB' },
-  { value: 'USD', label: 'USD' },
-  { value: 'EUR', label: 'EUR' },
-  { value: 'KZT', label: 'KZT' },
 ]
 
 const subscriptionOptions = computed(() => {

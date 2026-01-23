@@ -8,7 +8,6 @@ export interface CreatePaymentRequest {
   subscription_id: string
   external_id?: string
   amount: number
-  currency?: string
   status?: PaymentStatus
   payment_method?: string
   description?: string

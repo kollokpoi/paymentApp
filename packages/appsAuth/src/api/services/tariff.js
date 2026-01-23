@@ -4,7 +4,7 @@ export class TariffService {
   }
 
   async getCurrent() {
-    const response = await this.api.get('/api/tariffs/current');
+    const response = await this.api.get('/api/tariffs/');
     return response;
   }
 

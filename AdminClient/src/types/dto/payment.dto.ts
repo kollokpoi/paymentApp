@@ -11,7 +11,6 @@ export interface PaymentDTOData {
   external_id?: string| null
   externalId?: string| null
   amount: number | string
-  currency?: string
   status?: PaymentStatus
   payment_method?: string | null
   paymentMethod?: string | null
@@ -29,7 +28,6 @@ export class PaymentDTO {
   subscriptionId: string | null
   externalId: string | null
   amount: number
-  currency: string
   status: PaymentStatus
   paymentMethod: string | null
   description: string | null
@@ -43,7 +41,6 @@ export class PaymentDTO {
     this.subscriptionId = data.subscription_id || data.subscriptionId || null
     this.externalId = data.external_id || data.externalId || null
     this.amount = typeof data.amount === 'string' ? parseFloat(data.amount) : data.amount
-    this.currency = data.currency || 'RUB'
     this.status = data.status || PaymentStatus.PENDING
     this.paymentMethod = data.payment_method || data.paymentMethod || null
     this.description = data.description || null
