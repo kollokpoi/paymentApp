@@ -6,6 +6,7 @@ const config = require('./config/swagger');
 const routes = require('./routes');
 const logger = require('./utils/logger');
 const { Database } = require('@payment-app/apiModels')
+const SubscriptionAutoCheck = require('./services/subscriptionChecker')
 
 require('dotenv').config();
 
@@ -43,17 +44,17 @@ app.use((req, res, next) => {
       res.removeHeader('Cross-Origin-Embedder-Policy');
       res.removeHeader('Content-Security-Policy');
     };
-    
+
     // Удаляем заголовки после установки
     const originalSetHeader = res.setHeader;
-    res.setHeader = function(name, value) {
-      if (name.toLowerCase() === 'cross-origin-opener-policy' || 
-          name.toLowerCase() === 'cross-origin-embedder-policy') {
+    res.setHeader = function (name, value) {
+      if (name.toLowerCase() === 'cross-origin-opener-policy' ||
+        name.toLowerCase() === 'cross-origin-embedder-policy') {
         return this;
       }
       return originalSetHeader.call(this, name, value);
     };
-    
+
     removeHeaders();
   }
   next();
@@ -73,22 +74,39 @@ app.get('/health', (req, res) => {
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(config));
 
 let db;
+let subscriptionAutoCheck = null;
 
 app.use(async (req, res, next) => {
   try {
     if (!db) {
       db = new Database({
         database: process.env.DB_NAME,
-        username: process.env.DB_USER ,
-        password: process.env.DB_PASSWORD ,
+        username: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
         host: process.env.DB_HOST,
         port: process.env.DB_PORT
       });
       await db.connect();
       console.log('database connected');
     }
-    
-    req.db = db; 
+    if (!subscriptionAutoCheck && db.sequelize) {
+      subscriptionAutoCheck = new SubscriptionAutoCheck(db.sequelize.models);
+
+      setTimeout(() => {
+        try {
+          subscriptionAutoCheck.start();
+          console.log('Автоматическая проверка подписок запущена');
+
+          global.subscriptionAutoCheck = subscriptionAutoCheck;
+
+        } catch (error) {
+          console.error('Не удалось запустить авто-проверку:', error);
+        }
+      }, 3000);
+
+      console.log('⚙️ Сервис авто-проверки подписок инициализирован');
+    }
+    req.db = db;
     next();
   } catch (error) {
     console.error('Database connection error:', error);
@@ -129,4 +147,6 @@ app.use((err, req, res, next) => {
   res.status(status).json(response);
 });
 
-app.listen(port,()=>console.log(`Запущен на порту ${port}`))
+app.listen(port, () => {
+  console.log(`Запущен на порту ${port}`)
+})

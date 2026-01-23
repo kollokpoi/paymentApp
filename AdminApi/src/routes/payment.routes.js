@@ -104,8 +104,6 @@ router.get('/stats', authenticateToken, authorize('admin', 'superadmin'), paymen
  *               amount:
  *                 type: number
  *                 format: float
- *               currency:
- *                 type: string
  *               status:
  *                 type: string
  *                 enum: [pending, completed, failed, refunded]

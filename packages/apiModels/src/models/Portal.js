@@ -43,7 +43,7 @@ module.exports = sequelize => {
       metadata: {
         type: DataTypes.JSON,
         defaultValue: {},
-        get () {
+        get() {
           const rawValue = this.getDataValue('metadata')
           try {
             return rawValue ? JSON.parse(rawValue) : {}
@@ -51,7 +51,7 @@ module.exports = sequelize => {
             return rawValue || {}
           }
         },
-        set (value) {
+        set(value) {
           this.setDataValue(
             'metadata',
             typeof value === 'string' ? value : JSON.stringify(value || {})
@@ -63,7 +63,16 @@ module.exports = sequelize => {
         type: DataTypes.DATE,
         allowNull: true,
         comment: 'Время последней синхронизации с Bitrix24'
-      }
+      },
+      balance: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false,
+        validate: {
+          min: 0
+        },
+        defaultValue:0,
+        comment: 'Баланс портала'
+      },
     },
     {
       tableName: 'portals',
@@ -88,7 +97,7 @@ module.exports = sequelize => {
           }
         },
         beforeUpdate: portal => {
-          
+
         }
       },
       scopes: {
@@ -98,7 +107,7 @@ module.exports = sequelize => {
         withSubscriptions: {
           include: ['subscriptions']
         },
-        search (query) {
+        search(query) {
           return {
             where: {
               [sequelize.Op.or]: [

@@ -15,7 +15,7 @@ class PaymentController {
         paymentMethod,
         amountFrom,
         amountTo,
-        search, 
+        search,
       } = req.query;
 
       const offset = (page - 1) * limit;
@@ -54,22 +54,22 @@ class PaymentController {
         {
           model: req.db.getModel("Subscription"),
           as: "subscription",
-          where: {}, 
+          where: {},
           required: true,
           include: [
             {
               model: req.db.getModel("Portal"),
               as: "portal",
               attributes: ["id", "b24_domain", "company_name"],
-              where: {}, 
-              required: portalId ? true : false, 
+              where: {},
+              required: portalId ? true : false,
             },
             {
               model: req.db.getModel("Application"),
               as: "application",
               attributes: ["id", "name"],
-              where: {}, 
-              required: appId ? true : false, 
+              where: {},
+              required: appId ? true : false,
             },
           ],
         },
@@ -146,7 +146,6 @@ class PaymentController {
         subscription_id,
         external_id,
         amount,
-        currency,
         status,
         payment_method,
         description,
@@ -167,23 +166,20 @@ class PaymentController {
           message: "Subscription not found",
         });
       }
+      const portal = subscription.getPortal();
+      await portal.update({
+        balance: parseFloat(portal.balance) + parseFloat(amount)
+      })
 
       const payment = await Payment.create({
         subscription_id,
         external_id,
         amount: parseFloat(amount),
-        currency: currency || "RUB",
         status: status || "pending",
         payment_method,
         description,
         metadata: metadata || {},
       });
-
-      if (status === "completed") {
-        await subscription.update({
-          status: "active",
-        });
-      }
 
       const paymentDTO = PaymentDTO.fromSequelize(payment);
 
@@ -258,7 +254,7 @@ class PaymentController {
 
       const totalRevenue =
         (await Payment.sum("amount", {
-          where: { ...where, currency: "RUB" },
+          where: { ...where },
         })) || 0;
 
       const totalPayments = await Payment.count({ where });

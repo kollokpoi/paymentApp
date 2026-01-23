@@ -1,8 +1,6 @@
 const {
   SubscriptionDTO,
-  PortalDTO,
-  ApplicationDTO,
-  TariffDTO,
+  PERIOD_VALUES
 } = require("@payment-app/apiModels");
 
 class SubscriptionController {
@@ -167,6 +165,18 @@ class SubscriptionController {
         });
       }
 
+      if (status !== "trial" && portal.balance < tariff.amount) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "На балансе портала недостаточно средств",
+        });
+      }else{
+        await portal.update({
+          balance:portal.balance - tariff.amount
+        })
+      }
+
       const now = new Date();
       const startDate = valid_from ? new Date(valid_from) : now;
       let endDate;
@@ -179,38 +189,18 @@ class SubscriptionController {
       } else {
         endDate = new Date(startDate);
         switch (tariff.period) {
-          case "day":
+          case PERIOD_VALUES.DAY:
             endDate.setDate(endDate.getDate() + 1);
             break;
-          case "week":
+          case PERIOD_VALUES.WEEK:
             endDate.setDate(endDate.getDate() + 7);
             break;
-          case "year":
+          case PERIOD_VALUES.YEAR:
             endDate.setFullYear(endDate.getFullYear() + 1);
             break;
           default:
             endDate.setMonth(endDate.getMonth() + 1);
         }
-      }
-      const usedApp = ApplicationDTO.fromSequelize(application);
-      let used_limits = {}
-      if (usedApp.settings) {
-        const resetLimits = (limits) => {
-          if (!limits || typeof limits !== 'object') return {};
-
-          const result = {};
-          for (const [key, value] of Object.entries(limits)) {
-            if (value === null) result[key] = null;
-            else if (typeof value === 'number') result[key] = 0;
-            else if (typeof value === 'boolean') result[key] = false;
-            else if (Array.isArray(value)) result[key] = [];
-            else if (typeof value === 'object') result[key] = resetLimits(value);
-            else result[key] = null;
-          }
-          return result;
-        };
-
-        used_limits = resetLimits(usedApp.settings);
       }
 
       const subscription = await Subscription.create({
@@ -223,7 +213,7 @@ class SubscriptionController {
         auto_renew: auto_renew !== undefined ? auto_renew : true,
         trial_end_date: trial_end_date ? new Date(trial_end_date) : null,
         notes,
-        used_limits
+        used_limits: {}
       });
 
       const subscriptionDTO = SubscriptionDTO.fromSequelize(subscription);
@@ -302,13 +292,13 @@ class SubscriptionController {
         newValidUntil.setDate(newValidUntil.getDate() + parseInt(days));
       } else {
         switch (subscription.tariff.period) {
-          case "day":
+          case PERIOD_VALUES.DAY:
             newValidUntil.setDate(newValidUntil.getDate() + 1);
             break;
-          case "week":
+          case PERIOD_VALUES.WEEK:
             newValidUntil.setDate(newValidUntil.getDate() + 7);
             break;
-          case "year":
+          case PERIOD_VALUES.YEAR:
             newValidUntil.setFullYear(newValidUntil.getFullYear() + 1);
             break;
           default:
@@ -371,22 +361,22 @@ class SubscriptionController {
 
         const newValidUntil = new Date();
         switch (tariff.period) {
-          case "day":
+          case PERIOD_VALUES.DAY:
             newValidUntil.setDate(newValidUntil.getDate() + 1);
             break;
-          case "week":
+          case PERIOD_VALUES.WEEK:
             newValidUntil.setDate(newValidUntil.getDate() + 7);
             break;
-          case "year":
+          case PERIOD_VALUES.YEAR:
             newValidUntil.setFullYear(newValidUntil.getFullYear() + 1);
             break;
           default:
             newValidUntil.setMonth(newValidUntil.getMonth() + 1);
         }
 
-        await subscription.update({ valid_until: newValidUntil });
+        await subscription.update({ valid_until: newValidUntil, used_limits:{}});
       } else {
-        await subscription.update({ tariff_id });
+        await subscription.update({ tariff_id , used_limits:{}});
       }
 
       const subscriptionDTO = SubscriptionDTO.fromSequelize(subscription);

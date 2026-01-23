@@ -4,7 +4,6 @@ class PaymentDTO {
       this.subscriptionId = data.subscription_id || data.subscriptionId;
       this.externalId = data.external_id || data.externalId;
       this.amount = parseFloat(data.amount || 0);
-      this.currency = data.currency || 'RUB';
       this.status = data.status || 'pending';
       this.paymentMethod = data.payment_method || data.paymentMethod;
       this.description = data.description;
@@ -24,7 +23,6 @@ class PaymentDTO {
         subscription_id: this.subscriptionId,
         external_id: this.externalId,
         amount: this.amount,
-        currency: this.currency,
         status: this.status,
         payment_method: this.paymentMethod,
         description: this.description,
@@ -41,7 +39,6 @@ class PaymentDTO {
         subscriptionId: this.subscriptionId,
         externalId: this.externalId,
         amount: this.amount,
-        currency: this.currency,
         status: this.status,
         paymentMethod: this.paymentMethod,
         description: this.description,

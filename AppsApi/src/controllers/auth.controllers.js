@@ -31,7 +31,7 @@ class AuthController {
         include: ['tariff']
       })
 
-      if (!subscription || !subscription.isActive()) {
+      if (!subscription) {
         return res.status(401).json({
           success: false,
           message: 'Subscription expired or not found'
