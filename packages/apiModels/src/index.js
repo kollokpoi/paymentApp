@@ -29,7 +29,13 @@ module.exports = {
   // Утилиты
   validators,
   
-  // Константы
+  PERIOD_VALUES:{
+    DAY:'day',
+    WEEK:'week',
+    MONTH:'month',
+    YEAR:'year'
+  },
+  
   SUBSCRIPTION_STATUS: {
     TRIAL: 'trial',
     ACTIVE: 'active',

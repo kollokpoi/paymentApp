@@ -17,7 +17,7 @@ const authenticateToken = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET)
     const sub = await Subsciption.findByPk(decoded.subId)
 
-    if (!sub) {
+    if (!sub || !sub.isActive()) {
       return res.status(401).json({
         success: false,
         message: 'Sub not found or inactive'

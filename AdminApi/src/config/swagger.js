@@ -105,7 +105,6 @@ const options = {
             subscriptionId: { type: 'string', format: 'uuid' },
             externalId: { type: 'string' },
             amount: { type: 'number', format: 'float' },
-            currency: { type: 'string' },
             status: { 
               type: 'string', 
               enum: ['pending', 'completed', 'failed', 'refunded'] 

@@ -25,15 +25,6 @@ module.exports = (sequelize) => {
       },
       comment: 'Сумма платежа'
     },
-    currency: {
-      type: DataTypes.STRING(3),
-      defaultValue: 'RUB',
-      validate: {
-        len: [3, 3],
-        isUppercase: true
-      },
-      comment: 'Валюта платежа'
-    },
     status: {
       type: DataTypes.ENUM('pending', 'completed', 'failed', 'refunded'),
       defaultValue: 'pending',
