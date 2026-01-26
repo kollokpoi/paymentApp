@@ -6,7 +6,9 @@ class ApplicationController {
 
     try {
       const Application = req.db.getModel('Application')
-      const application = await Application.findByPk(id)
+      const application = await Application.findByPk(id,{
+        attributes:['id','name','description']
+      })
 
       if (!application) {
         return res.json({

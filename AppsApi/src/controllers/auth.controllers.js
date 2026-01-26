@@ -125,22 +125,7 @@ class AuthController {
         })
       }
 
-      const domainRegex =
-        /^[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9](\.bitrix24\.(ru|com))?$/
-      let cleanDomain = domain.trim().toLowerCase()
-
-      if (!cleanDomain.includes('.bitrix24.')) {
-        cleanDomain = cleanDomain + '.bitrix24.ru'
-      }
-
-      if (!domainRegex.test(cleanDomain)) {
-        return res.status(400).json({
-          success: false,
-          message: 'Invalid Bitrix24 domain format'
-        })
-      }
-
-      let portal = await Portal.findByDomain(cleanDomain)
+      let portal = await Portal.findByDomain(domain)
 
       if (portal) {
         if (!portal.is_active) {
@@ -148,8 +133,8 @@ class AuthController {
         }
       } else {
         portal = await Portal.create({
-          b24_domain: cleanDomain,
-          company_name: companyName || cleanDomain.split('.')[0],
+          b24_domain: domain,
+          company_name: companyName || domain.split('.')[0],
           admin_email: adminEmail || null,
           is_active: true,
           metadata: {
@@ -247,6 +232,7 @@ class AuthController {
     }
   }
 }
+
 function generateAuthResponse (subscription, res) {
   try {
     const accessToken = jwt.sign(

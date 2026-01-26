@@ -150,7 +150,7 @@ class UserController {
       res.json({
         success: true,
         data: adminUserDTO.toApiResponse(),
-        message: "Payment updated successfully",
+        message: "User updated successfully",
       });
     } catch (error) {
       next(error);

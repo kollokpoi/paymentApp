@@ -25,11 +25,6 @@ module.exports = (sequelize) => {
         notEmpty: true,
         len: [6, 255]
       },
-      set(value) {
-        const salt = bcrypt.genSaltSync(10);
-        const hash = bcrypt.hashSync(value, salt);
-        this.setDataValue('password', hash);
-      },
       comment: 'Хэшированный пароль'
     },
     name: {

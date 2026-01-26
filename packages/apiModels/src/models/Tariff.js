@@ -80,7 +80,7 @@ module.exports = (sequelize) => {
         }
       },
       set(value) {
-        this.setDataValue('limits', 
+        this.setDataValue('limits',
           typeof value === 'string' ? value : JSON.stringify(value || {})
         );
       },
@@ -98,7 +98,7 @@ module.exports = (sequelize) => {
         }
       },
       set(value) {
-        this.setDataValue('features', 
+        this.setDataValue('features',
           typeof value === 'string' ? value : JSON.stringify(value || [])
         );
       },
@@ -108,6 +108,11 @@ module.exports = (sequelize) => {
       type: DataTypes.INTEGER,
       defaultValue: 0,
       comment: 'Порядок сортировки'
+    },
+    show_in_list: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+      comment: 'Отображать в приложении'
     }
   }, {
     tableName: 'tariffs',
@@ -132,8 +137,8 @@ module.exports = (sequelize) => {
         if (tariff.changed('is_default') && tariff.is_default) {
           await sequelize.models.Tariff.update(
             { is_default: false },
-            { 
-              where: { 
+            {
+              where: {
                 app_id: tariff.app_id,
                 id: { [sequelize.Op.ne]: tariff.id }
               }
@@ -157,7 +162,7 @@ module.exports = (sequelize) => {
     }
   });
 
-  Tariff.prototype.getPeriodInDays = function() {
+  Tariff.prototype.getPeriodInDays = function () {
     switch (this.period) {
       case 'day': return 1;
       case 'week': return 7;
@@ -167,7 +172,7 @@ module.exports = (sequelize) => {
     }
   };
 
-  Tariff.prototype.calculatePricePerDay = function() {
+  Tariff.prototype.calculatePricePerDay = function () {
     const periodDays = this.getPeriodInDays();
     return this.price / periodDays;
   };
