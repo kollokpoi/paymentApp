@@ -98,6 +98,11 @@
 
             <div class="space-y-2">
               <div class="flex items-center gap-3">
+                <CheckboxPrime v-model="formData.show_in_list" :binary="true" inputId="showInList" />
+                <label for="showInList" class="font-medium">Отображать в приложении</label>
+              </div>
+              
+              <div class="flex items-center gap-3">
                 <CheckboxPrime v-model="formData.is_active" :binary="true" inputId="isActive" />
                 <label for="isActive" class="font-medium">Тариф активен</label>
               </div>
@@ -116,8 +121,8 @@
             <div>
               <h3 class="font-medium text-gray-700 mb-2">Лимиты</h3>
 
-              <EditableLimits :settings="selectedApplicationInfo?.settings || {}" v-model:value="formData.limits" label=""
-                :is-editing="true" :empty-message="'Выберите приложение для настройки лимитов'" />
+              <EditableLimits :settings="selectedApplicationInfo?.settings || {}" v-model:value="formData.limits"
+                label="" :is-editing="true" :empty-message="'Выберите приложение для настройки лимитов'" />
             </div>
 
             <div>
@@ -210,7 +215,8 @@ const formData = reactive<CreateTariffRequest>({
   is_default: false,
   limits: {},
   features: [],
-  sort_order: 0
+  sort_order: 0,
+  show_in_list: true
 })
 
 const periodOptions = [
@@ -340,7 +346,7 @@ const cancel = () => {
 
   router.push('/tariffs')
 }
-watch(formData,(newValue)=>{
+watch(formData, (newValue) => {
   console.log(newValue)
 })
 onMounted(() => {

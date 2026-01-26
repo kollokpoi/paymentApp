@@ -14,6 +14,7 @@ export interface TariffEditData {
   limits: Metadata
   features: string[]
   sortOrder: number
+  showInList: boolean
 }
 
 export const tariffDataToRequest = (data: TariffEditData): UpdateTariffRequest => ({
@@ -28,6 +29,7 @@ export const tariffDataToRequest = (data: TariffEditData): UpdateTariffRequest =
   limits: data.limits,
   features: data.features,
   sort_order: data.sortOrder,
+  show_in_list: data.showInList
 })
 
 export const createTariffEditData = (tariff: TariffDTO): TariffEditData => ({
@@ -39,7 +41,8 @@ export const createTariffEditData = (tariff: TariffDTO): TariffEditData => ({
   trialDays: tariff.trialDays,
   isActive: tariff.isActive,
   isDefault: tariff.isDefault,
-  limits: tariff.limits ,
+  showInList: tariff.showInList,
+  limits: tariff.limits,
   features: [...tariff.features],
   sortOrder: tariff.sortOrder,
 })
@@ -52,6 +55,7 @@ export const applyTariffEditData = (tariff: TariffDTO, editData: TariffEditData)
   tariff.period = editData.period
   tariff.trialDays = editData.trialDays
   tariff.isActive = editData.isActive
+  tariff.showInList = editData.showInList
   tariff.isDefault = editData.isDefault
   tariff.limits = editData.limits
   tariff.features = editData.features

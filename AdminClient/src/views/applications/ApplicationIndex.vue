@@ -132,6 +132,7 @@
           optionLabel="label"
           optionValue="value"
           placeholder="Все статусы"
+          :filter="true"
         />
       </div>
 

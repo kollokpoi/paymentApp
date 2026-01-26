@@ -39,16 +39,19 @@
               </div>
 
               <EditableText label="Название" :type="FieldTypes.Text" v-model:value="editData.name" required
-                :is-editing="globalEditing" @edit-start="startEditing" @validation-change="onValidationChange('name', $event)"/>
+                :is-editing="globalEditing" @edit-start="startEditing"
+                @validation-change="onValidationChange('name', $event)" />
 
               <EditableText label="Код" :type="FieldTypes.Text" v-model:value="editData.code" required
-                :is-editing="globalEditing" @edit-start="startEditing" @validation-change="onValidationChange('code', $event)"/>
+                :is-editing="globalEditing" @edit-start="startEditing"
+                @validation-change="onValidationChange('code', $event)" />
 
               <EditableText label="Описание" v-model:value="editData.description" :type="FieldTypes.TextArea"
                 :is-editing="globalEditing" @edit-start="startEditing" />
 
               <EditableNumber label="Цена" v-model:value="editData.price" required :min="0" :step="0.01"
-                :is-editing="globalEditing" @edit-start="startEditing" @validation-change="onValidationChange('price', $event)"/>
+                :is-editing="globalEditing" @edit-start="startEditing"
+                @validation-change="onValidationChange('price', $event)" />
 
               <EditableSelect label="Период" v-model:value="editData.period" required :items="periodOptions"
                 :is-editing="globalEditing" @edit-start="startEditing" />
@@ -58,6 +61,9 @@
 
               <EditableNumber label="Порядок сортировки" v-model:value="editData.sortOrder" :min="0" :step="1"
                 :is-editing="globalEditing" @edit-start="startEditing" />
+
+              <EditableBoolean label="Отображать в приложении" v-model:value="editData.showInList" true-label="Да"
+                false-label="Нет" :is-editing="globalEditing" @edit-start="startEditing" />
 
               <EditableBoolean label="Активен" v-model:value="editData.isActive" true-label="Да" false-label="Нет"
                 :is-editing="globalEditing" @edit-start="startEditing" />
@@ -69,11 +75,12 @@
 
           <div>
             <h3 class="font-medium text-gray-700 mt-6 mb-4">Лимиты</h3>
-            <div v-if="editData.limits && Object.keys(editData.limits).length > 0">
-              <EditableLimits label="Ограничения для тарифа" :settings="editData.limits || {}"
-                v-model="editData.limits" :is-editing="globalEditing" @edit-start="startEditing"/>
-            </div>
-            <div v-else class="text-gray-500">Лимиты не установлены</div>
+            <EditableLimits label="Ограничения для тарифа" :settings="editData.limits || {}" v-model="editData.limits"
+              :is-editing="globalEditing" @edit-start="startEditing" />
+            <h3 class="font-medium text-gray-700 mt-6 mb-4">Возможности(для отображения)</h3>
+            <EditableJson :is-editing="globalEditing" @edit-start="() => { globalEditing = true }"
+              label="Возможности" v-model:value="editData.features"
+              @validation-change="onValidationChange('settings', $event)" />
           </div>
         </div>
       </template>
@@ -98,7 +105,7 @@
       </template>
       <template #content>
         <div v-if="subscriptions && subscriptions.length > 0">
-          <SubscriptionTable :subscriptions="subscriptions" :loading="subscriptionsLoading" show-company />
+          <SubscriptionTable :subscriptions="subscriptions" :loading="subscriptionsLoading" show-company @deleted="loadSubscriptions"/>
         </div>
         <div v-else class="text-center py-12">
           <i class="pi pi-exclamation-circle text-4xl text-gray-300 mb-4"></i>
@@ -136,6 +143,7 @@ import EditableBoolean from '@/components/editableFields/EditableBoolean.vue'
 import EditableSelect from '@/components/editableFields/EditableSelect.vue'
 import SubscriptionTable from '@/components/SubscriptionTable.vue'
 import EditableLimits from '@/components/editableFields/EditableLimits.vue'
+import EditableJson from '@/components/editableFields/EditableJson.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -172,6 +180,7 @@ const editData = reactive<TariffEditData>({
   trialDays: 0,
   isActive: true,
   isDefault: false,
+  showInList: true,
   limits: {},
   features: [],
   sortOrder: 0,
@@ -320,7 +329,7 @@ const loadSubscriptions = async () => {
 const goToSubscriptions = () => {
   router.push(`/subscriptions?tariffId=${tariffId}`)
 }
-watch(editData,(newValue)=>{
+watch(editData, (newValue) => {
   console.log(newValue)
 })
 onMounted(() => {

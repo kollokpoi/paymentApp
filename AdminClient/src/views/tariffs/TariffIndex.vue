@@ -129,6 +129,7 @@
           optionLabel="label"
           optionValue="value"
           placeholder="Любой пробный период"
+          :filter="true"
         />
       </div>
 
@@ -141,6 +142,7 @@
           optionLabel="label"
           optionValue="value"
           placeholder="Любой"
+          :filter="true"
         />
       </div>
     </div>

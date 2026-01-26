@@ -18,6 +18,7 @@ export interface CreateTariffRequest {
   limits?: Metadata
   features?: string[]
   sort_order?: number
+  show_in_list:boolean
 }
 
 export interface UpdateTariffRequest {
@@ -32,6 +33,7 @@ export interface UpdateTariffRequest {
   features?: string[]
   sort_order?: number
   code?: string
+  show_in_list?:boolean
 }
 
 export interface TariffSearchParams {

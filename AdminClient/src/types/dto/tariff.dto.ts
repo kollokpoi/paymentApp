@@ -27,6 +27,8 @@ export interface TariffDTOData {
   updated_at?: string | Date
   updatedAt?: string | Date
   application?: any
+  show_in_list?: boolean
+  showInList?: boolean
 }
 
 export class TariffDTO {
@@ -43,6 +45,7 @@ export class TariffDTO {
   limits: Metadata
   features: string[]
   sortOrder: number
+  showInList: boolean
   createdAt: string | Date
   updatedAt: string | Date
   application: ApplicationDTO | null
@@ -58,6 +61,7 @@ export class TariffDTO {
     this.trialDays = data.trialDays || data.trial_days || 0
     this.isActive = data.isActive ?? data.is_active ?? true
     this.isDefault = data.isDefault ?? data.is_default ?? false
+    this.showInList = data.showInList ?? data.show_in_list ?? true
     this.limits = data.limits || {}
     this.features = data.features || []
     this.sortOrder = data.sortOrder || data.sort_order || 0

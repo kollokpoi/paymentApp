@@ -43,25 +43,25 @@
       <div>
         <label class="block text-sm font-medium mb-2">Портал</label>
         <SelectPrime v-model="selectedPortalId" class="w-full" :options="portalOptions" optionLabel="label"
-          optionValue="value" placeholder="Все порталы" />
+          :filter="true" optionValue="value" placeholder="Все порталы" />
       </div>
 
       <div>
         <label class="block text-sm font-medium mb-2">Статус</label>
-        <SelectPrime v-model="selectedStatus" class="w-full" :options="statusOptions" optionLabel="label"
+        <SelectPrime v-model="selectedStatus" class="w-full" :options="statusOptions" optionLabel="label" :filter="true"
           optionValue="value" placeholder="Все статусы" />
       </div>
 
       <div>
         <label class="block text-sm font-medium mb-2">Приложение</label>
-        <SelectPrime v-model="selectedAppId" class="w-full" :options="appsOptions" optionLabel="label"
+        <SelectPrime v-model="selectedAppId" class="w-full" :options="appsOptions" optionLabel="label" :filter="true"
           optionValue="value" placeholder="Все приложения" />
       </div>
 
       <div>
         <label class="block text-sm font-medium mb-2">Способ оплаты</label>
         <SelectPrime v-model="selectedPaymentMethod" class="w-full" :options="paymentMethodOptions" optionLabel="label"
-          optionValue="value" placeholder="Все способы" />
+          :filter="true" optionValue="value" placeholder="Все способы" />
       </div>
 
       <div class="grid grid-cols-2 gap-4">
@@ -116,8 +116,8 @@ const route = useRoute()
 const router = useRouter()
 const toast = useToast()
 
-const subscriptionId = route.query.subscriptionId 
-const appId = route.query.appId 
+const subscriptionId = route.query.subscriptionId
+const appId = route.query.appId
 const portalId = route.query.portalId
 
 const portals = ref<PortalShortDTO[]>([])

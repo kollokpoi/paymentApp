@@ -62,37 +62,40 @@
     <div class="flex flex-col gap-4">
       <div>
         <label class="block text-sm font-medium mb-2">Портал</label>
-        <DropdownPrime
+        <SelectPrime
           v-model="selectedPortalId"
           class="w-full"
           :options="portalOptions"
           optionLabel="label"
           optionValue="value"
           placeholder="Все порталы"
+          :filter="true"
         />
       </div>
 
       <div>
         <label class="block text-sm font-medium mb-2">Статус</label>
-        <DropdownPrime
+        <SelectPrime
           v-model="selectedStatus"
           class="w-full"
           :options="statusOptions"
           optionLabel="label"
           optionValue="value"
           placeholder="Все статусы"
+          :filter="true"
         />
       </div>
 
       <div>
         <label class="block text-sm font-medium mb-2">Приложение</label>
-        <DropdownPrime
+        <SelectPrime
           v-model="selectedAppId"
           class="w-full"
           :options="appsOptions"
           optionLabel="label"
           optionValue="value"
           placeholder="Все приложения"
+          :filter="true"
         />
       </div>
     </div>

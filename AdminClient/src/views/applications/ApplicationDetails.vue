@@ -83,7 +83,8 @@
       </template>
       <template #content>
         <div v-if="subscriptions && subscriptions.length > 0">
-          <SubscriptionTable :subscriptions="subscriptions" :loading="subscriptionsLoading" show-company />
+          <SubscriptionTable :subscriptions="subscriptions" :loading="subscriptionsLoading" show-company
+            @deleted="loadSubscriptions" />
         </div>
         <div v-else class="text-center py-12">
           <i class="pi pi-exclamation-circle text-4xl text-gray-300 mb-4"></i>
@@ -151,7 +152,6 @@ const onValidationChange = (field: string, result: ValidationResult) => {
   }
   console.log(validationErrors)
 }
-
 const canUpdate = computed(() => validationErrors.value.length == 0);
 
 const cancelEditing = () => {
