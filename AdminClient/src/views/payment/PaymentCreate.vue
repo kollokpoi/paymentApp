@@ -19,17 +19,9 @@
               <label class="block text-sm font-medium mb-2">
                 Подписка <span class="text-red-500">*</span>
               </label>
-              <SelectPrime
-                v-model="formData.subscription_id"
-                :options="subscriptionOptions"
-                optionLabel="label"
-                optionValue="value"
-                placeholder="Выберите подписку"
-                class="w-full"
-                :filter="true"
-                :loading="subscriptionsLoading"
-                :invalid="!formData.subscription_id"
-              />
+              <SelectPrime v-model="formData.subscription_id" :options="subscriptionOptions" optionLabel="label"
+                optionValue="value" placeholder="Выберите подписку" class="w-full" :filter="true"
+                :loading="subscriptionsLoading" :invalid="!formData.subscription_id" />
               <small v-if="!formData.subscription_id" class="text-red-500 text-xs">
                 Подписка обязательна
               </small>
@@ -40,15 +32,8 @@
                 Сумма <span class="text-red-500">*</span>
               </label>
               <div class="flex gap-2">
-                <InputNumber
-                  v-model="formData.amount"
-                  :min="0.01"
-                  :max="999999"
-                  :minFractionDigits="2"
-                  :maxFractionDigits="2"
-                  class="flex-1"
-                  :invalid="!formData.amount || formData.amount <= 0"
-                />
+                <InputNumber v-model="formData.amount" :min="0.01" :max="999999" :minFractionDigits="2"
+                  :maxFractionDigits="2" class="flex-1" :invalid="!formData.amount || formData.amount <= 0" />
               </div>
               <small v-if="!formData.amount || formData.amount <= 0" class="text-red-500 text-xs">
                 Сумма должна быть больше 0
@@ -59,41 +44,24 @@
               <label class="block text-sm font-medium mb-2">
                 Статус <span class="text-red-500">*</span>
               </label>
-              <SelectPrime
-                v-model="formData.status"
-                :options="statusOptions"
-                optionLabel="label"
-                optionValue="value"
-                placeholder="Выберите статус"
-                class="w-full"
-              />
+              <SelectPrime v-model="formData.status" :options="statusOptions" optionLabel="label" optionValue="value"
+                placeholder="Выберите статус" class="w-full" />
             </div>
 
             <div>
               <label class="block text-sm font-medium mb-2">Описание</label>
-              <InputText
-                v-model="formData.description"
-                placeholder="Описание платежа"
-                class="w-full"
-              />
+              <InputText v-model="formData.description" placeholder="Описание платежа" class="w-full" />
             </div>
 
             <div>
               <label class="block text-sm font-medium mb-2">Метод оплаты</label>
-              <InputText
-                v-model="formData.payment_method"
-                placeholder="Например: credit_card, bank_transfer"
-                class="w-full"
-              />
+              <InputText v-model="formData.payment_method" placeholder="Например: credit_card, bank_transfer"
+                class="w-full" />
             </div>
 
             <div>
               <label class="block text-sm font-medium mb-2">Внешний ID</label>
-              <InputText
-                v-model="formData.external_id"
-                placeholder="ID платежа во внешней системе"
-                class="w-full"
-              />
+              <InputText v-model="formData.external_id" placeholder="ID платежа во внешней системе" class="w-full" />
             </div>
           </div>
 
@@ -102,14 +70,8 @@
 
             <div>
               <label class="block text-sm font-medium mb-2">Метаданные (JSON)</label>
-              <TextareaPrime
-                v-model="jsonMetadata"
-                placeholder='{"invoice_id": "123", "note": "Оплата за услуги"}'
-                class="w-full font-mono text-sm"
-                rows="8"
-                autoResize
-                @input="handleJsonInput"
-              />
+              <TextareaPrime v-model="jsonMetadata" placeholder='{"invoice_id": "123", "note": "Оплата за услуги"}'
+                class="w-full font-mono text-sm" rows="8" autoResize @input="handleJsonInput" />
               <small class="text-gray-500 text-xs">
                 Дополнительные метаданные платежа в формате JSON
               </small>
@@ -119,8 +81,7 @@
 
               <div v-if="Object.keys(formData.metadata || {}).length > 0" class="mt-4">
                 <h4 class="font-medium mb-2">Предварительный просмотр:</h4>
-                <pre class="bg-gray-50 p-3 rounded text-xs overflow-auto max-h-40"
-                  >{{ JSON.stringify(formData.metadata, null, 2) }}
+                <pre class="bg-gray-50 p-3 rounded text-xs overflow-auto max-h-40">{{ JSON.stringify(formData.metadata, null, 2) }}
                 </pre>
               </div>
             </div>
@@ -147,10 +108,8 @@
 
                   <div class="text-gray-500">Статус:</div>
                   <div>
-                    <TagPrime
-                      :value="selectedSubscriptionInfo.status"
-                      :severity="getSubscriptionStatusSeverity(selectedSubscriptionInfo.status)"
-                    />
+                    <TagPrime :value="selectedSubscriptionInfo.status"
+                      :severity="getSubscriptionStatusSeverity(selectedSubscriptionInfo.status)" />
                   </div>
                 </div>
               </div>
@@ -165,12 +124,7 @@
 
     <div class="flex gap-2 justify-end">
       <ButtonPrime label="Отмена" icon="pi pi-times" outlined @click="cancel" />
-      <ButtonPrime
-        label="Создать"
-        icon="pi pi-check"
-        :disabled="!isFormValid || creating"
-        @click="createPayment"
-      />
+      <ButtonPrime label="Создать" icon="pi pi-check" :disabled="!isFormValid || creating" @click="createPayment" />
     </div>
   </div>
   <ConfirmDialog :draggable="true" />
@@ -196,6 +150,7 @@ const jsonError = ref<string | null>(null)
 const jsonMetadata = ref('')
 const subscriptions = ref<SubscriptionDTO[]>([])
 const subscriptionsLoading = ref(false)
+const fromExtend = computed(() => route.query.fromExtend === 'true')
 
 const formData = reactive<CreatePaymentRequest>({
   subscription_id: '',
@@ -304,24 +259,27 @@ const createPayment = async () => {
         detail: 'Платеж создан',
         life: 3000,
       })
-
-      confirm.require({
-        message: `Продлить подписку?`,
-        header: 'Продление подписки',
-        icon: 'pi pi-exclamation-triangle',
-        acceptClass: 'p-button-success',
-        acceptLabel: 'Продлить',
-        rejectLabel: 'Продолжить',
-        accept() {
-          router.push({
-            path: `/subscriptions/${response.data.subscriptionId}/extend`,
-            query: { fromPayment: 'true' },
-          })
-        },
-        reject() {
-          router.push(`/payments/${response.data.id}`)
-        },
-      })
+      if (!fromExtend.value) {
+        confirm.require({
+          message: `Продлить подписку?`,
+          header: 'Продление подписки',
+          icon: 'pi pi-exclamation-triangle',
+          acceptClass: 'p-button-success',
+          acceptLabel: 'Продлить',
+          rejectLabel: 'Продолжить',
+          accept() {
+            router.push({
+              path: `/subscriptions/${response.data.subscriptionId}/extend`,
+              query: { fromPayment: 'true' },
+            })
+          },
+          reject() {
+            router.push(`/payments/${response.data.id}`)
+          },
+        })
+      } else {
+        router.push(`/payments/${response.data.id}`)
+      }
     } else {
       toast.add({
         severity: 'error',
@@ -366,7 +324,7 @@ onMounted(() => {
   if (route.query.subscriptionId) {
     formData.subscription_id = route.query.subscriptionId as string
   }
-  
+
   if (route.query.amount) {
     formData.amount = parseFloat(route.query.amount as string) || 0
   }

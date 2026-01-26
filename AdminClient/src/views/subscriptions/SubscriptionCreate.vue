@@ -140,7 +140,7 @@
               <div v-if="selectedTariffInfo" class="pt-3 border-t">
                 <div class="text-sm text-gray-500">Итоговая стоимость:</div>
                 <div class="text-lg font-bold">
-                  {{ calculateTotalPrice }}
+                  {{ formatCurrency(calculateTotalPrice) }}
                 </div>
                 <div class="text-xs text-gray-500">
                   {{ selectedTariffInfo.price }} × {{ calculateDays / getDaysInPeriod(selectedTariffInfo.period) || 1 }}
@@ -177,6 +177,7 @@
         @click="createSubscription" />
     </div>
   </div>
+  <ConfirmDialog :draggable="true" />
 </template>
 
 <script setup lang="ts">
@@ -190,10 +191,12 @@ import type { ApplicationDTO } from '@/types/dto/application.dto'
 import type { TariffDTO } from '@/types/dto/tariff.dto'
 import { formatDate, formatCurrency } from '@/helpers/formatters'
 import type { PortalShortDTO } from '@/types/dto'
+import { useConfirm } from 'primevue'
 
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
+const confirm = useConfirm()
 
 const creating = ref(false)
 const jsonError = ref<string | null>(null)
@@ -280,13 +283,13 @@ const calculateDays = computed(() => {
 })
 
 const calculateTotalPrice = computed(() => {
-  if (!selectedTariffInfo.value || !calculateDays.value) return '0'
+  if (!selectedTariffInfo.value || !calculateDays.value) return 0
 
   const tariff = selectedTariffInfo.value
   const daysInPeriod = getDaysInPeriod(tariff.period) || 30
   const periods = calculateDays.value / daysInPeriod
 
-  return formatCurrency(tariff.price * periods)
+  return tariff.price * periods
 })
 
 const isFormValid = computed(() => {
@@ -427,20 +430,34 @@ const createSubscription = async () => {
     const response = await subscriptionService.createSubscription(formData)
 
     if (response.success) {
-      toast.add({
-        severity: 'success',
-        summary: 'Успешно',
-        detail: 'Подписка создана',
-        life: 3000
-      })
+      confirm.require({
+        message: `Создать платеж за продление на сумму ${calculateTotalPrice.value}?`,
+        header: 'Создание платежа',
+        icon: 'pi pi-credit-card',
+        acceptClass: 'p-button-success',
+        acceptLabel: 'Создать платеж',
+        rejectLabel: 'К подписке',
 
-      router.push(`/subscriptions/${response.data.id}`)
+        accept() {
+          router.push({
+            path: '/payments/create',
+            query: {
+              fromExtend: 'true',
+              subscriptionId: response.data.id,
+              amount: calculateTotalPrice.value,
+            },
+          })
+        },
+        reject() {
+          router.push(`/subscriptions/${response.data.id}`)
+        },
+      })
     } else {
       toast.add({
         severity: 'error',
         summary: 'Ошибка',
-        detail: response.message || 'Не удалось создать подписку',
-        life: 3000
+        detail: response.message || 'Не удалось продлить подписку',
+        life: 3000,
       })
     }
   } catch (error: any) {
@@ -479,10 +496,26 @@ onMounted(() => {
 
 })
 
+const periodMap = {
+  [PeriodType.DAY]: 1,
+  [PeriodType.WEEK]: 7,
+  [PeriodType.MONTH]: 30,
+  [PeriodType.YEAR]: 365,
+}
+
 watch(() => formData.app_id, () => {
   if (formData.app_id) {
     loadTariffs()
     formData.tariff_id = ''
+  }
+})
+
+watch(() => formData.tariff_id, (newValue) => {
+  const tariff = tariffs.value.find(x => x.id == newValue);
+  if (tariff) {
+    const newEnd = formData.valid_from ? new Date(formData.valid_from) : new Date()
+    newEnd.setDate(newEnd.getDate() + periodMap[tariff.period] || 30)
+    formData.valid_until = newEnd
   }
 })
 </script>
