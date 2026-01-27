@@ -103,25 +103,6 @@
         :disabled="globalEditing" />
       <ButtonPrime label="Удалить" icon="pi pi-trash" severity="danger" @click="confirmDelete" />
     </div>
-    <CardPrime>
-      <template #title>
-        <div class="flex justify-between">
-          <p>Платежи</p>
-          <ButtonPrime label="Все платежи" icon="pi pi-external-link" @click="goToPayments" />
-        </div>
-      </template>
-      <template #content>
-        <div v-if="payments">
-          <PaymentTable :payments="payments" :loading="paymentsLoading" />
-          <PaginatorPrime v-if="paymentPagination?.total > paymentPagination.limit" :rows="paymentPagination.limit"
-            :totalRecords="paymentPagination.total" @page="onPageChange" />
-        </div>
-        <div v-else class="text-center py-12">
-          <i class="pi pi-exclamation-circle text-4xl text-gray-300 mb-4"></i>
-          <h3 class="text-lg font-medium mb-2">Платежи не найдены</h3>
-        </div>
-      </template>
-    </CardPrime>
   </div>
   <div v-else class="text-center py-12">
     <i class="pi pi-exclamation-circle text-4xl text-gray-300 mb-4"></i>
@@ -133,11 +114,10 @@
   <ConfirmDialog :draggable="true" />
 </template>
 <script setup lang="ts">
-import { paymentService, subscriptionService, type PaymentSearchParams } from '@/services'
+import { subscriptionService } from '@/services'
 import {
   applySubscriptionEditData,
   createSubscriptionEditData,
-  PaymentDTO,
   subscriptionDataToRequest,
   SubscriptionDTO,
   type SubscriptionEditData,
@@ -151,7 +131,6 @@ import EditableText from '@/components/editableFields/EditableText.vue'
 import EditableSelect from '@/components/editableFields/EditableSelect.vue'
 import { SubscriptionStatus } from '@/types/api/responses'
 import { formatDate } from '@/helpers/formatters'
-import PaymentTable from '@/components/PaymentTable.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -161,9 +140,7 @@ const confirm = useConfirm()
 const subscriptionId = route.params.id as string
 
 const loading = ref(false)
-const paymentsLoading = ref(false)
 const subscription = ref<SubscriptionDTO>()
-const payments = ref<PaymentDTO[]>()
 const globalEditing = ref(false)
 const validationErrors = ref<Array<{ field: string; message: string }>>([])
 
@@ -175,14 +152,6 @@ const editData = reactive<SubscriptionEditData>({
   notes: '',
 })
 
-const paymentPagination = reactive({
-  total: 0,
-  page: 1,
-  limit: 30,
-  totalPages: 0,
-  hasNext: false,
-  hasPrev: false,
-})
 
 const statusOptions = [
   { value: SubscriptionStatus.TRIAL, label: 'Триал' },
@@ -302,52 +271,7 @@ const loadSubscriprion = async () => {
   }
 }
 
-const onPageChange = (event: any) => {
-  paymentPagination.page = event.page + 1
-  loadPayments()
-}
-
-const goToPayments = () => {
-  router.push(`/payments?subscriptionId=${subscriptionId}`)
-}
-
-const loadPayments = async () => {
-  paymentsLoading.value = true
-  try {
-    const params: PaymentSearchParams = {
-      page: paymentPagination.page,
-      limit: paymentPagination.limit,
-      subscriptionId: subscriptionId,
-    }
-    const response = await paymentService.getPayments(params)
-
-    if (response.success) {
-      payments.value = response.data.items
-      paymentPagination.hasNext = response.data.hasNext
-      paymentPagination.hasPrev = response.data.hasPrev
-      paymentPagination.total = response.data.total
-      paymentPagination.totalPages = response.data.totalPages
-    } else {
-      toast.add({
-        severity: 'error',
-        summary: 'Не удалось загрузить платежи',
-        detail: response.message,
-        life: 3000,
-      })
-    }
-  } catch {
-    toast.add({
-      severity: 'error',
-      summary: 'Не удалось загрузить платежи',
-      life: 3000,
-    })
-  } finally {
-    paymentsLoading.value = false
-  }
-}
-
 onMounted(() => {
   loadSubscriprion()
-  loadPayments()
 })
 </script>

@@ -5,7 +5,7 @@ import type { ApiResponse, PaginatedResponse, PaymentStatus } from '@/types/api/
 import type { AxiosRequestConfig } from 'axios'
 
 export interface CreatePaymentRequest {
-  subscription_id: string
+  portal_id: string
   external_id?: string
   amount: number
   status?: PaymentStatus
@@ -25,12 +25,10 @@ export interface PaymentSearchParams {
   page?: number
   limit?: number
   portalId?: string
-  subscriptionId?: string
   status?: string
   search?: string
   dateFrom?: string
   dateTo?: string
-  appId?: string
   paymentMethod?: string
   amountFrom?: number
   amountTo?: number

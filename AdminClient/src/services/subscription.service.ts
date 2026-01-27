@@ -20,6 +20,7 @@ export interface CreateSubscriptionRequest {
   trial_end_date?: Date
   notes?: string
   metadata?: Metadata
+  totalPrice?: number
 }
 
 export interface UpdateSubscriptionRequest {

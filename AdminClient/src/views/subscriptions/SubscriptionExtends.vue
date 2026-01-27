@@ -175,26 +175,6 @@
       <ButtonPrime label="Продлить" icon="pi pi-check" :disabled="!canExtend || extending"
         @click="extendSubscription" />
     </div>
-
-    <CardPrime>
-      <template #title>
-        <div class="flex justify-between">
-          <p>История платежей</p>
-          <ButtonPrime label="Все платежи" icon="pi pi-external-link" @click="goToPayments" />
-        </div>
-      </template>
-      <template #content>
-        <div v-if="payments && payments.length > 0">
-          <PaymentTable :payments="payments" :loading="paymentsLoading" />
-          <PaginatorPrime v-if="paymentPagination?.total > paymentPagination.limit" :rows="paymentPagination.limit"
-            :totalRecords="paymentPagination.total" @page="onPageChange" />
-        </div>
-        <div v-else class="text-center py-8">
-          <i class="pi pi-credit-card text-3xl text-gray-300 mb-3"></i>
-          <p class="text-gray-500">Платежей не найдено</p>
-        </div>
-      </template>
-    </CardPrime>
   </div>
 
   <div v-else class="text-center py-12">
@@ -211,39 +191,26 @@
 import { ref, computed, onMounted, watch, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
-import { subscriptionService, paymentService } from '@/services'
-import type { PaymentSearchParams } from '@/services/payment.service'
+import { subscriptionService } from '@/services'
 import type { RenewSubscriptionRequest } from '@/services/subscription.service'
-import type { SubscriptionDTO, PaymentDTO } from '@/types/dto'
+import type { SubscriptionDTO } from '@/types/dto'
 import { PeriodType } from '@/types/api/responses'
 import { formatDate, formatCurrency, pluralizeDays } from '@/helpers/formatters'
-import PaymentTable from '@/components/PaymentTable.vue'
 
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
 
 const subscriptionId = route.params.id as string
-const fromPayment = computed(() => route.query.fromPayment === 'true')
 
 const loading = ref(false)
 const extending = ref(false)
-const paymentsLoading = ref(false)
 const subscription = ref<SubscriptionDTO>()
-const payments = ref<PaymentDTO[]>([])
 
 const days = ref<number>(30)
 const fromTariff = ref<boolean>(true)
 const portalBalance = ref(0)
 
-const paymentPagination = reactive({
-  total: 0,
-  page: 1,
-  limit: 10,
-  totalPages: 0,
-  hasNext: false,
-  hasPrev: false,
-})
 const tariffDaysInPeriod = computed(() => {
   if (!subscription.value?.tariff?.period) return 30
 
@@ -350,42 +317,6 @@ const loadSubscription = async () => {
   }
 }
 
-const loadPayments = async () => {
-  if (!subscription.value) return
-
-  paymentsLoading.value = true
-  try {
-    const params: PaymentSearchParams = {
-      page: paymentPagination.page,
-      limit: paymentPagination.limit,
-      subscriptionId: subscriptionId,
-    }
-
-    const response = await paymentService.getPayments(params)
-
-    if (response.success) {
-      payments.value = response.data.items
-      paymentPagination.total = response.data.total
-      paymentPagination.totalPages = response.data.totalPages
-      paymentPagination.hasNext = response.data.hasNext
-      paymentPagination.hasPrev = response.data.hasPrev
-    }
-  } catch (error) {
-    console.error('Ошибка загрузки платежей:', error)
-  } finally {
-    paymentsLoading.value = false
-  }
-}
-
-const onPageChange = (event: any) => {
-  paymentPagination.page = event.page + 1
-  loadPayments()
-}
-
-const goToPayments = () => {
-  router.push(`/payments?subscriptionId=${subscriptionId}`)
-}
-
 // Продление подписки
 const extendSubscription = async () => {
   if (!subscription.value) {
@@ -427,11 +358,7 @@ const extendSubscription = async () => {
     const response = await subscriptionService.renewSubscription(subscriptionId, requestData)
 
     if (response.success) {
-      if (fromPayment.value) {
-        router.back()
-      } else {
-        router.push(`/subscriptions/${subscriptionId}`)
-      }
+      router.push(`/subscriptions/${subscriptionId}`)
     } else {
       toast.add({
         severity: 'error',
@@ -454,11 +381,7 @@ const extendSubscription = async () => {
 }
 
 const cancel = () => {
-  if (fromPayment.value) {
-    router.back()
-  } else {
-    router.push(`/subscriptions/${subscriptionId}`)
-  }
+  router.push(`/subscriptions/${subscriptionId}`)
 }
 
 // Наблюдатели
@@ -480,7 +403,6 @@ watch(
 // Инициализация
 onMounted(() => {
   loadSubscription()
-  loadPayments()
 })
 </script>
 

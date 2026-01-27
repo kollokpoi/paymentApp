@@ -35,9 +35,9 @@
                 label="Внешний Id платежа" :type="FieldTypes.Text" :is-editing="globalEditing"
                 @edit-start="() => { globalEditing = true }" />
               <div>
-                <dt class="text-sm text-gray-500">Подписка</dt>
-                <router-link :to="`/subscriptions/${payment.subscriptionId}`" class="font-medium text-primary-600 hover:text-primary-500">
-                  <dd>{{ payment.subscription?.companyName }} {{ payment.subscription?.application?.name }}</dd>
+                <dt class="text-sm text-gray-500">Портал</dt>
+                <router-link :to="`/portals/${payment.portalId}`" class="font-medium text-primary-600 hover:text-primary-500">
+                  <dd>{{ payment.portal?.companyName }}</dd>
                 </router-link>
 
               </div>

@@ -6,12 +6,10 @@ class PaymentController {
       const {
         page = 1,
         limit = 20,
-        subscriptionId,
+        portalId,
         status,
         dateFrom,
         dateTo,
-        portalId,
-        appId,
         paymentMethod,
         amountFrom,
         amountTo,
@@ -19,73 +17,52 @@ class PaymentController {
       } = req.query;
 
       const offset = (page - 1) * limit;
-
+      const { Op } = req.db.sequelize;
       const Payment = req.db.getModel("Payment");
+
+      // Основные условия фильтрации
       const where = {};
 
-      if (subscriptionId) where.subscription_id = subscriptionId;
       if (status) where.status = status;
       if (paymentMethod) where.payment_method = paymentMethod;
+      if (portalId) where['portal_id'] = portalId;
 
       if (dateFrom || dateTo) {
         where.created_at = {};
-        if (dateFrom)
-          where.created_at[req.db.sequelize.Op.gte] = new Date(dateFrom);
-        if (dateTo)
-          where.created_at[req.db.sequelize.Op.lte] = new Date(dateTo);
+        if (dateFrom) where.created_at[Op.gte] = new Date(dateFrom);
+        if (dateTo) where.created_at[Op.lte] = new Date(dateTo);
       }
 
       if (amountFrom || amountTo) {
         where.amount = {};
-        if (amountFrom)
-          where.amount[req.db.sequelize.Op.gte] = parseFloat(amountFrom);
-        if (amountTo)
-          where.amount[req.db.sequelize.Op.lte] = parseFloat(amountTo);
-      }
-
-      if (search) {
-        where[req.db.sequelize.Op.or] = [
-          { description: { [req.db.sequelize.Op.like]: `%${search}%` } },
-          { external_id: { [req.db.sequelize.Op.like]: `%${search}%` } },
-        ];
-      }
-
-      const include = [
-        {
-          model: req.db.getModel("Subscription"),
-          as: "subscription",
-          where: {},
-          required: true,
-          include: [
-            {
-              model: req.db.getModel("Portal"),
-              as: "portal",
-              attributes: ["id", "b24_domain", "company_name"],
-              where: {},
-              required: portalId ? true : false,
-            },
-            {
-              model: req.db.getModel("Application"),
-              as: "application",
-              attributes: ["id", "name"],
-              where: {},
-              required: appId ? true : false,
-            },
-          ],
-        },
-      ];
-
-      if (portalId) {
-        include[0].include[0].where.id = portalId;
-      }
-
-      if (appId) {
-        include[0].include[1].where.id = appId;
+        if (amountFrom) where.amount[Op.gte] = parseFloat(amountFrom);
+        if (amountTo) where.amount[Op.lte] = parseFloat(amountTo);
       }
 
       const { count, rows } = await Payment.findAndCountAll({
-        where,
-        include,
+        where: search
+          ? {
+            [Op.and]: [
+              where, // все существующие фильтры
+              {
+                [Op.or]: [ // поиск по всем полям
+                  { description: { [Op.like]: `%${search}%` } },
+                  { external_id: { [Op.like]: `%${search}%` } },
+                  { '$portal.b24_domain$': { [Op.like]: `%${search}%` } },
+                  { '$portal.company_name$': { [Op.like]: `%${search}%` } },
+                ]
+              }
+            ]
+          }
+          : where,
+        include: [
+          {
+            model: req.db.getModel("Portal"),
+            as: "portal",
+            required: true,
+          },
+        ],
+        distinct: true,
         limit: parseInt(limit),
         offset: parseInt(offset),
         order: [["created_at", "DESC"]],
@@ -116,9 +93,8 @@ class PaymentController {
       const payment = await Payment.findByPk(req.params.id, {
         include: [
           {
-            model: req.db.getModel("Subscription"),
-            as: "subscription",
-            include: ["portal", "application"],
+            model: req.db.getModel("Portal"),
+            as: "portal",
           },
         ],
       });
@@ -140,10 +116,10 @@ class PaymentController {
   async create(req, res, next) {
     try {
       const Payment = req.db.getModel("Payment");
-      const Subscription = req.db.getModel("Subscription");
+      const Portal = req.db.getModel("Portal");
 
       const {
-        subscription_id,
+        portal_id,
         external_id,
         amount,
         status,
@@ -152,27 +128,26 @@ class PaymentController {
         metadata,
       } = req.body;
 
-      if (!subscription_id || amount === undefined) {
+      if (!portal_id || amount === undefined) {
         return res.status(400).json({
           success: false,
-          message: "subscription_id and amount are required",
+          message: "portal_id and amount are required",
         });
       }
 
-      const subscription = await Subscription.findByPk(subscription_id);
-      if (!subscription) {
+      const portal = await Portal.findByPk(portal_id);
+      if (!portal) {
         return res.status(404).json({
           success: false,
-          message: "Subscription not found",
+          message: "Portal not found",
         });
       }
-      const portal = await subscription.getPortal();
       await portal.update({
         balance: parseFloat(portal.balance) + parseFloat(amount)
       })
 
       const payment = await Payment.create({
-        subscription_id,
+        portal_id,
         external_id,
         amount: parseFloat(amount),
         status: status || "pending",
@@ -196,7 +171,6 @@ class PaymentController {
   async update(req, res, next) {
     try {
       const Payment = req.db.getModel("Payment");
-      const Subscription = req.db.getModel("Subscription");
 
       const payment = await Payment.findByPk(req.params.id);
 
@@ -216,15 +190,6 @@ class PaymentController {
         description,
         metadata: { ...payment.metadata, ...metadata },
       });
-
-      if (oldStatus !== "completed" && status === "completed") {
-        const subscription = await Subscription.findByPk(
-          payment.subscription_id
-        );
-        if (subscription) {
-          await subscription.update({ status: "active" });
-        }
-      }
 
       const paymentDTO = PaymentDTO.fromSequelize(payment);
       res.json({

@@ -54,7 +54,7 @@ class PortalController {
       const Portal = req.db.getModel("Portal");
 
       const portals = await Portal.findAll({
-        attributes: ["id", "b24_domain", "company_name", "is_active"],
+        attributes: ["id", "b24_domain", "company_name", "is_active", "balance"],
         order: [
           ["company_name", "ASC"],
           ["b24_domain", "ASC"],

@@ -1,5 +1,6 @@
 const { SubscriptionDTO, TariffDTO } = require('@payment-app/apiModels')
 const ObjectUtils = require('../utils/ObjectUtils')
+const axios = require('axios');
 
 class SubsciptionController {
   get(req, res, next) {
@@ -72,7 +73,7 @@ class SubsciptionController {
         message: 'Subscription expired or not found'
       })
     }
-    
+
     const tariff = await subscription.getTariff();
     if (!tariff) {
       return res.status(500).json({
@@ -163,7 +164,7 @@ class SubsciptionController {
 
     try {
       const result = await subscription.update({
-        used_limits: usedLimits
+        used_limits: usedLimits,
       });
     } catch (error) {
       console.error('Failed to update limits:', error);
@@ -186,7 +187,226 @@ class SubsciptionController {
       }
     });
   }
+
+  async updateToken(req, res, next) {
+    if (!req.subscription) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
+    }
+    const { access_token, refresh_token } = req.body;
+
+    if (!access_token || typeof access_token !== 'string') {
+      return res.status(400).json({
+        success: false,
+        message: 'access_token is required'
+      });
+    }
+
+    if (!refresh_token || typeof refresh_token !== 'string') {
+      return res.status(400).json({
+        success: false,
+        message: 'refresh_token is required'
+      });
+    }
+
+    const metadata = {
+      ...req.subscription.metadata, // копируем все старые поля
+      lastTokenUpdate: new Date().toISOString(),
+      tokenExpiresAt: new Date(Date.now() + 55 * 60 * 1000).toISOString()
+    };
+
+    try {
+      await req.subscription.update({
+        b24_access_token: access_token,
+        b24_refresh_token: refresh_token,
+        metadata
+      })
+      res.json({
+        success: true
+      })
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getAll(req, res, next) {
+    try {
+      const Subscription = req.db.getModel('Subscription')
+      const dataRows = await Subscription.findAll({
+        where: {
+          user_type: {
+            [req.db.sequelize.Op.or]: ['user', 'owner']
+          }
+        },
+        include: [
+          {
+            model: req.db.getModel("Tariff"),
+            as: 'tariff',
+            required: true
+          },
+          {
+            model: req.db.getModel("Portal"),
+            as: 'portal',
+            required: true
+          }
+        ]
+      });
+      const subscriptions = dataRows.map((sub) =>
+        SubscriptionDTO.fromSequelize(sub).toApiResponse()
+      );
+      res.json({
+        success: true,
+        data: subscriptions,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getToken(req, res, next) {
+    const { id } = req.params
+
+    try {
+      const Subscription = req.db.getModel('Subscription');
+      const subscription = await Subscription.findByPk(id);
+
+      if (!subscription) {
+        return res.status(404).json({
+          success: false,
+          message: 'Subscription not found'
+        });
+      }
+
+      const { b24_access_token, b24_refresh_token, metadata } = subscription;
+
+      if (!b24_refresh_token || !b24_access_token) {
+        return res.status(400).json({
+          success: false,
+          message: 'Tokens do not exist'
+        });
+      }
+
+      const now = new Date();
+      const tokenExpiresAt = metadata?.tokenExpiresAt
+        ? new Date(metadata.tokenExpiresAt)
+        : null;
+
+      if (tokenExpiresAt && tokenExpiresAt > now) {
+        return res.json({
+          success: true,
+          data: {
+            access_token: b24_access_token,
+            tokenExpiresAt: tokenExpiresAt.toISOString()
+          }
+        });
+      }
+
+      const newTokens = await refreshBitrixToken(b24_refresh_token, subscription);
+
+      const updatedMetadata = {
+        ...subscription.metadata,
+        lastTokenUpdate: new Date().toISOString(),
+        tokenExpiresAt: new Date(Date.now() + 55 * 60 * 1000).toISOString()
+      };
+
+      await subscription.update({
+        b24_access_token: newTokens.access_token,
+        b24_refresh_token: newTokens.refresh_token,
+        metadata: updatedMetadata
+      });
+
+      res.json({
+        success: true,
+        data: {
+          access_token: newTokens.access_token,
+          tokenExpiresAt: updatedMetadata.tokenExpiresAt,
+          message: 'Token refreshed'
+        }
+      });
+
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateMetadataById(req, res, next) {
+    const { id } = req.params;
+    const Subscription = req.db.getModel('Subscription')
+    const subscription = await Subscription.findByPk(id);
+    if (!subscription) {
+      return res.status(404).json({
+        success: false,
+        message: 'subscription not found'
+      });
+    }
+
+    const { updates } = req.body
+
+    const currentMetadata = subscription.metadata || {}
+    const newMetadata = {
+      ...currentMetadata,
+      ...updates
+    }
+    await subscription.update({
+      metadata: newMetadata
+    })
+
+    return res.json({
+      success: true,
+      data: SubscriptionDTO.fromSequelize(subscription).toApiResponse()
+    })
+  }
 }
 
+async function refreshBitrixToken(refreshToken, subscription) {
+  try {
+    const url = 'https://oauth.bitrix.info/oauth/token/';
+
+    const application = await subscription.getApplication();
+
+    const client_id = application.client_id;
+    const client_secret = application.client_secret;
+
+    if (!client_id || !client_secret) {
+      throw new Error('BITRIX_CLIENT_ID or BITRIX_CLIENT_SECRET not configured');
+    }
+
+    const params = new URLSearchParams({
+      grant_type: 'refresh_token',
+      client_id: client_id,
+      client_secret: client_secret,
+      refresh_token: refreshToken
+    });
+
+    const response = await axios.post(url, params.toString(), {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      timeout: 10000
+    });
+
+    const data = response.data;
+
+    if (!data.access_token) {
+      throw new Error(`Failed to refresh token: ${JSON.stringify(data)}`);
+    }
+
+    return {
+      access_token: data.access_token,
+      refresh_token: data.refresh_token,
+      expires_in: data.expires_in || 3600
+    };
+
+  } catch (error) {
+    console.error('Error refreshing Bitrix token:', error.message);
+    if (error.response) {
+      console.error('Response data:', error.response.data);
+      console.error('Response status:', error.response.status);
+    }
+    throw new Error(`Token refresh failed: ${error.message}`);
+  }
+}
 
 module.exports = new SubsciptionController()

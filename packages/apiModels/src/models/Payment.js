@@ -7,10 +7,10 @@ module.exports = (sequelize) => {
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true
     },
-    subscription_id: {
+    portal_id: {
       type: DataTypes.UUID,
       allowNull: false,
-      comment: 'ID подписки'
+      comment: 'ID портала'
     },
     external_id: {
       type: DataTypes.STRING(100),
@@ -49,23 +49,11 @@ module.exports = (sequelize) => {
     tableName: 'payments',
     timestamps: true,
     indexes: [
-      { fields: ['subscription_id'] },
+      { fields: ['portal_id'] },
       { fields: ['external_id'] },
       { fields: ['status'] },
       { fields: ['created_at'] }
     ],
-    hooks: {
-      afterUpdate: async (payment) => {
-        if (payment.changed('status') && payment.status === 'completed') {
-          const subscription = await payment.getSubscription();
-          if (subscription) {
-            await subscription.update({
-              status: 'active'
-            });
-          }
-        }
-      }
-    }
   });
 
   return Payment;

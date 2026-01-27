@@ -26,39 +26,44 @@ class SubscriptionController {
       if (status) where.status = status;
       if (tariffId) where.tariff_id = tariffId;
 
-      let includeWhere = {};
-
-      if (search) {
-        includeWhere = {
-          [Op.or]: [
-            { "$application.name$": { [Op.like]: `%${search}%` } },
-            { notes: { [Op.like]: `%${search}%` } },
-          ],
-        };
-      }
-
       const { count, rows } = await Subscription.findAndCountAll({
-        where,
+        where: search
+          ? {
+            [Op.and]: [
+              where, // все существующие фильтры (portalId, appId, status, tariffId)
+              {
+                [Op.or]: [ // поиск по всем полям
+                  { notes: { [Op.like]: `%${search}%` } },
+                  { '$application.name$': { [Op.like]: `%${search}%` } },
+                  { '$tariff.name$': { [Op.like]: `%${search}%` } },
+                  { '$portal.company_name$': { [Op.like]: `%${search}%` } },
+                  { '$portal.b24_domain$': { [Op.like]: `%${search}%` } },
+                ]
+              }
+            ]
+          }
+          : where, // если нет поиска, только фильтры
         include: [
           {
             model: req.db.getModel("Application"),
             as: "application",
             attributes: ["id", "name"],
-            where: search
-              ? { name: { [Op.like]: `%${search}%` } }
-              : undefined,
+            required: search ? true : false,
           },
           {
             model: req.db.getModel("Tariff"),
             as: "tariff",
             attributes: ["id", "name", "code", "price", "period"],
+            required: search ? true : false,
           },
           {
             model: req.db.getModel("Portal"),
             as: "portal",
             attributes: ["id", "b24_domain", "company_name"],
+            required: search ? true : false,
           },
         ],
+        distinct: true, // Важно при использовании required: true
         limit: parseInt(limit),
         offset: parseInt(offset),
         order: [["created_at", "DESC"]],
@@ -116,6 +121,7 @@ class SubscriptionController {
         auto_renew,
         trial_end_date,
         notes,
+        totalPrice
       } = req.body;
 
       if (!portal_id || !app_id || !tariff_id) {
@@ -165,7 +171,7 @@ class SubscriptionController {
         });
       }
 
-      if (status !== "trial" && portal.balance < tariff.amount) {
+      if (status !== "trial" && portal.balance < totalPrice) {
         return res.status(400).json({
           success: false,
           message:
@@ -173,7 +179,7 @@ class SubscriptionController {
         });
       } else {
         await portal.update({
-          balance: portal.balance - tariff.amount
+          balance: portal.balance - totalPrice
         })
       }
 
@@ -322,7 +328,7 @@ class SubscriptionController {
             newValidUntil.setMonth(newValidUntil.getMonth() + 1);
         }
       }
-      
+
       await portal.update({
         balance: portal.balance - amount
       })

@@ -70,6 +70,17 @@
         :disabled="globalEditing" />
       <ButtonPrime label="Удалить" icon="pi pi-trash" severity="danger" @click="confirmDelete" />
     </div>
+
+    <!-- Действия -->
+    <CardPrime>
+      <template #title>Быстрые действия</template>
+      <template #content>
+        <div class="flex flex-wrap gap-3">
+          <ButtonPrime label="Отправить уведомление" icon="pi pi-send" severity="secondary" />
+          <ButtonPrime label="Создать подписку" icon="pi pi-plus" severity="success" @click="goToCreateSubscription" />
+        </div>
+      </template>
+    </CardPrime>
     <!-- Подписки -->
     <CardPrime v-if="portal.subscriptions && portal.subscriptions.length > 0">
       <template #title>
@@ -82,17 +93,26 @@
         <SubscriptionTable :subscriptions="portal.subscriptions" :loading="loading" />
       </template>
     </CardPrime>
-
-    <!-- Действия -->
     <CardPrime>
-      <template #title>Быстрые действия</template>
+      <template #title>
+        <div class="flex justify-between">
+          <p>Платежи</p>
+          <ButtonPrime label="Все платежи" icon="pi pi-external-link" @click="goToPayments" />
+        </div>
+      </template>
       <template #content>
-        <div class="flex flex-wrap gap-3">
-          <ButtonPrime label="Отправить уведомление" icon="pi pi-send" severity="secondary" />
-          <ButtonPrime label="Создать подписку" icon="pi pi-plus" severity="success" @click="goToCreateSubscription" />
+        <div v-if="payments">
+          <PaymentTable :payments="payments" :loading="paymentsLoading" />
+          <PaginatorPrime v-if="paymentPagination?.total > paymentPagination.limit" :rows="paymentPagination.limit"
+            :totalRecords="paymentPagination.total" @page="onPageChange" />
+        </div>
+        <div v-else class="text-center py-12">
+          <i class="pi pi-exclamation-circle text-4xl text-gray-300 mb-4"></i>
+          <h3 class="text-lg font-medium mb-2">Платежи не найдены</h3>
         </div>
       </template>
     </CardPrime>
+
   </div>
 
   <div v-else class="text-center py-12">
@@ -111,8 +131,8 @@ import { ref, onMounted, computed, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
-import type { PortalDTO, PortalEditData } from '@/types/dto'
-import { portalService } from '@/services'
+import type { PaymentDTO, PortalDTO, PortalEditData } from '@/types/dto'
+import { paymentService, portalService, type PaymentSearchParams } from '@/services'
 import { formatCurrency, formatDate } from '@/helpers/formatters'
 import EditableText from '@/components/editableFields/EditableText.vue'
 import { FieldTypes, type ValidationResult } from '@/types/editable'
@@ -121,11 +141,14 @@ import EditableEmail from '@/components/editableFields/EditableEmail.vue'
 import { portalDataToRequest, applyPortalEditData, createPortalEditData } from '@/types/dto'
 import { domainValidators, companyValidators } from '@/helpers/validators'
 import SubscriptionTable from '@/components/SubscriptionTable.vue'
+import PaymentTable from '@/components/PaymentTable.vue'
 
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
 const confirm = useConfirm()
+const payments = ref<PaymentDTO[]>()
+const paymentsLoading = ref(false)
 
 const portalId = route.params.id as string
 
@@ -135,6 +158,14 @@ const editData = reactive<PortalEditData>({
   adminEmail: null,
   companyName: '',
   b24Domain: '',
+})
+const paymentPagination = reactive({
+  total: 0,
+  page: 1,
+  limit: 30,
+  totalPages: 0,
+  hasNext: false,
+  hasPrev: false,
 })
 
 const loading = ref(true)
@@ -276,8 +307,50 @@ const goToCreateSubscription = () => {
     query: { portalId: portalId }
   })
 }
+const onPageChange = (event: any) => {
+  paymentPagination.page = event.page + 1
+  loadPayments()
+}
+const goToPayments = () => {
+  router.push(`/payments?portalId=${portalId}`)
+}
+const loadPayments = async () => {
+  paymentsLoading.value = true
+  try {
+    const params: PaymentSearchParams = {
+      page: paymentPagination.page,
+      limit: paymentPagination.limit,
+      portalId: portalId,
+    }
+    const response = await paymentService.getPayments(params)
+
+    if (response.success) {
+      payments.value = response.data.items
+      paymentPagination.hasNext = response.data.hasNext
+      paymentPagination.hasPrev = response.data.hasPrev
+      paymentPagination.total = response.data.total
+      paymentPagination.totalPages = response.data.totalPages
+    } else {
+      toast.add({
+        severity: 'error',
+        summary: 'Не удалось загрузить платежи',
+        detail: response.message,
+        life: 3000,
+      })
+    }
+  } catch {
+    toast.add({
+      severity: 'error',
+      summary: 'Не удалось загрузить платежи',
+      life: 3000,
+    })
+  } finally {
+    paymentsLoading.value = false
+  }
+}
 
 onMounted(() => {
   loadPortal()
+  loadPayments()
 })
 </script>

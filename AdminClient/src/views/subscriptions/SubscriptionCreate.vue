@@ -219,7 +219,8 @@ const formData = reactive<CreateSubscriptionRequest>({
   auto_renew: true,
   trial_end_date: undefined,
   notes: '',
-  metadata: {}
+  metadata: {},
+  totalPrice: 0
 })
 
 const statusOptions = [
@@ -427,31 +428,11 @@ const createSubscription = async () => {
   creating.value = true
 
   try {
+    formData.totalPrice = calculateTotalPrice.value
     const response = await subscriptionService.createSubscription(formData)
 
     if (response.success) {
-      confirm.require({
-        message: `Создать платеж за продление на сумму ${calculateTotalPrice.value}?`,
-        header: 'Создание платежа',
-        icon: 'pi pi-credit-card',
-        acceptClass: 'p-button-success',
-        acceptLabel: 'Создать платеж',
-        rejectLabel: 'К подписке',
-
-        accept() {
-          router.push({
-            path: '/payments/create',
-            query: {
-              fromExtend: 'true',
-              subscriptionId: response.data.id,
-              amount: calculateTotalPrice.value,
-            },
-          })
-        },
-        reject() {
-          router.push(`/subscriptions/${response.data.id}`)
-        },
-      })
+      router.push(`/subscriptions/${response.data.id}`)
     } else {
       toast.add({
         severity: 'error',
@@ -475,9 +456,17 @@ const createSubscription = async () => {
 
 const cancel = () => {
   if (formData.portal_id || formData.app_id || formData.tariff_id || jsonMetadata.value) {
-    if (!confirm('Вы уверены? Введенные данные будут потеряны.')) {
-      return
-    }
+    confirm.require({
+      message: `Вы уверены? Введенные данные будут потеряны.`,
+      header: 'Отмена создания',
+      icon: 'pi pi-exclamation-triangle',
+      acceptClass: 'p-button-danger',
+      acceptLabel: 'Выход',
+      rejectLabel: 'Продолжить',
+      accept() {
+        router.push('/subscriptions')
+      },
+    })
   }
 
   router.push('/subscriptions')

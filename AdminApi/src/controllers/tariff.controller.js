@@ -15,10 +15,10 @@ class TariffController {
         hasTrial,
         isDefault
       } = req.query;
-
+      const { Op } = req.db.sequelize;
       const offset = (page - 1) * limit;
 
-      const Tariff = req.db.getModel('Tariff');
+      // Основные условия фильтрации
       const where = {};
 
       // Базовые фильтры
@@ -43,43 +43,44 @@ class TariffController {
         }
       }
 
-      // Поиск по названию, коду, описанию
-      if (search) {
-        where[Op.or] = [
-          { name: { [Op.like]: `%${search}%` } },
-          { code: { [Op.like]: `%${search}%` } },
-          { description: { [Op.like]: `%${search}%` } }
-        ];
-      }
-
-      const include = [{
-        model: req.db.getModel('Application'),
-        as: 'application',
-        attributes: ['id', 'name']
-      }];
-
-      const { count, rows } = await Tariff.findAndCountAll({
-        where,
-        include,
-        limit: parseInt(limit),
+      const { count, rows } = await req.db.getModel('Tariff').findAndCountAll({
+        where: search
+          ? {
+            [Op.and]: [
+              where,
+              {
+                [Op.or]: [
+                  { name: { [Op.like]: `%${search}%` } },
+                  { code: { [Op.like]: `%${search}%` } },
+                  { description: { [Op.like]: `%${search}%` } },
+                  { '$application.name$': { [Op.like]: `%${search}%` } },
+                ]
+              }
+            ]
+          }
+          : where,
+        include: [{
+          model: req.db.getModel('Application'),
+          as: 'application',
+          attributes: ['id', 'name']
+        }],
+        limit: parseInt(limit || 20),
         offset: parseInt(offset),
         order: [['sort_order', 'ASC'], ['name', 'ASC']]
       });
 
-      const tariffs = rows.map(tariff =>
-        TariffDTO.fromSequelize(tariff).toApiResponse()
-      );
-
       res.json({
         success: true,
         data: {
-          items: tariffs,
+          items: rows.map(tariff =>
+            TariffDTO.fromSequelize(tariff).toApiResponse()
+          ),
+          page: parseInt(page || 1),
+          limit: parseInt(limit || 20),
           total: count,
-          page: parseInt(page),
-          limit: parseInt(limit),
-          totalPages: Math.ceil(count / limit),
-          hasNext: parseInt(page) < Math.ceil(count / limit),
-          hasPrev: parseInt(page) > 1
+          pages: Math.ceil(count / (limit || 20)),
+          hasNext: parseInt(page || 1) < Math.ceil(count / (limit || 20)),
+          hasPrev: parseInt(page || 1) > 1
         }
       });
     } catch (error) {
@@ -217,6 +218,7 @@ class TariffController {
         limits,
         features,
         sort_order,
+        show_in_list
       } = req.body;
 
       if (is_default && !tariff.is_default) {
@@ -237,6 +239,7 @@ class TariffController {
         limits,
         features: features || tariff.features,
         sort_order,
+        show_in_list
       });
 
       const tariffDTO = TariffDTO.fromSequelize(tariff);

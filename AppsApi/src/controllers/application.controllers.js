@@ -1,13 +1,13 @@
 const { ApplicationDTO, TariffDTO } = require('@payment-app/apiModels')
 
 class ApplicationController {
-  async get (req, res, next) {
+  async get(req, res, next) {
     const { id } = req.params
 
     try {
       const Application = req.db.getModel('Application')
-      const application = await Application.findByPk(id,{
-        attributes:['id','name','description']
+      const application = await Application.findByPk(id, {
+        attributes: ['id', 'name', 'description']
       })
 
       if (!application) {
@@ -26,7 +26,7 @@ class ApplicationController {
       next(error)
     }
   }
-  async getTariffs (req, res, next) {
+  async getTariffs(req, res, next) {
     const { appId } = req.params
 
     try {
@@ -47,7 +47,30 @@ class ApplicationController {
       next(error)
     }
   }
-  async getData (req, res, next) {}
+
+  async getFull(req, res, next) {
+    const { id } = req.params
+
+    try {
+      const Application = req.db.getModel('Application')
+      const application = await Application.findByPk(id)
+
+      if (!application) {
+        return res.json({
+          success: false,
+          message: 'Application not found'
+        })
+      }
+      const result = ApplicationDTO.fromSequelize(application).toApiResponse()
+
+      res.json({
+        success: true,
+        data: result
+      })
+    } catch (error) {
+      next(error)
+    }
+  }
 }
 
 module.exports = new ApplicationController()

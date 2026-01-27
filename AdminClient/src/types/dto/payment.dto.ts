@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { Metadata } from '.'
+import { PortalDTO, type Metadata } from '.'
 import { PaymentStatus } from '../api/responses'
 import { SubscriptionDTO } from './subscription.dto'
 
 
 export interface PaymentDTOData {
   id: string
-  subscription_id?: string | null
-  subscriptionId?: string | null
+  portal_id?: string | null
+  portalId?: string | null
   external_id?: string| null
   externalId?: string| null
   amount: number | string
@@ -20,12 +20,12 @@ export interface PaymentDTOData {
   createdAt?: string | Date
   updated_at?: string | Date
   updatedAt?: string | Date
-  subscription?: any
+  portal?: any
 }
 
 export class PaymentDTO {
   id: string
-  subscriptionId: string | null
+  portalId: string | null
   externalId: string | null
   amount: number
   status: PaymentStatus
@@ -34,11 +34,11 @@ export class PaymentDTO {
   metadata: Metadata
   createdAt: string | Date
   updatedAt: string | Date
-  subscription: SubscriptionDTO | null
+  portal: PortalDTO | null
 
   constructor(data: PaymentDTOData) {
     this.id = data.id
-    this.subscriptionId = data.subscription_id || data.subscriptionId || null
+    this.portalId = data.portal_id || data.portalId || null
     this.externalId = data.external_id || data.externalId || null
     this.amount = typeof data.amount === 'string' ? parseFloat(data.amount) : data.amount
     this.status = data.status || PaymentStatus.PENDING
@@ -48,9 +48,9 @@ export class PaymentDTO {
     this.createdAt = data.created_at || data.createdAt || new Date().toISOString()
     this.updatedAt = data.updated_at || data.updatedAt || new Date().toISOString()
 
-    this.subscription = null
-    if (data.subscription) {
-      this.subscription = new SubscriptionDTO(data.subscription)
+    this.portal = null
+    if (data.portal) {
+      this.portal = new PortalDTO(data.portal)
     }
   }
 }

@@ -80,7 +80,13 @@ module.exports = sequelize => {
         type: DataTypes.TEXT,
         allowNull: true,
         comment: 'Заметки по подписке'
-      }
+      },
+      user_type: {
+        type: DataTypes.ENUM('user', 'bot', 'owner'),
+        allowNull: false,
+        defaultValue: 'user',
+        comment: 'Тип пользователя'
+      },
     },
     {
       tableName: 'subscriptions',

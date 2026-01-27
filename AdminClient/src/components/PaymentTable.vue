@@ -6,8 +6,7 @@
     @row-click="handleRowClick"
     striped-rows
   >
-    <ColumnPrime field="subscription.application.name" header="Приложение" sortable />
-    <ColumnPrime field="subscription.portal.companyName" header="Портал" sortable />
+    <ColumnPrime field="portal.companyName" header="Портал" sortable />
     <ColumnPrime field="amount" header="Сумма" sortable>
       <template #body="{ data }">
         <div class="font-medium">

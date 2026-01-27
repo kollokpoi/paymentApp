@@ -8,7 +8,7 @@ class SubscriptionAutoCheck {
         this.Portal = models.Portal;
         this.isRunning = false;
         this.timeoutId = null;
-        this.checkInterval = 1 * 60 * 1000; // 5 минут (исправил комментарий)
+        this.checkInterval = 50 * 60 * 1000; // 5 минут (исправил комментарий)
     }
 
     start() {
@@ -56,7 +56,8 @@ class SubscriptionAutoCheck {
 
             const subscriptions = await this.Subscription.findAll({
                 where: {
-                    status: [SUBSCRIPTION_STATUS.TRIAL, SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.SUSPENDED]
+                    status: [SUBSCRIPTION_STATUS.TRIAL, SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.SUSPENDED],
+                    user_type: 'user'
                 },
                 include: [
                     {

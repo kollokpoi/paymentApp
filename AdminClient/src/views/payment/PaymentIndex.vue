@@ -1,7 +1,7 @@
 <template>
   <div class="mb-6">
     <h1 class="text-2xl font-bold mb-2">Платежи</h1>
-    <p class="text-gray-600">Управление платежами подписок</p>
+    <p class="text-gray-600">Управление платежами</p>
   </div>
 
   <div class="mb-6">
@@ -51,13 +51,6 @@
         <SelectPrime v-model="selectedStatus" class="w-full" :options="statusOptions" optionLabel="label" :filter="true"
           optionValue="value" placeholder="Все статусы" />
       </div>
-
-      <div>
-        <label class="block text-sm font-medium mb-2">Приложение</label>
-        <SelectPrime v-model="selectedAppId" class="w-full" :options="appsOptions" optionLabel="label" :filter="true"
-          optionValue="value" placeholder="Все приложения" />
-      </div>
-
       <div>
         <label class="block text-sm font-medium mb-2">Способ оплаты</label>
         <SelectPrime v-model="selectedPaymentMethod" class="w-full" :options="paymentMethodOptions" optionLabel="label"
@@ -105,8 +98,8 @@
 import { ref, onMounted, computed, watch, reactive, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
-import { paymentService, portalService, applicationService } from '@/services'
-import type { PortalShortDTO, PaymentDTO, ApplicationShortDTO } from '@/types/dto'
+import { paymentService, portalService } from '@/services'
+import type { PortalShortDTO, PaymentDTO } from '@/types/dto'
 import { useDebouncedFn } from '@/composables/useDebounce'
 import PaymentTable from '@/components/PaymentTable.vue'
 import type { PaymentSearchParams } from '@/services/payment.service'
@@ -116,19 +109,14 @@ const route = useRoute()
 const router = useRouter()
 const toast = useToast()
 
-const subscriptionId = route.query.subscriptionId
-const appId = route.query.appId
 const portalId = route.query.portalId
 
 const portals = ref<PortalShortDTO[]>([])
-const applications = ref<ApplicationShortDTO[]>([])
 const payments = ref<PaymentDTO[]>([])
 
 const search = ref('')
 const selectedPortalId = ref<string | undefined>(portalId as string)
 const selectedStatus = ref<string>()
-const selectedAppId = ref<string | undefined>(appId as string)
-const selectedSubscriptionId = ref<string | undefined>(subscriptionId as string)
 const selectedPaymentMethod = ref<string>()
 const dateFrom = ref<Date>()
 const dateTo = ref<Date>()
@@ -151,10 +139,7 @@ const portalOptions = computed(() => [
   { value: undefined, label: 'Все порталы' },
   ...(portals.value?.map(x => x.selectOption) || [])
 ])
-const appsOptions = computed(() => [
-  { value: undefined, label: 'Все приложения' },
-  ...(applications.value?.map(x => x.selectOption) || [])
-])
+
 const statusOptions = [
   { value: undefined, label: 'Любой' },
   { value: PaymentStatus.COMPLETED, label: 'Успешные' },
@@ -175,7 +160,6 @@ const hasPayments = computed(() => payments.value.length > 0)
 const hasActiveFilters = computed(() => {
   return !!selectedPortalId.value ||
     !!selectedStatus.value ||
-    !!selectedAppId.value ||
     !!selectedPaymentMethod.value ||
     !!dateFrom.value ||
     !!dateTo.value ||
@@ -212,28 +196,6 @@ const loadPortals = async () => {
   }
 }
 
-const loadApps = async () => {
-  try {
-    const response = await applicationService.getApplicationsList()
-
-    if (response.success) {
-      applications.value = response.data
-    } else {
-      toast.add({
-        severity: 'error',
-        summary: 'Не удалось загрузить приложения',
-        detail: response.message,
-        life: 3000,
-      })
-    }
-  } catch {
-    toast.add({
-      severity: 'error',
-      summary: 'Не удалось загрузить приложения',
-      life: 3000,
-    })
-  }
-}
 
 const loadPayments = async () => {
   if (abortController) {
@@ -251,10 +213,8 @@ const loadPayments = async () => {
       limit: pagination.limit
     }
 
-    if (selectedSubscriptionId.value) params.subscriptionId = selectedSubscriptionId.value
     if (selectedPortalId.value) params.portalId = selectedPortalId.value
     if (selectedStatus.value) params.status = selectedStatus.value
-    if (selectedAppId.value) params.appId = selectedAppId.value
     if (dateFrom.value) params.dateFrom = dateFrom.value.toISOString().split('T')[0]
     if (dateTo.value) params.dateTo = dateTo.value.toISOString().split('T')[0]
     if (amountFrom.value) params.amountFrom = amountFrom.value;
@@ -271,6 +231,7 @@ const loadPayments = async () => {
       pagination.hasPrev = response.data.hasPrev
       pagination.total = response.data.total
       pagination.totalPages = response.data.totalPages
+      console.log(payments.value)
     } else {
       toast.add({
         severity: 'error',
@@ -301,7 +262,6 @@ const applyFilters = () => {
 const resetFilters = () => {
   selectedPortalId.value = undefined
   selectedStatus.value = undefined
-  selectedAppId.value = undefined
   selectedPaymentMethod.value = undefined
   dateFrom.value = undefined
   dateTo.value = undefined
@@ -318,7 +278,7 @@ const onPageChange = (event: any) => {
 }
 
 const addPayment = () => {
-  const queryParams = subscriptionId ? { subscriptionId } : {}
+  const queryParams = portalId ? { portalId } : {}
   router.push({
     path: `/payments/create`,
     query: queryParams
@@ -333,7 +293,6 @@ watch(search, () => {
 onMounted(() => {
   loadPortals()
   loadPayments()
-  loadApps()
 })
 
 onUnmounted(() => {

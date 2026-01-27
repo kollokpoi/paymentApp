@@ -34,16 +34,15 @@ const authenticateToken = async (req, res, next) => {
   }
 }
 
-const authorize = (...roles) => {
-  return (req, res, next) => {
-    if (!req.user) {
+const authorize =  (...roles) => {
+  return async (req, res, next) => {
+    if (!req.subscription) {
       return res.status(401).json({
         success: false,
         message: 'Authentication required'
       })
     }
-
-    if (!roles.includes(req.user.role)) {
+    if (!roles.includes(req.subscription.user_type)) {
       return res.status(403).json({
         success: false,
         message: 'Insufficient permissions'

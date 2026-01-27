@@ -17,13 +17,13 @@
 
             <div>
               <label class="block text-sm font-medium mb-2">
-                Подписка <span class="text-red-500">*</span>
+                Портал <span class="text-red-500">*</span>
               </label>
-              <SelectPrime v-model="formData.subscription_id" :options="subscriptionOptions" optionLabel="label"
-                optionValue="value" placeholder="Выберите подписку" class="w-full" :filter="true"
-                :loading="subscriptionsLoading" :invalid="!formData.subscription_id" />
-              <small v-if="!formData.subscription_id" class="text-red-500 text-xs">
-                Подписка обязательна
+              <SelectPrime v-model="formData.portal_id" :options="portalOptions" optionLabel="label" optionValue="value"
+                placeholder="Выберите портал" class="w-full" :filter="true" :loading="portalLoading"
+                :invalid="!formData.portal_id" />
+              <small v-if="!formData.portal_id" class="text-red-500 text-xs">
+                Портал обязателен
               </small>
             </div>
 
@@ -87,29 +87,22 @@
             </div>
 
             <div class="pt-4 border-t">
-              <h4 class="font-medium mb-2">Информация о выбранной подписке</h4>
-              <div v-if="selectedSubscriptionInfo" class="bg-gray-50 p-3 rounded">
+              <h4 class="font-medium mb-2">Информация о портале</h4>
+              <div v-if="selectedPortalInfo" class="bg-gray-50 p-3 rounded">
                 <div class="grid grid-cols-2 gap-2 text-sm">
-                  <div class="text-gray-500">Приложение:</div>
-                  <div class="font-medium">{{ selectedSubscriptionInfo.application?.name }}</div>
+                  <div class="text-gray-500">Домен:</div>
+                  <div class="font-medium">{{ selectedPortalInfo.domain }}</div>
 
-                  <div class="text-gray-500">Портал:</div>
+                  <div class="text-gray-500">Компания:</div>
                   <div class="font-medium">
                     {{
-                      selectedSubscriptionInfo.portal?.companyName ||
-                      selectedSubscriptionInfo.portalId
+                      selectedPortalInfo.name
                     }}
                   </div>
 
-                  <div class="text-gray-500">Тариф:</div>
+                  <div class="text-gray-500">баланс:</div>
                   <div class="font-medium">
-                    {{ selectedSubscriptionInfo.tariff?.name || 'Без тарифа' }}
-                  </div>
-
-                  <div class="text-gray-500">Статус:</div>
-                  <div>
-                    <TagPrime :value="selectedSubscriptionInfo.status"
-                      :severity="getSubscriptionStatusSeverity(selectedSubscriptionInfo.status)" />
+                    {{ selectedPortalInfo.balance }}
                   </div>
                 </div>
               </div>
@@ -134,10 +127,10 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
-import { paymentService, subscriptionService } from '@/services'
+import { paymentService, portalService } from '@/services'
 import { PaymentStatus } from '@/types/api/responses'
 import type { CreatePaymentRequest } from '@/services/payment.service'
-import type { SubscriptionDTO } from '@/types/dto'
+import type { PortalShortDTO } from '@/types/dto'
 import { useConfirm } from 'primevue'
 
 const route = useRoute()
@@ -148,12 +141,12 @@ const confirm = useConfirm()
 const creating = ref(false)
 const jsonError = ref<string | null>(null)
 const jsonMetadata = ref('')
-const subscriptions = ref<SubscriptionDTO[]>([])
-const subscriptionsLoading = ref(false)
+const portals = ref<PortalShortDTO[]>([])
+const portalLoading = ref(false)
 const fromExtend = computed(() => route.query.fromExtend === 'true')
 
 const formData = reactive<CreatePaymentRequest>({
-  subscription_id: '',
+  portal_id: '',
   amount: 0,
   status: PaymentStatus.PENDING,
   description: '',
@@ -169,31 +162,18 @@ const statusOptions = [
   { value: PaymentStatus.REFUNDED, label: 'Возврат' },
 ]
 
-const subscriptionOptions = computed(() => {
-  return subscriptions.value.map((sub) => ({
-    value: sub.id,
-    label: `${sub.portal?.companyName || sub.portalId} - ${sub.application?.name || 'Без приложения'} (${sub.tariff?.name || 'Без тарифа'})`,
-  }))
+const portalOptions = computed(() => {
+  return portals.value.map((portal) => (portal.selectOption))
 })
 
-const selectedSubscriptionInfo = computed(() => {
-  return subscriptions.value.find((sub) => sub.id === formData.subscription_id)
+const selectedPortalInfo = computed(() => {
+  return portals.value.find((sub) => sub.id === formData.portal_id)
 })
 
 const isFormValid = computed(() => {
-  return !!formData.subscription_id && !!formData.amount && formData.amount > 0 && !!formData.status
+  return !!formData.portal_id && !!formData.amount && formData.amount > 0 && !!formData.status
 })
 
-const getSubscriptionStatusSeverity = (status: string) => {
-  const statusMap: Record<string, string> = {
-    active: 'success',
-    trial: 'info',
-    expired: 'danger',
-    suspended: 'warning',
-    cancelled: 'secondary',
-  }
-  return statusMap[status] || 'info'
-}
 
 const handleJsonInput = () => {
   jsonError.value = null
@@ -212,27 +192,23 @@ const handleJsonInput = () => {
 }
 
 const loadSubscriptions = async () => {
-  subscriptionsLoading.value = true
+  portalLoading.value = true
   try {
-    const response = await subscriptionService.getSubscriptions({
-      limit: 100,
-      page: 1,
-      status: 'active',
-    })
+    const response = await portalService.getPortalsList()
 
     if (response.success) {
-      subscriptions.value = response.data.items
+      portals.value = response.data
     }
   } catch (error) {
-    console.error('Ошибка загрузки подписок:', error)
+    console.error('Ошибка загрузки порталов:', error)
     toast.add({
       severity: 'error',
       summary: 'Ошибка',
-      detail: 'Не удалось загрузить список подписок',
+      detail: 'Не удалось загрузить список порталов',
       life: 3000,
     })
   } finally {
-    subscriptionsLoading.value = false
+    portalLoading.value = false
   }
 }
 
@@ -241,7 +217,7 @@ const createPayment = async () => {
     toast.add({
       severity: 'warn',
       summary: 'Заполните обязательные поля',
-      detail: 'Подписка, сумма и статус обязательны',
+      detail: 'Портал, сумма и статус обязательны',
       life: 3000,
     })
     return
@@ -259,27 +235,8 @@ const createPayment = async () => {
         detail: 'Платеж создан',
         life: 3000,
       })
-      if (!fromExtend.value) {
-        confirm.require({
-          message: `Продлить подписку?`,
-          header: 'Продление подписки',
-          icon: 'pi pi-exclamation-triangle',
-          acceptClass: 'p-button-success',
-          acceptLabel: 'Продлить',
-          rejectLabel: 'Продолжить',
-          accept() {
-            router.push({
-              path: `/subscriptions/${response.data.subscriptionId}/extend`,
-              query: { fromPayment: 'true' },
-            })
-          },
-          reject() {
-            router.push(`/payments/${response.data.id}`)
-          },
-        })
-      } else {
-        router.push(`/payments/${response.data.id}`)
-      }
+
+      router.push(`/payments/${response.data.id}`)
     } else {
       toast.add({
         severity: 'error',
@@ -302,7 +259,7 @@ const createPayment = async () => {
 }
 
 const cancel = () => {
-  if (formData.subscription_id || formData.amount || jsonMetadata.value) {
+  if (formData.portal_id || formData.amount || jsonMetadata.value) {
     confirm.require({
       message: `Вы уверены? Введенные данные будут потеряны.`,
       header: 'Отмена создания',
@@ -322,7 +279,7 @@ const cancel = () => {
 onMounted(() => {
   loadSubscriptions()
   if (route.query.subscriptionId) {
-    formData.subscription_id = route.query.subscriptionId as string
+    formData.portal_id = route.query.subscriptionId as string
   }
 
   if (route.query.amount) {

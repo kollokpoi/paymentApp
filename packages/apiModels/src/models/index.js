@@ -56,14 +56,14 @@ function initModels(sequelize) {
     as: 'tariff'
   });
 
-  models.Subscription.hasMany(models.Payment, {
-    foreignKey: 'subscription_id',
+  models.Portal.hasMany(models.Payment, {
+    foreignKey: 'portal_id',
     as: 'payments',
     onDelete: 'CASCADE'
   });
-  models.Payment.belongsTo(models.Subscription, {
-    foreignKey: 'subscription_id',
-    as: 'subscription'
+  models.Payment.belongsTo(models.Portal, {
+    foreignKey: 'portal_id',
+    as: 'portal'
   });
 
   return models;

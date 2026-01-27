@@ -6,6 +6,7 @@ export interface PortalShortDTOData {
   companyName?: string
   is_active?: boolean
   isActive?: boolean
+  balance?: number
 }
 
 export class PortalShortDTO {
@@ -13,12 +14,14 @@ export class PortalShortDTO {
   name: string
   domain: string
   isActive: boolean
+  balance: number
 
   constructor(data: PortalShortDTOData) {
     this.id = data.id
     this.domain = data.b24Domain || data.b24_domain || ''
     this.name = data.companyName || data.company_name || this.domain
     this.isActive = data.isActive ?? data.is_active ?? true
+    this.balance = data.balance || 0
   }
 
   get selectOption() {

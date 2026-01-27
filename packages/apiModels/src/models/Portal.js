@@ -70,7 +70,7 @@ module.exports = sequelize => {
         validate: {
           min: 0
         },
-        defaultValue:0,
+        defaultValue: 0,
         comment: 'Баланс портала'
       },
     },

@@ -2,9 +2,9 @@ const jwt = require('jsonwebtoken')
 const { SubscriptionDTO } = require('@payment-app/apiModels')
 
 class AuthController {
-  async login (req, res, next) {
+  async login(req, res, next) {
     try {
-      const { domain, applicationId } = req.body
+      const { domain, applicationId, auth = null } = req.body
 
       if (!domain || !applicationId) {
         return res.status(400).json({
@@ -37,14 +37,19 @@ class AuthController {
           message: 'Subscription expired or not found'
         })
       }
-
+      if (auth) {
+        await subscription.update({
+          b24_access_token: auth.access_token,
+          b24_refresh_token: auth.refresh_token
+        })
+      }
       return generateAuthResponse(subscription, res)
     } catch (error) {
       next(error)
     }
   }
 
-  async refresh (req, res, next) {
+  async refresh(req, res, next) {
     try {
       const { refreshToken } = req.body
 
@@ -94,11 +99,12 @@ class AuthController {
     }
   }
 
-  async register (req, res, next) {
+  async register(req, res, next) {
     try {
       const {
         domain,
         applicationId,
+        auth = null,
         companyName = null,
         adminEmail = null,
         portalData = {}
@@ -155,6 +161,13 @@ class AuthController {
         include: ['tariff']
       })
 
+      if (subscription && auth) {
+        await subscription.update({
+          b24_access_token: auth.access_token,
+          b24_refresh_token: auth.refresh_token
+        })
+      }
+
       if (subscription && subscription.isActive()) {
         return generateAuthResponse(subscription, res)
       }
@@ -207,8 +220,17 @@ class AuthController {
           created_via: 'auto_register',
           tariff_code: tariff.code,
           trial_days: tariff.trial_days,
-          initial_tariff: tariff.name
-        }
+          initial_tariff: tariff.name,
+          sync_settings: {
+            'last_sync' : null,
+            'global_settings' : false,
+            'frequency_days' : 7,
+            'save_to_chat' : false,
+            'save_to_timeline' : true
+          }
+        },
+        b24_refresh_token: auth ? auth.refresh_token : '',
+        b24_access_token: auth ? auth.access_token : ''
       })
 
       const subscriptionWithTariff = await Subscription.findByPk(
@@ -233,7 +255,7 @@ class AuthController {
   }
 }
 
-function generateAuthResponse (subscription, res) {
+function generateAuthResponse(subscription, res) {
   try {
     const accessToken = jwt.sign(
       {
